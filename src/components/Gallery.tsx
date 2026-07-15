@@ -51,7 +51,7 @@ export default function Gallery() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-3">
               Découvrez <span className="text-[#6b7c5c]">l'expérience</span>
             </h2>
-            <p className="text-white/45 text-base font-light max-w-lg mx-auto">
+            <p className="text-white/60 text-base font-light max-w-lg mx-auto">
               Une interface moderne et intuitive pour accéder à tout votre contenu.
             </p>
           </div>

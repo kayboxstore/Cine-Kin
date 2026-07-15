@@ -83,7 +83,7 @@ export default function Blog() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-5 tracking-[-0.02em]">
               Le <span className="text-[#6b7c5c]">blog</span> Ciné Kin
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light leading-relaxed">
               Guides, conseils et actualités sur l'IPTV et le streaming. Tout ce qu'il faut savoir pour profiter pleinement de votre abonnement.
             </p>
           </ScrollReveal>
@@ -115,12 +115,12 @@ export default function Blog() {
                   {article.title}
                 </h2>
 
-                <p className="text-white/40 text-sm leading-relaxed mb-4">
+                <p className="text-white/60 text-sm leading-relaxed mb-4">
                   {article.excerpt}
                 </p>
 
                 <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
-                  <div className="flex items-center gap-3 text-white/30 text-xs">
+                  <div className="flex items-center gap-3 text-white/55 text-xs">
                     <span className="flex items-center gap-1">
                       <FiCalendar className="w-3 h-3" />
                       {article.date}
@@ -145,7 +145,7 @@ export default function Blog() {
             <h2 className="font-display font-bold text-3xl text-white mb-4">
               Prêt à <span className="text-[#6b7c5c]">commencer</span> ?
             </h2>
-            <p className="text-white/45 text-lg mb-8 max-w-xl mx-auto font-light">
+            <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto font-light">
               Essayez notre service gratuitement pendant 24h. Aucun engagement.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

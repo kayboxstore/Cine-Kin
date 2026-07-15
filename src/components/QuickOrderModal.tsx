@@ -42,12 +42,12 @@ export default function QuickOrderModal({ isOpen, onClose }: QuickOrderModalProp
                 </div>
                 <div>
                   <h3 className="font-display font-semibold text-lg text-white">Commander en 1 clic</h3>
-                  <p className="text-white/40 text-xs">Choisissez votre formule</p>
+                  <p className="text-white/60 text-xs">Choisissez votre formule</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.05] text-white/40 hover:text-white transition-all"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.05] text-white/60 hover:text-white transition-all"
               >
                 <FiX className="w-4 h-4" />
               </button>
@@ -73,7 +73,7 @@ export default function QuickOrderModal({ isOpen, onClose }: QuickOrderModalProp
                     </div>
                     <div>
                       <span className="text-white font-medium text-sm">{plan.name}</span>
-                      <span className="text-white/35 text-xs ml-2">{(plan as any).duration || ""}</span>
+                      <span className="text-white/55 text-xs ml-2">{(plan as any).duration || ""}</span>
                     </div>
                   </div>
                   <span className="font-display font-bold text-white text-sm">{(plan as any).priceLabel || (plan as any).price}</span>
@@ -95,7 +95,7 @@ export default function QuickOrderModal({ isOpen, onClose }: QuickOrderModalProp
                 <FiMessageCircle className="w-5 h-5" />
                 Commander sur WhatsApp
               </a>
-              <p className="text-white/25 text-xs text-center mt-3">
+              <p className="text-white/55 text-xs text-center mt-3">
                 Réponse sous 5 minutes garantie
               </p>
             </div>

@@ -66,7 +66,7 @@ export default function WhatsAppWidget() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-white/[0.04] text-center">
-              <p className="text-white/30 text-xs">
+              <p className="text-white/55 text-xs">
                 Horaires : {SITE_CONFIG.supportHours}
               </p>
             </div>

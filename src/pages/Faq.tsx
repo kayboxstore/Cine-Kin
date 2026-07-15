@@ -56,7 +56,7 @@ export default function Faq() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-5 tracking-[-0.02em]">
               Questions <span className="text-[#6b7c5c]">fréquentes</span>
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light leading-relaxed">
               Trouvez rapidement les réponses à vos questions sur notre service IPTV.
             </p>
           </ScrollReveal>
@@ -64,7 +64,7 @@ export default function Faq() {
           {/* Search */}
           <ScrollReveal delay={0.1}>
             <div className="relative max-w-lg mx-auto mt-10">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/55" />
               <input
                 type="text"
                 value={search}
@@ -89,7 +89,7 @@ export default function Faq() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeCat === cat
                     ? "bg-[#5a6b4e] text-white"
-                    : "bg-white/[0.03] text-white/45 hover:text-white/65 border border-white/[0.06]"
+                    : "bg-white/[0.03] text-white/60 hover:text-white/65 border border-white/[0.06]"
                 }`}
               >
                 {cat}
@@ -98,7 +98,7 @@ export default function Faq() {
           </div>
 
           {/* Results count */}
-          <p className="text-white/30 text-sm mb-6 text-center">
+          <p className="text-white/55 text-sm mb-6 text-center">
             {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
           </p>
 
@@ -122,7 +122,7 @@ export default function Faq() {
                     {openIndex === i ? (
                       <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                     ) : (
-                      <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                      <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                     )}
                   </button>
                   <AnimatePresence>
@@ -135,7 +135,7 @@ export default function Faq() {
                       >
                         <div className="px-5 pb-5 border-t border-white/[0.04] pt-4">
                           <p className="text-white/50 text-sm leading-relaxed">{faq.a}</p>
-                          <span className="inline-block mt-3 px-2.5 py-1 bg-white/[0.03] text-white/30 text-xs rounded-lg">
+                          <span className="inline-block mt-3 px-2.5 py-1 bg-white/[0.03] text-white/55 text-xs rounded-lg">
                             {faq.cat}
                           </span>
                         </div>
@@ -150,7 +150,7 @@ export default function Faq() {
           {filtered.length === 0 && (
             <div className="text-center py-12">
               <FiSearch className="w-10 h-10 text-white/15 mx-auto mb-3" />
-              <p className="text-white/35 text-base">Aucun résultat pour "{search}"</p>
+              <p className="text-white/55 text-base">Aucun résultat pour "{search}"</p>
               <button
                 onClick={() => { setSearch(""); setActiveCat("Tous"); }}
                 className="text-[#6b7c5c] text-sm mt-2 hover:underline"

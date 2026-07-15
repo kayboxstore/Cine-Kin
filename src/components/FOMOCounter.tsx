@@ -36,7 +36,7 @@ export default function FOMOCounter() {
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-2 mb-2">
                   <FiUsers className="w-4 h-4 text-[#6b7c5c]" />
-                  <span className="text-white/40 text-xs uppercase tracking-wider">En ligne</span>
+                  <span className="text-white/60 text-xs uppercase tracking-wider">En ligne</span>
                 </div>
                 <motion.div
                   key={viewers}
@@ -46,29 +46,29 @@ export default function FOMOCounter() {
                 >
                   {viewers}
                 </motion.div>
-                <span className="text-white/30 text-xs">personnes consultent</span>
+                <span className="text-white/55 text-xs">personnes consultent</span>
               </div>
 
               {/* Orders today */}
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-2 mb-2">
                   <FiTrendingUp className="w-4 h-4 text-[#6b7c5c]" />
-                  <span className="text-white/40 text-xs uppercase tracking-wider">Aujourd'hui</span>
+                  <span className="text-white/60 text-xs uppercase tracking-wider">Aujourd'hui</span>
                 </div>
                 <div className="font-display font-bold text-3xl text-white">128</div>
-                <span className="text-white/30 text-xs">commandes passées</span>
+                <span className="text-white/55 text-xs">commandes passées</span>
               </div>
 
               {/* Spots left */}
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-2 mb-2">
                   <FiZap className="w-4 h-4 text-orange-400" />
-                  <span className="text-white/40 text-xs uppercase tracking-wider">Urgence</span>
+                  <span className="text-white/60 text-xs uppercase tracking-wider">Urgence</span>
                 </div>
                 <div className="font-display font-bold text-3xl text-orange-400">
                   {spotsLeft}
                 </div>
-                <span className="text-white/30 text-xs">places promo restantes</span>
+                <span className="text-white/55 text-xs">places promo restantes</span>
               </div>
             </div>
 
@@ -83,7 +83,7 @@ export default function FOMOCounter() {
                   className="h-full rounded-full bg-[#5a6b4e]"
                 />
               </div>
-              <p className="text-white/25 text-xs mt-2 text-center">
+              <p className="text-white/55 text-xs mt-2 text-center">
                 88% des places promo déjà réservées aujourd'hui
               </p>
             </div>

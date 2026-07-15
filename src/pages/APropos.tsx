@@ -55,7 +55,7 @@ export default function APropos() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
               À propos de <span className="text-[#6b7c5c]">{SITE_CONFIG.name}</span>
             </h1>
-            <p className="text-white/45 text-lg max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="text-white/60 text-lg max-w-3xl mx-auto font-light leading-relaxed">
               Depuis 2020, nous redéfinissons l'expérience de télévision avec une technologie de pointe et un catalogue exceptionnel.
             </p>
           </ScrollReveal>
@@ -70,7 +70,7 @@ export default function APropos() {
               {stats.map((stat, i) => (
                 <div key={i} className="text-center">
                   <div className="font-display font-bold text-2xl sm:text-3xl text-white mb-1">{stat.value}</div>
-                  <div className="text-white/40 text-sm tracking-wide">{stat.label}</div>
+                  <div className="text-white/60 text-sm tracking-wide">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -85,7 +85,7 @@ export default function APropos() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-6 tracking-[-0.02em]">
               Notre <span className="text-[#6b7c5c]">mission</span>
             </h2>
-            <p className="text-white/45 text-lg leading-relaxed font-light">
+            <p className="text-white/60 text-lg leading-relaxed font-light">
               {SITE_CONFIG.name} a été fondé avec une conviction simple : le divertissement devrait être accessible, de qualité et sans limites. 
               Nous construisons la plateforme IPTV la plus complète et fiable, où chaque utilisateur trouve son contenu préféré 
               en quelques clics, où qu'il soit dans le monde.
@@ -117,7 +117,7 @@ export default function APropos() {
                   <val.icon className="w-6 h-6 text-[#6b7c5c]" />
                 </div>
                 <h3 className="font-display font-semibold text-lg text-white mb-2">{val.title}</h3>
-                <p className="text-white/40 text-base leading-relaxed font-light">{val.desc}</p>
+                <p className="text-white/60 text-base leading-relaxed font-light">{val.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -142,7 +142,7 @@ export default function APropos() {
                     <div className="ml-12 sm:ml-0">
                       <div className="font-display font-bold text-xl text-[#6b7c5c] mb-1">{milestone.year}</div>
                       <h3 className="font-display font-semibold text-lg text-white mb-1">{milestone.title}</h3>
-                      <p className="text-white/40 text-base font-light leading-relaxed">{milestone.desc}</p>
+                      <p className="text-white/60 text-base font-light leading-relaxed">{milestone.desc}</p>
                     </div>
                   </div>
                   <div className="absolute left-4 sm:left-1/2 w-3 h-3 rounded-full bg-[#5a6b4e] -translate-x-1/2 mt-2 ring-4 ring-[#0a1628]" />

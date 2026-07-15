@@ -27,7 +27,7 @@ export default function Breadcrumbs() {
     <nav className="py-4 px-6 sm:px-8" aria-label="Breadcrumb">
       <ol className="flex items-center gap-2 text-xs">
         <li>
-          <Link to="/" className="text-white/35 hover:text-white/60 transition-colors flex items-center gap-1">
+          <Link to="/" className="text-white/55 hover:text-white/60 transition-colors flex items-center gap-1">
             <FiHome className="w-3 h-3" />
             <span className="hidden sm:inline">Accueil</span>
           </Link>
@@ -41,7 +41,7 @@ export default function Breadcrumbs() {
               {isLast ? (
                 <span className="text-white/50 font-medium">{routeNames[name] || name}</span>
               ) : (
-                <Link to={routeTo} className="text-white/35 hover:text-white/60 transition-colors">
+                <Link to={routeTo} className="text-white/55 hover:text-white/60 transition-colors">
                   {routeNames[name] || name}
                 </Link>
               )}

@@ -35,7 +35,7 @@ export default function TrustBadgeReviews() {
               <div className="font-display font-bold text-4xl text-white mb-1">
                 {rating.toFixed(1)}
               </div>
-              <p className="text-white/35 text-xs">Note moyenne sur 2 847 avis</p>
+              <p className="text-white/55 text-xs">Note moyenne sur 2 847 avis</p>
               <div className="flex items-center gap-1 mt-2 text-emerald-400 text-xs">
                 <FiTrendingUp className="w-3 h-3" />
                 <span>+0.3 ce mois</span>
@@ -50,7 +50,7 @@ export default function TrustBadgeReviews() {
               <div className="font-display font-bold text-2xl text-white mb-1">
                 Avis vérifiés
               </div>
-              <p className="text-white/35 text-xs max-w-[200px]">
+              <p className="text-white/55 text-xs max-w-[200px]">
                 Tous nos avis sont authentiques, vérifiés après achat confirmé.
               </p>
               <div className="flex items-center gap-1 mt-2 text-white/20 text-xs">
@@ -67,7 +67,7 @@ export default function TrustBadgeReviews() {
               <div className="font-display font-bold text-3xl text-white mb-1">
                 12 400+
               </div>
-              <p className="text-white/35 text-xs">clients satisfaits</p>
+              <p className="text-white/55 text-xs">clients satisfaits</p>
               <div className="flex items-center gap-1 mt-2 text-emerald-400 text-xs">
                 <FiTrendingUp className="w-3 h-3" />
                 <span>+340 cette semaine</span>

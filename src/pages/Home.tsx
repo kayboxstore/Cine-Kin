@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -13,7 +13,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import ScrambleText from "@/components/ScrambleText";
 import MagneticButton from "@/components/MagneticButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import TestimonialCarousel from "@/components/TestimonialCarousel";
+const TestimonialCarousel = lazy(() => import("@/components/TestimonialCarousel"));
 import TrustBadges from "@/components/TrustBadges";
 import CompareTable from "@/components/CompareTable";
 import Gallery from "@/components/Gallery";
@@ -85,7 +85,7 @@ function HeroSection() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6b7c5c] opacity-40" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#6b7c5c]" />
           </span>
-          <span className="text-sm text-white/45 font-medium tracking-[0.15em] uppercase">15 000+ clients dans 40 pays</span>
+          <span className="text-sm text-white/60 font-medium tracking-[0.15em] uppercase">15 000+ clients dans 40 pays</span>
         </motion.div>
 
         {/* Main headline */}
@@ -110,11 +110,11 @@ function HeroSection() {
         >
           <ScrambleText
             text="15 000+ chaînes, films et séries en 4K UHD"
-            className="text-base sm:text-lg text-white/40 font-light tracking-wide block"
+            className="text-base sm:text-lg text-white/60 font-light tracking-wide block"
             duration={1.2}
             delay={0.8}
           />
-          <p className="text-white/35 text-base font-light mt-2 tracking-wide">
+          <p className="text-white/55 text-base font-light mt-2 tracking-wide">
             Tous vos appareils. Sans interruption. Partout.
           </p>
         </motion.div>
@@ -138,7 +138,7 @@ function HeroSection() {
           </Link>
           <Link to="/revendeurs">
             <MagneticButton
-              className="px-8 py-4 text-base font-medium text-white/45 border border-white/[0.08] rounded-full hover:border-[#5a6b4e]/30 hover:text-white/70 transition-all duration-300 flex items-center gap-2.5 tracking-wide bg-white/[0.02]"
+              className="px-8 py-4 text-base font-medium text-white/60 border border-white/[0.08] rounded-full hover:border-[#5a6b4e]/30 hover:text-white/70 transition-all duration-300 flex items-center gap-2.5 tracking-wide bg-white/[0.02]"
               strength={0.15}
             >
               <FiUsers className="w-4 h-4" />
@@ -162,17 +162,17 @@ function HeroSection() {
                 </div>
                 <div className="text-left">
                   <div className="font-display font-semibold text-white text-sm">Premium 4K</div>
-                  <div className="text-white/30 text-xs">12 mois</div>
+                  <div className="text-white/55 text-xs">12 mois</div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-display font-bold text-lg text-white">$69.99</div>
-                <div className="text-white/30 text-sm">/an</div>
+                <div className="text-white/55 text-sm">/an</div>
               </div>
             </div>
             <div className="flex gap-1.5 flex-wrap">
               {["15K+ chaînes", "5 écrans", "4K UHD"].map((tag, i) => (
-                <span key={i} className="px-2.5 py-1 rounded-md border border-white/[0.05] text-xs text-white/40 tracking-wide bg-white/[0.02]">
+                <span key={i} className="px-2.5 py-1 rounded-md border border-white/[0.05] text-xs text-white/60 tracking-wide bg-white/[0.02]">
                   {tag}
                 </span>
               ))}
@@ -221,7 +221,7 @@ function StatsBar() {
                 <div className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight mb-1">
                   <AnimatedCounter end={stat.target} suffix={stat.suffix} />
                 </div>
-                <div className="text-white/40 text-[11px] tracking-[0.15em] uppercase">{stat.label}</div>
+                <div className="text-white/60 text-[11px] tracking-[0.15em] uppercase">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -247,9 +247,9 @@ function AdvantagesSection() {
             Pourquoi nous choisir
           </p>
           <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] mb-5 leading-tight">
-            Sans <span className="text-white/30">compromis</span>
+            Sans <span className="text-white/55">compromis</span>
           </h2>
-          <p className="text-white/45 text-base max-w-md mx-auto font-light">
+          <p className="text-white/60 text-base max-w-md mx-auto font-light">
             Tout ce dont vous avez besoin pour un divertissement illimité.
           </p>
         </ScrollReveal>
@@ -273,7 +273,7 @@ function AdvantagesSection() {
                       <Icon className="w-3.5 h-3.5 text-[#6b7c5c]" />
                     </div>
                     <h3 className="font-display font-semibold text-base text-white mb-2">{adv.title}</h3>
-                    <p className="text-white/45 text-sm leading-relaxed font-light">{adv.description}</p>
+                    <p className="text-white/60 text-sm leading-relaxed font-light">{adv.description}</p>
                   </div>
                 </div>
               </ScrollReveal>
@@ -297,7 +297,7 @@ function HowItWorksSection() {
             Comment ça marche
           </p>
           <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] leading-tight">
-            En <span className="text-white/30">3 étapes</span>
+            En <span className="text-white/55">3 étapes</span>
           </h2>
         </ScrollReveal>
 
@@ -314,7 +314,7 @@ function HowItWorksSection() {
                   </div>
                 </div>
                 <h3 className="font-display font-semibold text-lg text-white mb-2">{step.title}</h3>
-                <p className="text-white/45 text-sm leading-relaxed max-w-[16rem] mx-auto font-light">{step.description}</p>
+                <p className="text-white/60 text-sm leading-relaxed max-w-[16rem] mx-auto font-light">{step.description}</p>
               </div>
             </ScrollReveal>
           ))}
@@ -340,11 +340,11 @@ function PopularPlansSection() {
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 sm:px-8">
         <ScrollReveal className="text-center mb-20">
-          <p className="text-white/45 text-sm font-medium tracking-[0.2em] uppercase mb-5">
+          <p className="text-white/60 text-sm font-medium tracking-[0.2em] uppercase mb-5">
             Nos formules
           </p>
           <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] leading-tight">
-            Choisissez <span className="text-white/30">votre plan</span>
+            Choisissez <span className="text-white/55">votre plan</span>
           </h2>
         </ScrollReveal>
 
@@ -370,7 +370,7 @@ function PopularPlansSection() {
                 <div className="text-center mb-6 pt-2">
                   <h3 className="font-display font-medium text-base text-white/60 mb-3">{plan.name}</h3>
                   <div className="font-display font-bold text-4xl text-white tracking-tight">{plan.priceLabel}</div>
-                  <div className="text-white/40 text-sm mt-1">{plan.duration}</div>
+                  <div className="text-white/60 text-sm mt-1">{plan.duration}</div>
                 </div>
 
                 <ul className="space-y-2.5 mb-6">
@@ -400,7 +400,7 @@ function PopularPlansSection() {
         <ScrollReveal delay={0.2} className="text-center mt-8">
           <Link
             to="/offres"
-            className="inline-flex items-center gap-2 text-white/45 hover:text-[#5a6b4e] transition-colors text-sm font-medium tracking-wide group"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-[#5a6b4e] transition-colors text-sm font-medium tracking-wide group"
           >
             Voir toutes les offres
             <FiArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -434,7 +434,7 @@ function ResellerCTASection() {
               </div>
 
               <h2 className="font-display font-bold text-4xl sm:text-5xl text-white mb-5 tracking-[-0.02em] leading-tight">
-                Devenez <span className="text-white/30">revendeur</span>
+                Devenez <span className="text-white/55">revendeur</span>
               </h2>
               <p className="text-white/50 text-base mb-10 leading-relaxed max-w-md mx-auto font-light">
                 Rejoignez notre réseau et bénéficiez de marges de plus de 150%.
@@ -459,7 +459,7 @@ function ResellerCTASection() {
                 ].map((stat, i) => (
                   <div key={i} className="text-center">
                     <div className="font-display font-bold text-xl text-white/70">{stat.value}</div>
-                    <div className="text-white/45 text-xs mt-1 tracking-[0.1em] uppercase">{stat.label}</div>
+                    <div className="text-white/60 text-xs mt-1 tracking-[0.1em] uppercase">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -483,12 +483,14 @@ function TestimonialsSection() {
             Témoignages
           </p>
           <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] leading-tight">
-            Ils nous <span className="text-white/30">font confiance</span>
+            Ils nous <span className="text-white/55">font confiance</span>
           </h2>
         </ScrollReveal>
 
         <ScrollReveal delay={0.15}>
-          <TestimonialCarousel />
+          <Suspense fallback={<div className="h-64" />}>
+            <TestimonialCarousel />
+          </Suspense>
         </ScrollReveal>
       </div>
     </section>
@@ -505,11 +507,11 @@ function FAQSection() {
     <section className="relative py-32 bg-[#111d32] overflow-hidden">
       <div className="relative z-10 max-w-2xl mx-auto px-6 sm:px-8">
         <ScrollReveal className="text-center mb-16">
-          <p className="text-white/45 text-sm font-medium tracking-[0.2em] uppercase mb-5">
+          <p className="text-white/60 text-sm font-medium tracking-[0.2em] uppercase mb-5">
             FAQ
           </p>
           <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] leading-tight">
-            Questions <span className="text-white/30">fréquentes</span>
+            Questions <span className="text-white/55">fréquentes</span>
           </h2>
         </ScrollReveal>
 
@@ -525,7 +527,7 @@ function FAQSection() {
                   {openIndex === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
-                    <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                    <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                   )}
                 </button>
                 {openIndex === i && (
@@ -562,7 +564,7 @@ function FinalCTASection() {
       <div className="relative z-10 max-w-2xl mx-auto px-6 sm:px-8 text-center">
         <ScrollReveal>
           <h2 className="font-display font-bold text-5xl sm:text-6xl text-white mb-6 tracking-[-0.02em] leading-tight">
-            Prêt à <span className="text-white/30">commencer</span> ?
+            Prêt à <span className="text-white/55">commencer</span> ?
           </h2>
           <p className="text-white/50 text-base mb-10 max-w-md mx-auto font-light">
             Essayez gratuitement pendant 24h ou choisissez l'offre qui vous convient.

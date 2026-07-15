@@ -41,7 +41,7 @@ export default function TestimonialCarousel() {
               </p>
               <div className="pt-3 border-t border-white/[0.03]">
                 <div className="font-display font-medium text-white/80 text-sm">{t.name}</div>
-                <div className="text-white/40 text-xs tracking-wide">{t.role}</div>
+                <div className="text-white/60 text-xs tracking-wide">{t.role}</div>
               </div>
             </div>
           </SwiperSlide>

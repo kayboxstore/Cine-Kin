@@ -49,7 +49,7 @@ export default function PressSection() {
             {pressItems.map((item, i) => (
               <div
                 key={i}
-                className="text-white/15 font-bold text-lg sm:text-xl tracking-tight hover:text-white/30 transition-colors cursor-default select-none"
+                className="text-white/15 font-bold text-lg sm:text-xl tracking-tight hover:text-white/55 transition-colors cursor-default select-none"
               >
                 {item.name}
               </div>

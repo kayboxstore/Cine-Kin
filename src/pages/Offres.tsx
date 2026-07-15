@@ -47,7 +47,7 @@ export default function Offres() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
               Nos <span className="text-[#6b7c5c]">offres</span>
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
               Choisissez l'abonnement qui correspond à vos besoins. Tous nos plans incluent l'accès complet à notre catalogue.
             </p>
           </ScrollReveal>
@@ -87,7 +87,7 @@ export default function Offres() {
                 <div className="text-center mb-6 pt-2">
                   <h3 className="font-display font-semibold text-xl text-white mb-1">{plan.name}</h3>
                   <div className="font-display font-bold text-4xl text-white">{plan.priceLabel}</div>
-                  <div className="text-white/35 text-sm mt-1">{plan.duration}</div>
+                  <div className="text-white/55 text-sm mt-1">{plan.duration}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
@@ -146,7 +146,7 @@ export default function Offres() {
                   </div>
                   <div>
                     <h3 className="font-display font-semibold text-white mb-1">Qualité garantie</h3>
-                    <p className="text-white/40 text-sm font-light">HD, Full HD et 4K selon votre formule. Technologie anti-freeze intégrée.</p>
+                    <p className="text-white/60 text-sm font-light">HD, Full HD et 4K selon votre formule. Technologie anti-freeze intégrée.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -155,7 +155,7 @@ export default function Offres() {
                   </div>
                   <div>
                     <h3 className="font-display font-semibold text-white mb-1">Sécurisé</h3>
-                    <p className="text-white/40 text-sm font-light">Compatible VPN. Vos données sont protégées et votre confidentialité respectée.</p>
+                    <p className="text-white/60 text-sm font-light">Compatible VPN. Vos données sont protégées et votre confidentialité respectée.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -164,7 +164,7 @@ export default function Offres() {
                   </div>
                   <div>
                     <h3 className="font-display font-semibold text-white mb-1">Support réactif</h3>
-                    <p className="text-white/40 text-sm font-light">Notre équipe est disponible {SITE_CONFIG.supportHours.toLowerCase()} pour vous aider.</p>
+                    <p className="text-white/60 text-sm font-light">Notre équipe est disponible {SITE_CONFIG.supportHours.toLowerCase()} pour vous aider.</p>
                   </div>
                 </div>
               </div>

@@ -81,7 +81,7 @@ export default function Navbar() {
                 className={`relative px-3.5 py-1.5 text-[13px] font-medium rounded-md transition-all duration-300 tracking-wide ${
                   location.pathname === link.path
                     ? "text-white"
-                    : "text-white/45 hover:text-white/75"
+                    : "text-white/60 hover:text-white/75"
                 }`}
               >
                 {link.name}
@@ -96,7 +96,7 @@ export default function Navbar() {
                 className={`relative px-3.5 py-1.5 text-[13px] font-medium rounded-md transition-all duration-300 tracking-wide flex items-center gap-1.5 ${
                   location.pathname === "/admin"
                     ? "text-[#6b7c5c]"
-                    : "text-white/45 hover:text-white/75"
+                    : "text-white/60 hover:text-white/75"
                 }`}
               >
                 <FiShield className="w-3.5 h-3.5" />
@@ -126,7 +126,7 @@ export default function Navbar() {
                 </div>
                 <button
                   onClick={logout}
-                  className="w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all"
                   title="Déconnexion"
                 >
                   <FiLogOut className="w-3.5 h-3.5" />
@@ -156,7 +156,7 @@ export default function Navbar() {
             >
               Commander
             </Link>
-            <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg text-white/35 hover:text-white/65 transition-colors">
+            <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg text-white/55 hover:text-white/65 transition-colors">
               {isOpen ? <FiX className="w-4 h-4" /> : <FiMenu className="w-4 h-4" />}
             </button>
           </div>
@@ -175,14 +175,14 @@ export default function Navbar() {
             <div className="px-6 py-6 space-y-0.5">
               {NAV_LINKS.map((link) => (
                 <Link key={link.path} to={link.path} className={`block px-4 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                  location.pathname === link.path ? "text-white bg-white/[0.03]" : "text-white/35 hover:text-white/65"
+                  location.pathname === link.path ? "text-white bg-white/[0.03]" : "text-white/55 hover:text-white/65"
                 }`}>
                   {link.name}
                 </Link>
               ))}
               {isAdmin && (
                 <Link to="/admin" className={`block px-4 py-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
-                  location.pathname === "/admin" ? "text-[#6b7c5c] bg-white/[0.03]" : "text-white/35 hover:text-white/65"
+                  location.pathname === "/admin" ? "text-[#6b7c5c] bg-white/[0.03]" : "text-white/55 hover:text-white/65"
                 }`}>
                   <FiShield className="w-3.5 h-3.5" />
                   Dashboard

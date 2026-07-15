@@ -46,7 +46,7 @@ export default function CountdownTimer() {
               <span className="inline-flex items-center justify-center w-8 h-7 bg-[#5a6b4e]/20 rounded text-white font-mono text-sm font-bold">
                 {pads(unit.value)}
               </span>
-              <span className="text-white/30 text-xs ml-0.5 mr-1">{unit.label}</span>
+              <span className="text-white/55 text-xs ml-0.5 mr-1">{unit.label}</span>
             </span>
           ))}
         </div>

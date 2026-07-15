@@ -32,7 +32,7 @@ export default function CompareTable() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-3">
               Comparez nos <span className="text-[#6b7c5c]">offres</span>
             </h2>
-            <p className="text-white/45 text-base max-w-lg mx-auto font-light">
+            <p className="text-white/60 text-base max-w-lg mx-auto font-light">
               Toutes nos formules incluent l'accès complet au catalogue. Choisissez simplement la durée qui vous convient.
             </p>
           </div>
@@ -44,7 +44,7 @@ export default function CompareTable() {
               <table className="w-full min-w-[700px]">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
-                    <th className="text-left text-white/40 text-xs font-medium px-5 py-4 w-48">Fonctionnalité</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-5 py-4 w-48">Fonctionnalité</th>
                     {plans.map((plan) => (
                       <th key={plan.name} className="text-center px-3 py-4 relative">
                         {plan.popular && (
@@ -53,7 +53,7 @@ export default function CompareTable() {
                           </span>
                         )}
                         <div className={`font-display font-bold text-base ${plan.color}`}>{plan.price}</div>
-                        <div className="text-white/35 text-xs">{plan.period}</div>
+                        <div className="text-white/55 text-xs">{plan.period}</div>
                       </th>
                     ))}
                   </tr>

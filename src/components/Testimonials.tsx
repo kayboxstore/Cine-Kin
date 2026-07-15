@@ -118,7 +118,7 @@ export default function Testimonials() {
                 </div>
                 <div className="text-left">
                   <div className="text-white font-medium text-sm">{t.name}</div>
-                  <div className="text-white/40 text-xs">
+                  <div className="text-white/60 text-xs">
                     {t.location} — {t.plan}
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default function Testimonials() {
           <div className="flex items-center justify-center gap-4 mt-8">
             <button
               onClick={prev}
-              className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] transition-all"
+              className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.08] transition-all"
             >
               <FiChevronLeft className="w-5 h-5" />
             </button>
@@ -150,7 +150,7 @@ export default function Testimonials() {
             </div>
             <button
               onClick={next}
-              className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] transition-all"
+              className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.08] transition-all"
             >
               <FiChevronRight className="w-5 h-5" />
             </button>

@@ -46,13 +46,13 @@ export default function Footer() {
               {SITE_CONFIG.description}
             </p>
             <div className="space-y-2.5">
-              <a href={`https://wa.me/${SITE_CONFIG.whatsappNumber.replace(/[+\s]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-white/45 hover:text-[#6b7c5c] transition-colors text-sm font-light">
+              <a href={`https://wa.me/${SITE_CONFIG.whatsappNumber.replace(/[+\s]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-white/60 hover:text-[#6b7c5c] transition-colors text-sm font-light">
                 <FiPhone className="w-4 h-4" /> WhatsApp : {SITE_CONFIG.whatsappNumber}
               </a>
-              <a href={`mailto:${SITE_CONFIG.email}`} className="flex items-center gap-2.5 text-white/45 hover:text-[#6b7c5c] transition-colors text-sm font-light">
+              <a href={`mailto:${SITE_CONFIG.email}`} className="flex items-center gap-2.5 text-white/60 hover:text-[#6b7c5c] transition-colors text-sm font-light">
                 <FiMail className="w-4 h-4" /> {SITE_CONFIG.email}
               </a>
-              <div className="flex items-center gap-2.5 text-white/45 text-sm font-light">
+              <div className="flex items-center gap-2.5 text-white/60 text-sm font-light">
                 <FiMapPin className="w-4 h-4" /> {SITE_CONFIG.supportHours}
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {group.links.map((link) => (
                   <li key={link.path}>
-                    <Link to={link.path} className="text-white/45 hover:text-[#6b7c5c] transition-colors text-sm font-light">
+                    <Link to={link.path} className="text-white/60 hover:text-[#6b7c5c] transition-colors text-sm font-light">
                       {link.name}
                     </Link>
                   </li>
@@ -80,7 +80,7 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-2">
             {[FiFacebook, FiInstagram, FiTwitter, FiYoutube].map((Icon, i) => (
-              <a key={i} href="#" className="w-7 h-7 flex items-center justify-center rounded-md text-white/25 hover:text-[#6b7c5c] transition-all duration-300 border border-white/[0.04]">
+              <a key={i} href="#" className="w-7 h-7 flex items-center justify-center rounded-md text-white/55 hover:text-[#6b7c5c] transition-all duration-300 border border-white/[0.04]">
                 <Icon className="w-3 h-3" />
               </a>
             ))}

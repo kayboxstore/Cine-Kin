@@ -24,7 +24,7 @@ export default function PromoCode() {
             <h2 className="font-display font-bold text-3xl text-white mb-3">
               Codes promo <span className="text-[#6b7c5c]">actifs</span>
             </h2>
-            <p className="text-white/45 text-base font-light max-w-md mx-auto">
+            <p className="text-white/60 text-base font-light max-w-md mx-auto">
               Copiez un code et mentionnez-le lors de votre commande WhatsApp.
             </p>
           </div>
@@ -50,7 +50,7 @@ export default function PromoCode() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <FiTag className="w-4 h-4 text-[#6b7c5c]" />
-                    <span className="text-white/45 text-xs">CODE</span>
+                    <span className="text-white/60 text-xs">CODE</span>
                   </div>
                   <AnimatePresence>
                     {applied === promo.code && (

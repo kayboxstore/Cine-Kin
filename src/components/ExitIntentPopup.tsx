@@ -57,7 +57,7 @@ export default function ExitIntentPopup() {
             <div className="relative p-8 text-center border-b border-white/[0.04]">
               <button
                 onClick={() => setIsVisible(false)}
-                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.05] text-white/30 hover:text-white transition-all"
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.05] text-white/55 hover:text-white transition-all"
               >
                 <FiX className="w-4 h-4" />
               </button>
@@ -69,7 +69,7 @@ export default function ExitIntentPopup() {
               <h3 className="font-display font-bold text-2xl text-white mb-2">
                 Ne partez pas sans votre essai !
               </h3>
-              <p className="text-white/45 text-sm font-light">
+              <p className="text-white/60 text-sm font-light">
                 Essayez Ciné Kin Premium gratuitement pendant 24h.
               </p>
             </div>
@@ -80,7 +80,7 @@ export default function ExitIntentPopup() {
                 <FiClock className="w-5 h-5 text-[#6b7c5c] flex-shrink-0" />
                 <div>
                   <div className="text-white text-sm font-medium">Essai gratuit 24h</div>
-                  <div className="text-white/35 text-xs">Accès complet, aucun engagement</div>
+                  <div className="text-white/55 text-xs">Accès complet, aucun engagement</div>
                 </div>
               </div>
 
@@ -108,7 +108,7 @@ export default function ExitIntentPopup() {
 
               <button
                 onClick={() => setIsVisible(false)}
-                className="block w-full text-white/25 text-xs hover:text-white/50 transition-colors text-center"
+                className="block w-full text-white/55 text-xs hover:text-white/50 transition-colors text-center"
               >
                 Non merci, je préfère payer plus cher ailleurs
               </button>

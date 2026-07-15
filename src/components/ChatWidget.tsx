@@ -134,7 +134,7 @@ export default function ChatWidget() {
                 <div className="text-white text-sm font-medium">Ciné Kin Assistant</div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-white/35 text-[10px]">En ligne</span>
+                  <span className="text-white/55 text-[10px]">En ligne</span>
                 </div>
               </div>
             </div>

@@ -44,7 +44,7 @@ export default function SavingsCalculator() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-3">
               Comparez et <span className="text-[#6b7c5c]">économisez</span>
             </h2>
-            <p className="text-white/45 text-base font-light max-w-lg mx-auto">
+            <p className="text-white/60 text-base font-light max-w-lg mx-auto">
               Sélectionnez vos abonnements actuels et voyez combien vous pourriez économiser.
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function SavingsCalculator() {
                     </div>
                     <span className="text-white/70 text-sm">{option.label}</span>
                   </div>
-                  <span className="text-white/40 text-xs">${option.monthly}/mois</span>
+                  <span className="text-white/60 text-xs">${option.monthly}/mois</span>
                 </button>
               ))}
             </div>
@@ -89,7 +89,7 @@ export default function SavingsCalculator() {
             <div className="border-t border-white/[0.06] pt-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-center sm:text-left">
-                  <div className="text-white/35 text-xs mb-1">Vos abonnements actuels</div>
+                  <div className="text-white/55 text-xs mb-1">Vos abonnements actuels</div>
                   <div className="font-display font-bold text-2xl text-white/60">
                     ${cableYearly.toFixed(0)}/an
                   </div>
@@ -116,7 +116,7 @@ export default function SavingsCalculator() {
                   <div className="font-display font-bold text-3xl text-[#6b7c5c]">
                     ${savings.toFixed(0)}/an
                   </div>
-                  <div className="text-white/30 text-xs">({percentage}% de moins)</div>
+                  <div className="text-white/55 text-xs">({percentage}% de moins)</div>
                 </motion.div>
               </div>
             </div>

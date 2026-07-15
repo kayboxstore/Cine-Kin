@@ -234,7 +234,7 @@ export default function BlogArticle() {
           <ScrollReveal>
             <Link
               to="/blog"
-              className="inline-flex items-center gap-2 text-white/40 hover:text-[#6b7c5c] transition-colors text-sm mb-8"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-[#6b7c5c] transition-colors text-sm mb-8"
             >
               <FiArrowLeft className="w-4 h-4" />
               Retour au blog
@@ -245,11 +245,11 @@ export default function BlogArticle() {
                 <FiTag className="w-3 h-3" />
                 {article.category}
               </span>
-              <span className="flex items-center gap-1 text-white/30 text-xs">
+              <span className="flex items-center gap-1 text-white/55 text-xs">
                 <FiCalendar className="w-3 h-3" />
                 {article.date}
               </span>
-              <span className="flex items-center gap-1 text-white/30 text-xs">
+              <span className="flex items-center gap-1 text-white/55 text-xs">
                 <FiClock className="w-3 h-3" />
                 {article.readTime}
               </span>
@@ -265,7 +265,7 @@ export default function BlogArticle() {
               </div>
               <div>
                 <div className="text-white text-sm font-medium">{article.author}</div>
-                <div className="text-white/40 text-xs">{article.authorRole}</div>
+                <div className="text-white/60 text-xs">{article.authorRole}</div>
               </div>
             </div>
           </ScrollReveal>
@@ -317,15 +317,15 @@ export default function BlogArticle() {
             <div className="mt-12 pt-8 border-t border-white/[0.06]">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-2">
-                  <FiShare2 className="w-4 h-4 text-white/30" />
-                  <span className="text-white/40 text-sm">Partager :</span>
-                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/30 hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10 transition-all">
+                  <FiShare2 className="w-4 h-4 text-white/55" />
+                  <span className="text-white/60 text-sm">Partager :</span>
+                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10 transition-all">
                     <FiTwitter className="w-4 h-4" />
                   </button>
-                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/30 hover:text-[#4267B2] hover:bg-[#4267B2]/10 transition-all">
+                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#4267B2] hover:bg-[#4267B2]/10 transition-all">
                     <FiFacebook className="w-4 h-4" />
                   </button>
-                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/30 hover:text-[#0077b5] hover:bg-[#0077b5]/10 transition-all">
+                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#0077b5] hover:bg-[#0077b5]/10 transition-all">
                     <FiLinkedin className="w-4 h-4" />
                   </button>
                 </div>
@@ -374,7 +374,7 @@ export default function BlogArticle() {
                       <h3 className="font-display font-semibold text-base text-white mb-2 group-hover:text-[#6b7c5c] transition-colors">
                         {related.title}
                       </h3>
-                      <p className="text-white/40 text-sm line-clamp-2">{related.excerpt}</p>
+                      <p className="text-white/60 text-sm line-clamp-2">{related.excerpt}</p>
                     </Link>
                   </motion.article>
                 );
@@ -391,7 +391,7 @@ export default function BlogArticle() {
             <h2 className="font-display font-bold text-3xl text-white mb-4">
               Prêt à <span className="text-[#6b7c5c]">commencer</span> ?
             </h2>
-            <p className="text-white/45 text-lg mb-8 max-w-xl mx-auto font-light">
+            <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto font-light">
               Essayez notre service gratuitement pendant 24h. Aucun engagement.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

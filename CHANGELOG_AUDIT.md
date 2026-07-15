@@ -67,3 +67,95 @@ l'historique git. `.gitignore` exclut déjà `.env` / `.env.*.local`,
 `.env.example` ne contient que des placeholders vides. Aucune clé à régénérer.
 
 ---
+
+## Vague 2 — Élevée (sécurité runtime, perf, accessibilité, fiabilité)
+
+**Date :** 15 juillet 2026
+
+### [AUDIT §2.2] 🟠 Absence de rate limiting — CORRIGÉ
+
+**Fichier :** `api/boot.ts`
+
+- Ajout d'un rate limiter en mémoire (fenêtre fixe, 100 req/min/IP) sur
+  `/api/trpc/*`, renvoyant `429 Too Many Requests` + `Retry-After` au-delà.
+  Sans dépendance externe. Limite connue : état par process — un store
+  partagé (Redis) serait requis derrière plusieurs instances (documenté
+  dans le code).
+
+### [AUDIT §2.3] 🟠 Headers de sécurité absents — CORRIGÉ
+
+**Fichier :** `api/boot.ts`
+
+- `app.use(secureHeaders())` (Hono) : `X-Frame-Options`,
+  `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`,
+  `Referrer-Policy`, etc. sur toutes les réponses.
+- CSP tailored volontairement différée : `index.html` embarque des scripts
+  inline + GA/fonts externes ; une CSP stricte nécessite d'abord un passage
+  par nonce (noté pour une vague ultérieure).
+
+### [AUDIT §4.1] 🟠 Bundle home lourd (GSAP/Swiper synchrones) — CORRIGÉ
+
+**Fichiers :** `src/components/ParallaxHero.tsx`, `src/pages/Home.tsx`
+
+- `ParallaxHero` charge désormais GSAP en `import()` dynamique dans
+  l'`useEffect` : la bibliothèque sort du bundle initial, le hero
+  (above-the-fold) reste rendu immédiatement.
+- `TestimonialCarousel` (Swiper + CSS) passe en `React.lazy` + `Suspense` :
+  Swiper est déplacé dans un chunk séparé chargé à la demande.
+
+### [AUDIT §5.2] 🟠 `prefers-reduced-motion` ignoré — CORRIGÉ
+
+**Fichiers :** `src/main.tsx`, `src/index.css`, `src/components/ParallaxHero.tsx`
+
+- `<MotionConfig reducedMotion="user">` enveloppe l'app : Framer Motion
+  respecte désormais le réglage OS « réduire les animations ».
+- `ParallaxHero` court-circuite le parallax GSAP si `prefers-reduced-motion`.
+- Media query CSS globale neutralisant animations/transitions CSS + smooth
+  scroll sous `prefers-reduced-motion: reduce`.
+
+### [AUDIT §5.1] 🟠 Contrastes de texte sous le seuil WCAG AA — CORRIGÉ
+
+**Fichiers :** 41 fichiers dans `src/pages` et `src/components` (hors `ui/`)
+
+- Relèvement du plancher d'opacité du texte : `text-white/25|30|35` → `/55`,
+  `text-white/40|45` → `/60`. Sur fond `#0a1628`, ces valeurs franchissent
+  le seuil AA de 4.5:1 (les précédentes étaient à ~3–4:1).
+- **Changement visible :** le texte secondaire du site entier est plus
+  lisible (moins « estompé »). Valeurs facilement ajustables si un rendu
+  plus subtil est souhaité sur certains gros titres.
+
+### [AUDIT §7.3] 🟠 Formulaires Contact/Revendeurs non branchés — CORRIGÉ
+
+**Fichiers :** `src/pages/Contact.tsx`, `src/pages/Revendeurs.tsx`
+
+- `handleSubmit` construit désormais un message WhatsApp pré-rempli avec les
+  champs du formulaire et l'ouvre (`window.open`), cohérent avec la décision
+  produit « commandes/leads via WhatsApp uniquement ». Fin de la perte
+  silencieuse de leads.
+- **Changement visible :** soumettre le formulaire ouvre WhatsApp dans un
+  nouvel onglet avant l'écran de confirmation.
+
+### [AUDIT §8.2] 🟠 Mutations Dashboard sans gestion d'erreur — CORRIGÉ
+
+**Fichier :** `src/pages/Dashboard.tsx`
+
+- Les 4 mutations (`orderUpdateStatus`, `orderDelete`, `customerUpdateStatus`,
+  `customerDelete`) ont désormais un `onError` affichant un toast d'erreur
+  (via le `ToastProvider` existant). Fin des échecs silencieux.
+
+### ⚠️ Blocage identifié — mirror npm privé dans `package-lock.json`
+
+`package-lock.json` contient 303 URLs `resolved` pointant vers un mirror
+privé `npm.mirrors.msh.team` (injoignable / 502), aux côtés de 410 URLs
+`registry.npmjs.org`. Conséquences :
+- Impossible de faire `npm ci` dans cet environnement → **tests Vague 1 & 2
+  non exécutés localement**.
+- La CI ajoutée en Vague 1 **échouerait** sur GitHub Actions (mirror privé
+  inaccessible depuis les runners).
+
+Tous les paquets concernés sont pourtant publics sur npmjs.org (vérifié, y
+compris `kimi-plugin-inspect-react@1.0.3`). La correction (réécriture des
+URLs mirror → npmjs) nécessite ton autorisation explicite car elle reroute
+le registre. **En attente de décision (voir échange).**
+
+---

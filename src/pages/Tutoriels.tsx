@@ -115,7 +115,7 @@ export default function Tutoriels() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-5 tracking-[-0.02em]">
               Comment <span className="text-[#6b7c5c]">installer</span> IPTV
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light leading-relaxed">
               Suivez nos guides étape par étape pour installer et configurer votre abonnement IPTV sur n'importe quel appareil. L'installation prend moins de 5 minutes.
             </p>
           </ScrollReveal>
@@ -169,7 +169,7 @@ export default function Tutoriels() {
                   {openTutorial === tutorial.id ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
-                    <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                    <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                   )}
                 </button>
 
@@ -223,7 +223,7 @@ export default function Tutoriels() {
             <h2 className="font-display font-bold text-3xl text-white mb-4">
               Besoin d'<span className="text-[#6b7c5c]">aide</span> ?
             </h2>
-            <p className="text-white/45 text-lg mb-8 max-w-xl mx-auto font-light">
+            <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto font-light">
               Notre équipe de support est disponible 7j/7 pour vous accompagner dans l'installation.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

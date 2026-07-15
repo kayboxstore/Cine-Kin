@@ -30,7 +30,7 @@ export default function PolitiqueConfidentialite() {
           <ScrollReveal>
             <div className="prose prose-invert max-w-none space-y-8">
               <div className="border border-white/[0.04] rounded-xl p-6 bg-[#111d32]/30">
-                <p className="text-white/45 text-base leading-relaxed font-light">
+                <p className="text-white/60 text-base leading-relaxed font-light">
                   Chez {SITE_CONFIG.name}, nous prenons la protection de vos données personnelles très au sérieux. 
                   Cette politique décrit comment nous collectons, utilisons et protégeons vos informations.
                 </p>
@@ -48,7 +48,7 @@ export default function PolitiqueConfidentialite() {
               ].map((section, i) => (
                 <div key={i} className="border border-white/[0.04] rounded-xl p-6 bg-[#111d32]/30">
                   <h2 className="font-display font-semibold text-xl text-white mb-3">{section.title}</h2>
-                  <p className="text-white/45 text-base leading-relaxed font-light">{section.content}</p>
+                  <p className="text-white/60 text-base leading-relaxed font-light">{section.content}</p>
                 </div>
               ))}
             </div>
