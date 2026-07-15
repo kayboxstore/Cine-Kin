@@ -43,7 +43,7 @@ export default function Commande() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4 tracking-[-0.02em]">
               Commandez en <span className="text-[#6b7c5c]">1 clic</span>
             </h1>
-            <p className="text-white/45 text-base font-light max-w-md mx-auto">
+            <p className="text-white/60 text-base font-light max-w-md mx-auto">
               Sélectionnez votre formule et envoyez-nous un message WhatsApp. Notre équipe vous répond sous 5 min.
             </p>
           </ScrollReveal>
@@ -55,10 +55,10 @@ export default function Commande() {
           {/* Toggle */}
           <div className="flex justify-center mb-8">
                 <div className="inline-flex bg-white/[0.03] rounded-full p-1 border border-white/[0.06]">
-                  <button onClick={() => { setPlanType("client"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "client" ? "bg-[#5a6b4e] text-white" : "text-white/45 hover:text-white/65"}`}>
+                  <button onClick={() => { setPlanType("client"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "client" ? "bg-[#5a6b4e] text-white" : "text-white/60 hover:text-white/65"}`}>
                     Client
                   </button>
-                  <button onClick={() => { setPlanType("reseller"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "reseller" ? "bg-[#5a6b4e] text-white" : "text-white/45 hover:text-white/65"}`}>
+                  <button onClick={() => { setPlanType("reseller"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "reseller" ? "bg-[#5a6b4e] text-white" : "text-white/60 hover:text-white/65"}`}>
                     Revendeur
                   </button>
                 </div>
@@ -78,7 +78,7 @@ export default function Commande() {
                     {planType === "client" ? (
                       <div>
                         <div className="font-display font-bold text-2xl text-white">{(plan as typeof CLIENT_PLANS[0]).priceLabel}</div>
-                        <div className="text-white/35 text-xs">{(plan as typeof CLIENT_PLANS[0]).duration}</div>
+                        <div className="text-white/55 text-xs">{(plan as typeof CLIENT_PLANS[0]).duration}</div>
                       </div>
                     ) : (
                       <div>
@@ -115,7 +115,7 @@ export default function Commande() {
 
                   <div className="flex items-center gap-3 p-3 bg-[#5a6b4e]/5 rounded-lg mb-4">
                     <FiShield className="w-4 h-4 text-[#6b7c5c] flex-shrink-0" />
-                    <span className="text-white/45 text-xs">Paiement sécurisé via WhatsApp. Aucune donnée bancaire requise.</span>
+                    <span className="text-white/60 text-xs">Paiement sécurisé via WhatsApp. Aucune donnée bancaire requise.</span>
                   </div>
 
                   <a

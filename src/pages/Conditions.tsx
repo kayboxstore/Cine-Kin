@@ -31,7 +31,7 @@ export default function Conditions() {
             <div className="prose prose-invert max-w-none space-y-8">
               {[
                 { title: "1. Acceptation des conditions", content: `En accédant et en utilisant les services de ${SITE_CONFIG.name}, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services.` },
-                { title: "2. Description du service", content: `${SITE_CONFIG.name} fournit un service d'abonnement IPTV permettant l'accès à des chaînes de télévision et du contenu vidéo via Internet. Le service est fourni \"tel quel\" et peut évoluer sans préavis.` },
+                { title: "2. Description du service", content: `${SITE_CONFIG.name} fournit un service d'abonnement IPTV permettant l'accès à des chaînes de télévision et du contenu vidéo via Internet. Le service est fourni « tel quel » et peut évoluer sans préavis.` },
                 { title: "3. Compte utilisateur", content: `Vous êtes responsable de maintenir la confidentialité de vos identifiants de connexion. Toute activité effectuée avec votre compte est sous votre responsabilité. En cas de partage non autorisé de votre compte, nous nous réservons le droit de le suspendre.` },
                 { title: "4. Paiements et remboursements", content: `Tous les paiements sont effectués en amont pour la période choisie. Nous offrons une garantie satisfait ou remboursé de 7 jours à compter de l'activation. Aucun remboursement n'est effectué après cette période.` },
                 { title: "5. Utilisation acceptable", content: `Vous vous engagez à utiliser le service conformément aux lois en vigueur. Il est interdit de revendre, redistribuer ou partager votre accès en dehors du cadre du programme revendeur autorisé.` },
@@ -41,7 +41,7 @@ export default function Conditions() {
               ].map((section, i) => (
                 <div key={i} className="border border-white/[0.04] rounded-xl p-6 bg-[#111d32]/30">
                   <h2 className="font-display font-semibold text-xl text-white mb-3">{section.title}</h2>
-                  <p className="text-white/45 text-base leading-relaxed font-light">{section.content}</p>
+                  <p className="text-white/60 text-base leading-relaxed font-light">{section.content}</p>
                 </div>
               ))}
             </div>

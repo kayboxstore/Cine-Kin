@@ -8,9 +8,11 @@ import {
   FiShield, FiAlertTriangle
 } from "react-icons/fi";
 import SEO from "@/components/SEO";
+import { useToast } from "@/components/Toast";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth({
     redirectOnUnauthenticated: true,
   });
@@ -38,15 +40,19 @@ export default function Dashboard() {
 
   const updateOrderStatus = trpc.admin.orderUpdateStatus.useMutation({
     onSuccess: () => { refetchOrders(); refetchOrderStats(); },
+    onError: (e) => toast(e.message || "Échec de la mise à jour de la commande", "error"),
   });
   const deleteOrder = trpc.admin.orderDelete.useMutation({
     onSuccess: () => { refetchOrders(); refetchOrderStats(); },
+    onError: (e) => toast(e.message || "Échec de la suppression de la commande", "error"),
   });
   const updateCustomerStatus = trpc.admin.customerUpdateStatus.useMutation({
     onSuccess: () => { refetchCustomers(); refetchCustomerStats(); },
+    onError: (e) => toast(e.message || "Échec de la mise à jour du client", "error"),
   });
   const deleteCustomer = trpc.admin.customerDelete.useMutation({
     onSuccess: () => { refetchCustomers(); refetchCustomerStats(); },
+    onError: (e) => toast(e.message || "Échec de la suppression du client", "error"),
   });
 
   const refreshAll = () => {
@@ -84,7 +90,7 @@ export default function Dashboard() {
         <div className="text-center max-w-md">
           <FiShield className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="font-display font-bold text-2xl text-white mb-2">Accès refusé</h1>
-          <p className="text-white/45 mb-6">Vous devez être administrateur pour accéder à cette page.</p>
+          <p className="text-white/60 mb-6">Vous devez être administrateur pour accéder à cette page.</p>
           <button
             onClick={() => navigate("/")}
             className="px-6 py-3 bg-[#5a6b4e] text-white rounded-xl hover:bg-[#4d5d42] transition-all"
@@ -105,7 +111,7 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-display font-bold text-3xl text-white">Dashboard</h1>
-            <p className="text-white/40 text-sm mt-1">Gestion des commandes et clients</p>
+            <p className="text-white/60 text-sm mt-1">Gestion des commandes et clients</p>
           </div>
           <div className="flex items-center gap-3">
             {user && (
@@ -125,14 +131,14 @@ export default function Dashboard() {
             )}
             <button
               onClick={logout}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.05] text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all"
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.05] text-white/60 hover:text-red-400 hover:bg-red-400/10 transition-all"
               title="Déconnexion"
             >
               <FiLogOut className="w-4 h-4" />
             </button>
             <button
               onClick={refreshAll}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.05] text-white/40 hover:text-white hover:bg-white/[0.08] transition-all"
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all"
               title="Rafraîchir"
             >
               <FiRefreshCw className="w-4 h-4" />
@@ -153,7 +159,7 @@ export default function Dashboard() {
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div className="font-display font-bold text-2xl text-white">{stat.value}</div>
-              <div className="text-white/40 text-sm">{stat.label}</div>
+              <div className="text-white/60 text-sm">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -163,7 +169,7 @@ export default function Dashboard() {
           <button
             onClick={() => setActiveTab("orders")}
             className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === "orders" ? "bg-[#5a6b4e] text-white" : "bg-white/[0.03] text-white/45 hover:text-white/65"
+              activeTab === "orders" ? "bg-[#5a6b4e] text-white" : "bg-white/[0.03] text-white/60 hover:text-white/65"
             }`}
           >
             Commandes
@@ -171,7 +177,7 @@ export default function Dashboard() {
           <button
             onClick={() => setActiveTab("customers")}
             className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === "customers" ? "bg-[#5a6b4e] text-white" : "bg-white/[0.03] text-white/45 hover:text-white/65"
+              activeTab === "customers" ? "bg-[#5a6b4e] text-white" : "bg-white/[0.03] text-white/60 hover:text-white/65"
             }`}
           >
             Clients
@@ -185,13 +191,13 @@ export default function Dashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">ID</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Client</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Plan</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Prix</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Statut</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Date</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Actions</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">ID</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Client</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Plan</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Prix</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Statut</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Date</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -201,11 +207,11 @@ export default function Dashboard() {
                         <td className="text-white/60 text-sm px-4 py-3">#{order.id}</td>
                         <td className="px-4 py-3">
                           <div className="text-white text-sm">{order.customerName}</div>
-                          <div className="text-white/35 text-xs">{order.customerPhone}</div>
+                          <div className="text-white/55 text-xs">{order.customerPhone}</div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="text-white text-sm">{order.planName}</div>
-                          <div className="text-white/35 text-xs capitalize">{order.planType}</div>
+                          <div className="text-white/55 text-xs capitalize">{order.planType}</div>
                         </td>
                         <td className="text-white text-sm px-4 py-3">{order.price}</td>
                         <td className="px-4 py-3">
@@ -225,13 +231,14 @@ export default function Dashboard() {
                             <option value="cancelled">Annulé</option>
                           </select>
                         </td>
-                        <td className="text-white/40 text-xs px-4 py-3">
+                        <td className="text-white/60 text-xs px-4 py-3">
                           {order.createdAt ? new Date(order.createdAt).toLocaleDateString("fr-FR") : "-"}
                         </td>
                         <td className="px-4 py-3">
                           <button
+                            disabled={deleteOrder.isPending}
                             onClick={() => { if (confirm("Supprimer ?")) deleteOrder.mutate({ id: order.id }); }}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-40 disabled:pointer-events-none"
                           >
                             <FiTrash2 className="w-3.5 h-3.5" />
                           </button>
@@ -240,7 +247,7 @@ export default function Dashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="text-center text-white/30 text-sm py-12">
+                      <td colSpan={7} className="text-center text-white/55 text-sm py-12">
                         Aucune commande
                       </td>
                     </tr>
@@ -258,13 +265,13 @@ export default function Dashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">ID</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Nom</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Contact</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Plan</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Statut</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Date</th>
-                    <th className="text-left text-white/40 text-xs font-medium px-4 py-3">Actions</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">ID</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Nom</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Contact</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Plan</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Statut</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Date</th>
+                    <th className="text-left text-white/60 text-xs font-medium px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -275,7 +282,7 @@ export default function Dashboard() {
                         <td className="text-white text-sm px-4 py-3">{customer.name}</td>
                         <td className="px-4 py-3">
                           <div className="text-white/60 text-sm">{customer.email}</div>
-                          <div className="text-white/35 text-xs">{customer.phone}</div>
+                          <div className="text-white/55 text-xs">{customer.phone}</div>
                         </td>
                         <td className="text-white text-sm px-4 py-3">{customer.planName}</td>
                         <td className="px-4 py-3">
@@ -294,13 +301,14 @@ export default function Dashboard() {
                             <option value="suspended">Suspendu</option>
                           </select>
                         </td>
-                        <td className="text-white/40 text-xs px-4 py-3">
+                        <td className="text-white/60 text-xs px-4 py-3">
                           {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString("fr-FR") : "-"}
                         </td>
                         <td className="px-4 py-3">
                           <button
+                            disabled={deleteCustomer.isPending}
                             onClick={() => { if (confirm("Supprimer ?")) deleteCustomer.mutate({ id: customer.id }); }}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-40 disabled:pointer-events-none"
                           >
                             <FiTrash2 className="w-3.5 h-3.5" />
                           </button>
@@ -309,7 +317,7 @@ export default function Dashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="text-center text-white/30 text-sm py-12">
+                      <td colSpan={7} className="text-center text-white/55 text-sm py-12">
                         Aucun client
                       </td>
                     </tr>

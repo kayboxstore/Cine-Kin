@@ -25,7 +25,7 @@ export default function Newsletter() {
           <h2 className="font-display font-bold text-3xl text-white mb-3">
             Restez <span className="text-[#6b7c5c]">informé</span>
           </h2>
-          <p className="text-white/45 text-base mb-8 max-w-lg mx-auto font-light">
+          <p className="text-white/60 text-base mb-8 max-w-lg mx-auto font-light">
             Inscrivez-vous pour recevoir nos offres exclusives, les nouveautés chaînes et les promotions spéciales.
           </p>
 
@@ -54,7 +54,7 @@ export default function Newsletter() {
             </form>
           )}
 
-          <p className="text-white/25 text-xs mt-4">
+          <p className="text-white/55 text-xs mt-4">
             Aucun spam. Désinscription à tout moment.
           </p>
         </ScrollReveal>

@@ -31,14 +31,14 @@ export default function ReferralSection() {
               1 mois <span className="text-[#6b7c5c]">gratuit</span> par ami parrainé
             </h2>
 
-            <p className="text-white/45 text-base font-light max-w-md mx-auto mb-8">
+            <p className="text-white/60 text-base font-light max-w-md mx-auto mb-8">
               Partagez votre lien avec vos amis. Pour chaque ami qui souscrit un abonnement, vous recevez 1 mois gratuit.
             </p>
 
             {/* Referral Link */}
             <div className="flex items-center gap-2 max-w-md mx-auto mb-8">
               <div className="flex-1 px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-left">
-                <span className="text-white/40 text-xs">Votre lien de parrainage</span>
+                <span className="text-white/60 text-xs">Votre lien de parrainage</span>
                 <div className="text-white/60 text-sm truncate">{referralLink}</div>
               </div>
               <button

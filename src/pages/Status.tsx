@@ -46,7 +46,7 @@ export default function Status() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4 tracking-[-0.02em]">
               État des <span className="text-[#6b7c5c]">serveurs</span>
             </h1>
-            <p className="text-white/45 text-base font-light max-w-md mx-auto">
+            <p className="text-white/60 text-base font-light max-w-md mx-auto">
               Surveillance en temps réel de tous nos services. Mise à jour automatique.
             </p>
           </ScrollReveal>
@@ -69,7 +69,7 @@ export default function Status() {
                   className="flex items-center justify-between px-5 py-4 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.01] transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 text-white/30" />
+                    <Icon className="w-4 h-4 text-white/55" />
                     <span className="text-white/70 text-sm">{item.label}</span>
                   </div>
                   <div className="flex items-center gap-4">
@@ -80,7 +80,7 @@ export default function Status() {
                       </span>
                       <span className="text-emerald-400 text-xs font-medium">{item.status}</span>
                     </div>
-                    <span className="text-white/25 text-xs font-mono hidden sm:block w-20 text-right">{item.uptime}</span>
+                    <span className="text-white/55 text-xs font-mono hidden sm:block w-20 text-right">{item.uptime}</span>
                   </div>
                 </motion.div>
               );
@@ -102,7 +102,7 @@ export default function Status() {
               ].map((stat, i) => (
                 <div key={i} className="border border-white/[0.04] rounded-xl p-4 text-center bg-white/[0.02]">
                   <div className="font-display font-bold text-xl text-white mb-1">{stat.value}</div>
-                  <div className="text-white/30 text-xs">{stat.label}</div>
+                  <div className="text-white/55 text-xs">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -118,7 +118,7 @@ export default function Status() {
           </ScrollReveal>
 
           <div className="border border-white/[0.06] rounded-2xl overflow-hidden bg-white/[0.02]">
-            <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-white/[0.02] border-b border-white/[0.04] text-white/25 text-xs uppercase tracking-wider">
+            <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-white/[0.02] border-b border-white/[0.04] text-white/55 text-xs uppercase tracking-wider">
               <div className="col-span-3 sm:col-span-2">Date</div>
               <div className="col-span-5 sm:col-span-5">Description</div>
               <div className="col-span-2 sm:col-span-2 text-center">Statut</div>
@@ -133,12 +133,12 @@ export default function Status() {
                 transition={{ delay: i * 0.1 }}
                 className="grid grid-cols-12 gap-4 px-5 py-4 border-b border-white/[0.03] last:border-0 items-center"
               >
-                <div className="col-span-3 sm:col-span-2 text-white/40 text-xs">{incident.date}</div>
+                <div className="col-span-3 sm:col-span-2 text-white/60 text-xs">{incident.date}</div>
                 <div className="col-span-5 sm:col-span-5 text-white/60 text-sm">{incident.title}</div>
                 <div className="col-span-2 sm:col-span-2 text-center">
                   <span className="text-emerald-400 text-xs font-medium">{incident.status}</span>
                 </div>
-                <div className="col-span-2 sm:col-span-3 text-right text-white/30 text-xs font-mono">{incident.duration}</div>
+                <div className="col-span-2 sm:col-span-3 text-right text-white/55 text-xs font-mono">{incident.duration}</div>
               </motion.div>
             ))}
           </div>

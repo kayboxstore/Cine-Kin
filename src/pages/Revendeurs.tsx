@@ -40,15 +40,23 @@ export default function Revendeurs() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Leads go through WhatsApp only: forward the request there so it is
+    // actually delivered instead of being silently dropped.
+    const lines = [
+      "Bonjour Ciné Kin Premium ! (demande revendeur)",
+      formData.name && `Nom : ${formData.name}`,
+      formData.email && `Email : ${formData.email}`,
+      formData.phone && `Téléphone : ${formData.phone}`,
+      formData.pack && `Pack souhaité : ${formData.pack}`,
+      formData.message && `Message : ${formData.message}`,
+    ].filter(Boolean);
+    const url = `https://wa.me/${SITE_CONFIG.whatsappNumber.replace(/[+\s]/g, "")}?text=${encodeURIComponent(lines.join("\n"))}`;
+    window.open(url, "_blank", "noopener,noreferrer");
     setSubmitted(true);
   };
 
   return (
-
-
     <div>
-
-
       <SEO
         title="Devenez Revendeur IPTV - Marge 150%+"
         description="Lancez votre business IPTV avec Ciné Kin Premium. Packs revendeur de 20 à 500 codes. Panneau d'administration dédié."
@@ -72,7 +80,7 @@ export default function Revendeurs() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
               Devenez <span className="text-[#6b7c5c]">revendeur</span>
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
               Lancez votre propre business IPTV avec des marges de plus de 150%. Un programme complet pour les entrepreneurs ambitieux.
             </p>
           </ScrollReveal>
@@ -86,7 +94,7 @@ export default function Revendeurs() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-4 tracking-[-0.02em]">
               Pourquoi devenir <span className="text-[#6b7c5c]">revendeur</span> ?
             </h2>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
               Rejoignez un réseau de plus de 1000 revendeurs actifs et bénéficiez d'avantages exclusifs.
             </p>
           </ScrollReveal>
@@ -109,7 +117,7 @@ export default function Revendeurs() {
                   <adv.icon className="w-6 h-6 text-[#6b7c5c]" />
                 </div>
                 <h3 className="font-display font-semibold text-lg text-white mb-2">{adv.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed font-light">{adv.desc}</p>
+                <p className="text-white/60 text-sm leading-relaxed font-light">{adv.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -123,7 +131,7 @@ export default function Revendeurs() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-4 tracking-[-0.02em]">
               Nos packs <span className="text-[#6b7c5c]">revendeur</span>
             </h2>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
               Choisissez le pack adapté à votre ambition.
             </p>
           </ScrollReveal>
@@ -157,7 +165,7 @@ export default function Revendeurs() {
 
                 <div className="text-center py-3 mb-6 bg-white/[0.03] rounded-xl">
                   <div className="font-display font-bold text-2xl text-white">{plan.credits}</div>
-                  <div className="text-white/40 text-sm">codes inclus</div>
+                  <div className="text-white/60 text-sm">codes inclus</div>
                 </div>
 
                 <ul className="space-y-3 mb-7">
@@ -208,7 +216,7 @@ export default function Revendeurs() {
                   {openFaq === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
-                    <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                    <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                   )}
                 </button>
                 <AnimatePresence>
@@ -220,7 +228,7 @@ export default function Revendeurs() {
                       transition={{ duration: 0.3 }}
                       className="px-5 pb-5"
                     >
-                      <p className="text-white/45 text-sm leading-relaxed font-light">{item.answer}</p>
+                      <p className="text-white/60 text-sm leading-relaxed font-light">{item.answer}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -241,7 +249,7 @@ export default function Revendeurs() {
                     <h2 className="font-display font-bold text-2xl sm:text-3xl text-white mb-2 tracking-[-0.02em]">
                       Demander un <span className="text-[#6b7c5c]">pack revendeur</span>
                     </h2>
-                    <p className="text-white/45 text-base font-light">
+                    <p className="text-white/60 text-base font-light">
                       Remplissez le formulaire ci-dessous. Notre équipe vous contactera rapidement.
                     </p>
                   </div>

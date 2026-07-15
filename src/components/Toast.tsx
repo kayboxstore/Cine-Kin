@@ -16,6 +16,7 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast must be used within ToastProvider");
@@ -63,7 +64,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               >
                 <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-white/80 flex-1">{t.message}</p>
-                <button onClick={() => removeToast(t.id)} className="text-white/40 hover:text-white transition-colors">
+                <button onClick={() => removeToast(t.id)} className="text-white/60 hover:text-white transition-colors">
                   <FiX className="w-4 h-4" />
                 </button>
               </motion.div>

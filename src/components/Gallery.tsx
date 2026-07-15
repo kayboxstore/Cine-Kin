@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiTv, FiFilm, FiMonitor, FiGrid } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
@@ -37,8 +37,21 @@ const galleryItems = [
 
 export default function Gallery() {
   const [selected, setSelected] = useState<number | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const selectedItem = galleryItems.find((g) => g.id === selected);
+
+  // Accessibility: close the lightbox on Escape and move focus to the
+  // close button when it opens.
+  useEffect(() => {
+    if (selected === null) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    closeButtonRef.current?.focus();
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selected]);
 
   return (
     <section className="py-20 bg-[#0a1628]">
@@ -51,7 +64,7 @@ export default function Gallery() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-3">
               Découvrez <span className="text-[#6b7c5c]">l'expérience</span>
             </h2>
-            <p className="text-white/45 text-base font-light max-w-lg mx-auto">
+            <p className="text-white/60 text-base font-light max-w-lg mx-auto">
               Une interface moderne et intuitive pour accéder à tout votre contenu.
             </p>
           </div>
@@ -98,6 +111,9 @@ export default function Gallery() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[90] flex items-center justify-center p-4 sm:p-8"
             onClick={() => setSelected(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={selectedItem.title}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -107,7 +123,9 @@ export default function Gallery() {
               onClick={(e) => e.stopPropagation()}
             >
               <button
+                ref={closeButtonRef}
                 onClick={() => setSelected(null)}
+                aria-label="Fermer"
                 className="absolute -top-10 right-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.1] text-white/60 hover:text-white transition-all"
               >
                 <FiX className="w-4 h-4" />

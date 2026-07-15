@@ -50,7 +50,7 @@ export default function Support() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
               Centre de <span className="text-[#6b7c5c]">support</span>
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
               Trouvez des réponses à vos questions ou contactez notre équipe.
             </p>
           </ScrollReveal>
@@ -82,7 +82,7 @@ export default function Support() {
                   <contact.icon className="w-6 h-6 text-[#6b7c5c]" />
                 </div>
                 <h3 className="font-display font-semibold text-lg text-white mb-1">{contact.title}</h3>
-                <p className="text-white/45 text-base mb-3">{contact.value}</p>
+                <p className="text-white/60 text-base mb-3">{contact.value}</p>
                 {contact.action && (
                   <a
                     href={contact.action}
@@ -119,7 +119,7 @@ export default function Support() {
                   {openFaq === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
-                    <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                    <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                   )}
                 </button>
                 {openFaq === i && (
@@ -145,7 +145,7 @@ export default function Support() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-4 tracking-[-0.02em]">
               Guides d'<span className="text-[#6b7c5c]">installation</span>
             </h2>
-            <p className="text-white/45 text-base font-light">Suivez les étapes selon votre appareil.</p>
+            <p className="text-white/60 text-base font-light">Suivez les étapes selon votre appareil.</p>
           </ScrollReveal>
 
           <div className="space-y-4">
@@ -164,7 +164,7 @@ export default function Support() {
                   {openGuide === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
-                    <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                    <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                   )}
                 </button>
                 {openGuide === i && (
@@ -199,7 +199,7 @@ export default function Support() {
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-4 tracking-[-0.02em]">
               Problèmes <span className="text-[#6b7c5c]">fréquents</span>
             </h2>
-            <p className="text-white/45 text-base font-light">Solutions aux problèmes les plus courants.</p>
+            <p className="text-white/60 text-base font-light">Solutions aux problèmes les plus courants.</p>
           </ScrollReveal>
 
           <div className="space-y-3">
@@ -218,7 +218,7 @@ export default function Support() {
                   {openIssue === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
-                    <FiChevronDown className="w-5 h-5 text-white/30 flex-shrink-0" />
+                    <FiChevronDown className="w-5 h-5 text-white/55 flex-shrink-0" />
                   )}
                 </button>
                 {openIssue === i && (
@@ -244,7 +244,7 @@ export default function Support() {
               <h3 className="font-display font-semibold text-xl text-white mb-2">
                 Toujours besoin d'aide ?
               </h3>
-              <p className="text-white/45 text-base mb-6 font-light">
+              <p className="text-white/60 text-base mb-6 font-light">
                 Notre équipe est disponible {SITE_CONFIG.supportHours.toLowerCase()} pour vous assister.
               </p>
               <a

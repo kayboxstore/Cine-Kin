@@ -69,7 +69,7 @@ export default function ThankYou() {
           <h1 className="font-display font-bold text-3xl sm:text-4xl text-white mb-3">
             Commande <span className="text-[#6b7c5c]">confirmée</span> !
           </h1>
-          <p className="text-white/45 text-base font-light max-w-md mx-auto mb-8">
+          <p className="text-white/60 text-base font-light max-w-md mx-auto mb-8">
             Merci pour votre confiance. Notre équipe prépare vos accès et vous contactera très rapidement.
           </p>
 
@@ -96,7 +96,7 @@ export default function ThankYou() {
                       className={`w-4 h-4 ${step.done ? "text-[#6b7c5c]" : "text-white/20"}`}
                     />
                   </div>
-                  <span className={`text-sm ${step.done ? "text-white/60" : "text-white/35"}`}>
+                  <span className={`text-sm ${step.done ? "text-white/60" : "text-white/55"}`}>
                     {step.text}
                   </span>
                 </motion.div>
@@ -113,7 +113,7 @@ export default function ThankYou() {
               </span>
             </div>
 
-            <p className="text-white/45 text-sm mb-5">
+            <p className="text-white/60 text-sm mb-5">
               Pour accélérer le processus, contactez-nous directement sur WhatsApp :
             </p>
 

@@ -29,7 +29,7 @@ export default function Login() {
           <h1 className="font-display font-bold text-2xl text-white mb-2">
             Espace Admin
           </h1>
-          <p className="text-white/40 text-sm">
+          <p className="text-white/60 text-sm">
             Connectez-vous pour accéder au dashboard
           </p>
         </div>
@@ -43,15 +43,15 @@ export default function Login() {
             Se connecter avec Kimi
           </button>
 
-          <p className="text-white/30 text-xs text-center mt-6">
+          <p className="text-white/55 text-xs text-center mt-6">
             Authentification sécurisée via OAuth 2.0
           </p>
         </div>
 
         <div className="text-center mt-6">
           <a
-            href="/#/"
-            className="text-white/30 hover:text-[#6b7c5c] text-sm transition-colors"
+            href="/"
+            className="text-white/55 hover:text-[#6b7c5c] text-sm transition-colors"
           >
             Retour à l'accueil
           </a>

@@ -32,7 +32,7 @@ export default function NotFound() {
         <h2 className="font-display font-semibold text-2xl text-white mb-3">
           Page introuvable
         </h2>
-        <p className="text-white/45 text-base mb-8 font-light leading-relaxed">
+        <p className="text-white/60 text-base mb-8 font-light leading-relaxed">
           La page que vous recherchez n'existe pas ou a été déplacée. Retournez à l'accueil ou explorez nos offres.
         </p>
 

@@ -10,14 +10,24 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); setSubmitted(true); };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Orders/leads go through WhatsApp only: forward the message there so it
+    // is actually delivered instead of being silently dropped.
+    const lines = [
+      "Bonjour Ciné Kin Premium ! (via formulaire de contact)",
+      formData.name && `Nom : ${formData.name}`,
+      formData.email && `Email : ${formData.email}`,
+      formData.subject && `Sujet : ${formData.subject}`,
+      formData.message && `Message : ${formData.message}`,
+    ].filter(Boolean);
+    const url = `https://wa.me/${SITE_CONFIG.whatsappNumber.replace(/[+\s]/g, "")}?text=${encodeURIComponent(lines.join("\n"))}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    setSubmitted(true);
+  };
 
   return (
-
-
     <div>
-
-
       <SEO
         title="Contactez-nous - Ciné Kin Premium"
         description="Contactez l'équipe Ciné Kin Premium par WhatsApp ou email. Support disponible Lun-Dim 08h-23h."
@@ -36,7 +46,7 @@ export default function Contact() {
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
               Nous <span className="text-[#6b7c5c]">contacter</span>
             </h1>
-            <p className="text-white/45 text-lg max-w-2xl mx-auto font-light">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
               Notre équipe est à votre disposition pour répondre à toutes vos questions.
             </p>
           </ScrollReveal>
@@ -74,7 +84,7 @@ export default function Contact() {
 
               <div className="border border-[#5a6b4e]/15 rounded-xl p-5 bg-[#5a6b4e]/5">
                 <h3 className="font-display font-semibold text-base text-white mb-2">Temps de réponse</h3>
-                <p className="text-white/45 text-base font-light">Nous répondons généralement en moins de 2 heures pendant les heures de support.</p>
+                <p className="text-white/60 text-base font-light">Nous répondons généralement en moins de 2 heures pendant les heures de support.</p>
               </div>
             </div>
 
