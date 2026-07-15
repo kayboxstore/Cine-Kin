@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createRouter, publicQuery } from "./middleware";
+import { createRouter, adminQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { orders, customers } from "@db/schema";
 import { eq, desc, count } from "drizzle-orm";
@@ -16,13 +16,13 @@ function generateActivationCode(): string {
 
 export const adminRouter = createRouter({
   // Orders
-  orderList: publicQuery.query(async () => {
+  orderList: adminQuery.query(async () => {
     return getDb().query.orders.findMany({
       orderBy: [desc(orders.createdAt)],
     });
   }),
 
-  orderCreate: publicQuery
+  orderCreate: adminQuery
     .input(
       z.object({
         customerName: z.string().min(1),
@@ -49,7 +49,7 @@ export const adminRouter = createRouter({
       return { id: result[0].id, activationCode };
     }),
 
-  orderUpdateStatus: publicQuery
+  orderUpdateStatus: adminQuery
     .input(
       z.object({
         id: z.number(),
@@ -64,14 +64,14 @@ export const adminRouter = createRouter({
       return { success: true };
     }),
 
-  orderDelete: publicQuery
+  orderDelete: adminQuery
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       await getDb().delete(orders).where(eq(orders.id, input.id));
       return { success: true };
     }),
 
-  orderStats: publicQuery.query(async () => {
+  orderStats: adminQuery.query(async () => {
     const db = getDb();
     const allOrders = await db.select({ count: count() }).from(orders);
     const pendingOrders = await db
@@ -90,13 +90,13 @@ export const adminRouter = createRouter({
   }),
 
   // Customers
-  customerList: publicQuery.query(async () => {
+  customerList: adminQuery.query(async () => {
     return getDb().query.customers.findMany({
       orderBy: [desc(customers.createdAt)],
     });
   }),
 
-  customerCreate: publicQuery
+  customerCreate: adminQuery
     .input(
       z.object({
         name: z.string().min(1),
@@ -121,7 +121,7 @@ export const adminRouter = createRouter({
       return result[0];
     }),
 
-  customerUpdateStatus: publicQuery
+  customerUpdateStatus: adminQuery
     .input(
       z.object({
         id: z.number(),
@@ -136,14 +136,14 @@ export const adminRouter = createRouter({
       return { success: true };
     }),
 
-  customerDelete: publicQuery
+  customerDelete: adminQuery
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       await getDb().delete(customers).where(eq(customers.id, input.id));
       return { success: true };
     }),
 
-  customerStats: publicQuery.query(async () => {
+  customerStats: adminQuery.query(async () => {
     const db = getDb();
     const allCustomers = await db.select({ count: count() }).from(customers);
     const activeCustomers = await db

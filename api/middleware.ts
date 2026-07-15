@@ -8,6 +8,7 @@ const t = initTRPC.context<TrpcContext>().create({
 });
 
 export const createRouter = t.router;
+export const createCallerFactory = t.createCallerFactory;
 export const publicQuery = t.procedure;
 
 const requireAuth = t.middleware(async (opts) => {
