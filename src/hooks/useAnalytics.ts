@@ -9,8 +9,8 @@ export function useAnalytics() {
 
   useEffect(() => {
     // Track page views
-    if (typeof window !== "undefined" && (window as any).gtag) {
-      (window as any).gtag("config", GA_ID, {
+    if (typeof window !== "undefined") {
+      window.gtag?.("config", GA_ID, {
         page_path: location.pathname + location.search,
       });
     }
@@ -18,8 +18,8 @@ export function useAnalytics() {
 }
 
 export function trackEvent(action: string, category?: string, label?: string, value?: number) {
-  if (typeof window !== "undefined" && (window as any).gtag) {
-    (window as any).gtag("event", action, {
+  if (typeof window !== "undefined") {
+    window.gtag?.("event", action, {
       event_category: category,
       event_label: label,
       value,
@@ -30,6 +30,6 @@ export function trackEvent(action: string, category?: string, label?: string, va
 // Declare gtag on window
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }

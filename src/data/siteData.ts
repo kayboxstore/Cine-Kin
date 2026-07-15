@@ -472,13 +472,13 @@ export const COMMON_ISSUES = [
   },
 ] as const;
 
-// Navigation
+// Navigation (single source of truth, consumed by Navbar)
 export const NAV_LINKS = [
   { name: "Accueil", path: "/" },
   { name: "Offres", path: "/offres" },
   { name: "Revendeurs", path: "/revendeurs" },
-  { name: "Support", path: "/support" },
-  { name: "À propos", path: "/a-propos" },
+  { name: "Tutoriels", path: "/tutoriels" },
+  { name: "Contact", path: "/contact" },
 ] as const;
 
 // Pays pour le formulaire

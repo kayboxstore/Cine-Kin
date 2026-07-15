@@ -50,7 +50,7 @@ export default function Login() {
 
         <div className="text-center mt-6">
           <a
-            href="/#/"
+            href="/"
             className="text-white/55 hover:text-[#6b7c5c] text-sm transition-colors"
           >
             Retour à l'accueil

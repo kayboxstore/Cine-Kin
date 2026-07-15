@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { HashRouter } from 'react-router'
+import { BrowserRouter } from 'react-router'
 import { HelmetProvider } from 'react-helmet-async'
 import { MotionConfig } from 'framer-motion'
 import { TRPCProvider } from '@/providers/trpc'
@@ -22,9 +22,9 @@ createRoot(document.getElementById('root')!).render(
     <HelmetProvider>
       <MotionConfig reducedMotion="user">
         <TRPCProvider>
-          <HashRouter>
+          <BrowserRouter>
             <App />
-          </HashRouter>
+          </BrowserRouter>
         </TRPCProvider>
       </MotionConfig>
     </HelmetProvider>

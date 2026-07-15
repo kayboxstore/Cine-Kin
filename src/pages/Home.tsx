@@ -18,11 +18,8 @@ import TrustBadges from "@/components/TrustBadges";
 import CompareTable from "@/components/CompareTable";
 import Gallery from "@/components/Gallery";
 import SavingsCalculator from "@/components/SavingsCalculator";
-import PressSection from "@/components/PressSection";
 import ReferralSection from "@/components/ReferralSection";
 import PromoCode from "@/components/PromoCode";
-import FOMOCounter from "@/components/FOMOCounter";
-import TrustBadgeReviews from "@/components/TrustBadgeReviews";
 import ServerStatus from "@/components/ServerStatus";
 import ParallaxHero from "@/components/ParallaxHero";
 import SEO from "@/components/SEO";
@@ -616,12 +613,9 @@ export default function Home() {
       <PromoCode />
       <CompareTable />
       <SavingsCalculator />
-      <FOMOCounter />
-      <TrustBadgeReviews />
       <Gallery />
       <ResellerCTASection />
       <TestimonialsSection />
-      <PressSection />
       <ServerStatus />
       <FAQSection />
       <ReferralSection />

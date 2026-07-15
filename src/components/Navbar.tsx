@@ -3,15 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiLogIn, FiLogOut, FiUser, FiShield } from "react-icons/fi";
 import { useAuth } from "@/hooks/useAuth";
+import { NAV_LINKS } from "@/data/siteData";
 import Logo from "./Logo";
-
-const NAV_LINKS = [
-  { name: "Accueil", path: "/" },
-  { name: "Offres", path: "/offres" },
-  { name: "Revendeurs", path: "/revendeurs" },
-  { name: "Tutoriels", path: "/tutoriels" },
-  { name: "Contact", path: "/contact" },
-];
 
 // Preload map for route prefetching
 const preloadMap: Record<string, () => Promise<unknown>> = {
@@ -54,6 +47,8 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close the mobile menu on route change.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setIsOpen(false); }, [location]);
 
   return (

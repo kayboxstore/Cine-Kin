@@ -158,4 +158,106 @@ compris `kimi-plugin-inspect-react@1.0.3`). La correction (réécriture des
 URLs mirror → npmjs) nécessite ton autorisation explicite car elle reroute
 le registre. **En attente de décision (voir échange).**
 
+### [POST-VAGUE 2] Déblocage de l'environnement — RÉSOLU (autorisé)
+
+- Réécriture des 303 URLs `resolved` du mirror privé → `registry.npmjs.org`
+  dans `package-lock.json` (intégrité préservée). `npm ci` fonctionne
+  désormais localement et en CI.
+- Ajout de l'alias `@db` dans `vitest.config.ts` : les tests d'autorisation
+  de la Vague 1 s'exécutent (**4 passent**).
+
+---
+
+## Vague 3 — Moyenne (dette technique, SEO, UX)
+
+**Date :** 15 juillet 2026
+**Décisions produit :** domaine de prod = `7a5czmte3r3ri.kimi.page` ;
+migration vers BrowserRouter ; suppression des fausses statistiques.
+
+### [AUDIT §7.1] 🟡 Statistiques/avis fictifs (dark patterns) — CORRIGÉ
+
+- Suppression des composants `LiveVisitors`, `FOMOCounter`,
+  `TrustBadgeReviews`, `PressSection` (compteurs aléatoires, « 2 847 avis »,
+  logos presse inventés). Usages retirés de `src/pages/Home.tsx`.
+- **Changement visible :** ces sections n'apparaissent plus sur l'accueil.
+
+### [AUDIT §3.1] 🟠 Code mort — CORRIGÉ
+
+- Suppression de 13 composants jamais importés (~1000 lignes) :
+  `ExitIntentPopup`, `AnnouncementBar`, `QuickOrderButton`, `QuickOrderModal`,
+  `CustomCursor`, `ParticleBackground`, `OrderCounter`, `CountdownTimer`,
+  `AuthLayout`, `AuthLayoutSkeleton`, `GSAPScrollReveal`, `ParallaxImage`,
+  `WhatsAppButton`.
+
+### [AUDIT §6.2] 🟠 HashRouter → BrowserRouter — CORRIGÉ
+
+**Fichiers :** `src/main.tsx`, `src/pages/Login.tsx`, `public/sitemap.xml`
+
+- Passage de `HashRouter` à `BrowserRouter` (URLs propres `/offres` au lieu
+  de `/#/offres`). Le serveur gère déjà le fallback SPA.
+- `sitemap.xml` : URLs nettoyées du segment `/#/`. Lien en dur `/#/` de
+  `Login` corrigé en `/`.
+- **Changement visible :** les URLs changent de forme (meilleur SEO).
+
+### [AUDIT §6.1] 🟠 Incohérence de domaine SEO — CORRIGÉ
+
+**Fichier :** `index.html`
+
+- Alignement des balises OG/Twitter sur `https://7a5czmte3r3ri.kimi.page`
+  (cohérent avec `SchemaOrg`, `robots.txt`, `sitemap.xml`).
+
+### [AUDIT §3.4] 🟡 `NAV_LINKS` dupliqué — CORRIGÉ
+
+- Source unique dans `src/data/siteData.ts`, importée par
+  `src/components/Navbar.tsx` (suppression de la copie locale divergente).
+
+### [AUDIT §3.2] 🟡 Dépendances inutilisées — CORRIGÉ
+
+- Retrait de `zustand`, `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`
+  (jamais importés). Réduit fortement l'arbre de dépendances.
+
+### [AUDIT §8.3] 🟡 Double-clic sur suppression — CORRIGÉ
+
+**Fichier :** `src/pages/Dashboard.tsx`
+
+- Boutons de suppression désactivés pendant la mutation
+  (`disabled={deleteX.isPending}`) → plus de double-soumission.
+
+### [AUDIT §9.4] 🟡 README générique — CORRIGÉ
+
+- `README.md` réécrit : stack, variables d'env, scripts, structure,
+  déploiement.
+
+### Nettoyage ESLint (débloque la CI) — CORRIGÉ
+
+Les 27 erreurs ESLint pré-existantes (qui auraient laissé la CI rouge) sont
+résolues → **lint vert** :
+- Override ESLint pour `src/components/ui/**` (shadcn vendored :
+  `react-refresh` + `react-hooks/purity` désactivés pour ce dossier généré).
+- `useAnalytics.ts` : suppression des `any` (typage `unknown`, `window.gtag?`).
+- `api/lib/http.ts` : `any` → `unknown` / `RequestInit["body"]`.
+- `Conditions.tsx` : escapes inutiles corrigés.
+- `db/seed.ts` : variable inutilisée retirée.
+- `trpc.tsx`, `Button.tsx`, `Toast.tsx` : `eslint-disable` ciblé
+  (react-refresh sur exports non-composants légitimes).
+- `Navbar.tsx` : `eslint-disable` ciblé (fermeture du menu au changement de
+  route).
+
+### Vérifications (Vagues 1→3)
+
+- `npm run lint` : ✅ 0 erreur
+- `npm run check` (tsc) : ✅
+- `npm test` : ✅ 4/4
+- `npm run build` : ✅
+
+### Non traité dans cette vague (justifié)
+
+- **§2.7 (deps vulnérables)** : les 15 vulnérabilités restantes concernent la
+  toolchain de build (vite, rollup, esbuild via drizzle-kit, lodash…). Leur
+  correction exige `npm audit fix --force` avec des bumps **majeurs** (dont un
+  downgrade de `drizzle-kit`) → risque de régression non testable dans cette
+  vague. Recommandé : à traiter isolément avec tests de non-régression.
+- **§4.2 (images WebP)**, **§6.3 (SSR)**, **§3.3/§7.2 (charte /paiement)** :
+  reportés (roadmap moyen/long terme, nécessitent outillage/refonte).
+
 ---

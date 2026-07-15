@@ -236,8 +236,9 @@ export default function Dashboard() {
                         </td>
                         <td className="px-4 py-3">
                           <button
+                            disabled={deleteOrder.isPending}
                             onClick={() => { if (confirm("Supprimer ?")) deleteOrder.mutate({ id: order.id }); }}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-40 disabled:pointer-events-none"
                           >
                             <FiTrash2 className="w-3.5 h-3.5" />
                           </button>
@@ -305,8 +306,9 @@ export default function Dashboard() {
                         </td>
                         <td className="px-4 py-3">
                           <button
+                            disabled={deleteCustomer.isPending}
                             onClick={() => { if (confirm("Supprimer ?")) deleteCustomer.mutate({ id: customer.id }); }}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-40 disabled:pointer-events-none"
                           >
                             <FiTrash2 className="w-3.5 h-3.5" />
                           </button>
