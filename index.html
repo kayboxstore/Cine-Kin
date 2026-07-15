@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a1628" />
+    <meta name="description" content="Ciné Kin Premium - Accédez à plus de 15 000 chaînes TV, films et séries en HD, FHD et 4K. Une expérience TV ultime sans limites sur tous vos appareils." />
+    <meta name="keywords" content="IPTV, TV en ligne, streaming, chaînes TV, films, séries, 4K, HD, abonnement IPTV, Ciné Kin Premium" />
+    <meta name="author" content="Ciné Kin Premium" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cinekinpremium.com" />
+    <meta property="og:title" content="Ciné Kin Premium - L'Expérience TV Ultime" />
+    <meta property="og:description" content="Plus de 15 000 chaînes, films et séries en HD/4K. Sur tous vos appareils." />
+    <meta property="og:image" content="https://cinekinpremium.com/og-image.jpg" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://cinekinpremium.com" />
+    <meta property="twitter:title" content="Ciné Kin Premium - L'Expérience TV Ultime" />
+    <meta property="twitter:description" content="Plus de 15 000 chaînes, films et séries en HD/4K. Sur tous vos appareils." />
+    <meta property="twitter:image" content="https://cinekinpremium.com/og-image.jpg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Performance: DNS prefetch & preconnect -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Google Analytics 4 (async loading) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', { send_page_view: false });
+    </script>
+
+    <title>Ciné Kin Premium - L'Expérience TV Ultime</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Remove Kimi Agent floating widget
+      (function() {
+        function removeWidget() {
+          // Remove by text content
+          document.querySelectorAll('div, span, a, button, iframe, img, svg').forEach(function(el) {
+            var text = (el.textContent || el.title || el.alt || '').trim();
+            if (text === 'Kimi Agent' || text.indexOf('Kimi Agent') !== -1 ||
+                el.ariaLabel === 'Kimi Agent' || el.getAttribute('aria-label') === 'Kimi Agent') {
+              var parent = el.parentElement;
+              el.remove();
+              // Also remove parent if it becomes empty
+              if (parent && parent.children.length === 0 && parent.textContent.trim() === '') {
+                parent.remove();
+              }
+            }
+          });
+          // Remove known selectors
+          ['.kimi-agent', '.kimi-widget', '#kimi-agent', '#kimi-widget',
+           '[class*="kimi-agent"]', '[class*="kimi-widget"]', '[class*="kimiAgent"]',
+           '[id*="kimi-agent"]', '[id*="kimi-widget"]', '[id*="kimiAgent"]',
+           '[data-testid*="kimi"]', 'iframe[src*="kimi"]'].forEach(function(sel) {
+            document.querySelectorAll(sel).forEach(function(el) { el.remove(); });
+          });
+          // Remove green circular buttons in bottom-right corner (Kimi widget icon)
+          document.querySelectorAll('a, button, div').forEach(function(el) {
+            var style = window.getComputedStyle(el);
+            var rect = el.getBoundingClientRect();
+            var isBottomRight = rect.bottom > window.innerHeight - 80 && rect.right > window.innerWidth - 80;
+            var isGreen = style.backgroundColor.indexOf('34, 197') !== -1 ||
+                          style.backgroundColor.indexOf('74, 222') !== -1 ||
+                          style.backgroundColor.indexOf('22, 163') !== -1 ||
+                          style.backgroundColor.indexOf('green') !== -1;
+            var isRound = parseFloat(style.borderRadius) > 20;
+            if (isBottomRight && isGreen && isRound && rect.width < 80 && rect.height < 80) {
+              el.remove();
+            }
+          });
+        }
+        removeWidget();
+        setInterval(removeWidget, 300);
+        if (window.MutationObserver) {
+          new MutationObserver(function() { removeWidget(); }).observe(document.body, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: sans-serif;">
+        JavaScript est requis pour utiliser Ciné Kin Premium. Veuillez l'activer dans les paramètres de votre navigateur.
+      </div>
+    </noscript>
+  </body>
+</html>

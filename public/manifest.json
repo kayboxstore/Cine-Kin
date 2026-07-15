@@ -1,0 +1,24 @@
+{
+  "name": "Ciné Kin Premium",
+  "short_name": "Ciné Kin",
+  "description": "Abonnement IPTV Premium - 15000+ chaînes en 4K UHD",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
