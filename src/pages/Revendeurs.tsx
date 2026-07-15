@@ -56,11 +56,7 @@ export default function Revendeurs() {
   };
 
   return (
-
-
     <div>
-
-
       <SEO
         title="Devenez Revendeur IPTV - Marge 150%+"
         description="Lancez votre business IPTV avec Ciné Kin Premium. Packs revendeur de 20 à 500 codes. Panneau d'administration dédié."

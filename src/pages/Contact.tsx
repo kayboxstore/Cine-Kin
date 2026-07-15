@@ -27,11 +27,7 @@ export default function Contact() {
   };
 
   return (
-
-
     <div>
-
-
       <SEO
         title="Contactez-nous - Ciné Kin Premium"
         description="Contactez l'équipe Ciné Kin Premium par WhatsApp ou email. Support disponible Lun-Dim 08h-23h."

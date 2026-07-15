@@ -261,3 +261,43 @@ résolues → **lint vert** :
   reportés (roadmap moyen/long terme, nécessitent outillage/refonte).
 
 ---
+
+## Vague 4 — Faible / finitions
+
+**Date :** 15 juillet 2026
+
+### [AUDIT §5.3] 🟡 Lightbox Gallery non accessible au clavier — CORRIGÉ
+
+**Fichier :** `src/components/Gallery.tsx`
+
+- Fermeture au clavier via `Échap`, focus déplacé sur le bouton « Fermer » à
+  l'ouverture, `role="dialog"` + `aria-modal="true"` + `aria-label` sur la
+  modale, `aria-label="Fermer"` sur le bouton de fermeture.
+
+### [AUDIT §4.3] 🟡 Polices Google en `@import` bloquant — CORRIGÉ
+
+**Fichiers :** `index.html`, `src/index.css`
+
+- Suppression du `@import` CSS render-blocking ; chargement des polices via
+  `<link rel="preload" as="style" onload=...>` + fallback `<noscript>` dans
+  `index.html`. Le premier paint n'attend plus le téléchargement des polices.
+
+### [AUDIT §3.6] 🟢 Fragments JSX superflus — CORRIGÉ
+
+**Fichiers :** `src/pages/Contact.tsx`, `src/pages/Revendeurs.tsx`
+
+- Suppression des lignes vides et wrappers superflus en tête de `return`.
+
+### Déjà couvert par les vagues précédentes (aucune action)
+
+- §8.3 (double-clic suppression, Vague 3), §6.1/§6.2 (SEO routing/domaine,
+  Vague 3), §7.1 (faux « social proof » supprimé, Vague 3).
+
+### Vérifications (Vague 4)
+
+- `npm run lint` : ✅ 0 erreur
+- `npm run check` (tsc) : ✅
+- `npm test` / `npm run build` : à relancer (indispo transitoire du
+  classifieur de sûreté au moment du commit ; lint + typecheck déjà verts).
+
+---
