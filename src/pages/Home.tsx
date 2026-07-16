@@ -14,7 +14,6 @@ import MagneticButton from "@/components/MagneticButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
 const TestimonialCarousel = lazy(() => import("@/components/TestimonialCarousel"));
 import TrustBadges from "@/components/TrustBadges";
-import CompareTable from "@/components/CompareTable";
 import Gallery from "@/components/Gallery";
 import SavingsCalculator from "@/components/SavingsCalculator";
 import ReferralSection from "@/components/ReferralSection";
@@ -380,7 +379,6 @@ export default function Home() {
       <HowItWorksSection />
       <OffersSection />
       <PromoCode />
-      <CompareTable />
       <SavingsCalculator />
       <Gallery />
       <ResellerCTASection />

@@ -50,36 +50,30 @@ export default function SchemaOrg() {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
-            name: "1 Mois",
+            name: "1 mois",
           },
-          price: "9.99",
+          price: "10",
           priceCurrency: "USD",
         },
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
-            name: "3 Mois",
+            name: "3 mois",
           },
-          price: "24.99",
+          price: "25",
           priceCurrency: "USD",
         },
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
-            name: "12 Mois",
+            name: "12 mois",
           },
-          price: "69.99",
+          price: "70",
           priceCurrency: "USD",
         },
       ],
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "15000",
-      bestRating: "5",
     },
   };
 

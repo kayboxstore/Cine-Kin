@@ -29,8 +29,8 @@ export default function Offres() {
 
 
       <SEO
-        title="Nos Offres IPTV - Abonnements à partir de $9.99"
-        description="Découvrez nos abonnements IPTV premium : Essai gratuit, 1 mois, 3 mois, 6 mois, 12 mois et 24 mois. 15000+ chaînes en 4K UHD."
+        title="Nos Offres IPTV - Abonnements à partir de 10 $"
+        description="Découvrez nos abonnements IPTV premium : Essai gratuit 24h, 1 mois, 3 mois, 6 mois et 12 mois (1 ou 2 écrans). 15 000+ chaînes en 4K UHD."
       />
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
@@ -87,7 +87,7 @@ export default function Offres() {
                 <div className="text-center mb-6 pt-2">
                   <h3 className="font-display font-semibold text-xl text-white mb-1">{plan.name}</h3>
                   <div className="font-display font-bold text-4xl text-white">{plan.priceLabel}</div>
-                  <div className="text-white/55 text-sm mt-1">{plan.duration}</div>
+                  <div className="text-white/55 text-sm mt-1">{plan.duration} · {plan.screensLabel}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">

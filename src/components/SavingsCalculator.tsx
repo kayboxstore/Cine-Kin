@@ -14,7 +14,7 @@ const CABLE_PRICES = [
 
 export default function SavingsCalculator() {
   const [selected, setSelected] = useState<number[]>([0, 2]);
-  const cineKinYearly = 69.99;
+  const cineKinYearly = 70;
 
   const toggle = (i: number) => {
     setSelected((prev) =>
