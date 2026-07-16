@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
+import { rateLimiter } from "hono-rate-limiter";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
@@ -12,13 +13,8 @@ import { Paths } from "@contracts/constants";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
-// ── Basic in-memory rate limiter (per IP, fixed window) ──────────
-// No external dependency. Note: state is per-process, so behind
-// multiple instances a shared store (Redis) would be required.
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 100;
-const rateLimitHits = new Map<string, { count: number; resetAt: number }>();
-
+// Extract the client IP used as the rate-limiter key: the first
+// X-Forwarded-For entry when behind a proxy, otherwise the socket address.
 function getClientIp(c: Context<{ Bindings: HttpBindings }>): string {
   const xff = c.req.header("x-forwarded-for");
   if (xff) return xff.split(",")[0]!.trim();
@@ -33,31 +29,18 @@ app.use(secureHeaders());
 
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 
-app.use("/api/trpc/*", async (c, next) => {
-  const ip = getClientIp(c);
-  const now = Date.now();
-
-  if (rateLimitHits.size > 10_000) {
-    for (const [key, value] of rateLimitHits) {
-      if (now > value.resetAt) rateLimitHits.delete(key);
-    }
-  }
-
-  const entry = rateLimitHits.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimitHits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-  } else {
-    entry.count++;
-    if (entry.count > RATE_LIMIT_MAX) {
-      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
-      return c.json({ error: "Too Many Requests" }, 429, {
-        "Retry-After": String(retryAfter),
-      });
-    }
-  }
-
-  return next();
-});
+// Rate limiting on the tRPC API via hono-rate-limiter. Default in-memory
+// store (per process); a shared store (e.g. Redis) would be required behind
+// multiple instances.
+app.use(
+  "/api/trpc/*",
+  rateLimiter<{ Bindings: HttpBindings }>({
+    windowMs: 60_000, // 1 minute
+    limit: 100, // max requests per IP per window
+    standardHeaders: "draft-6",
+    keyGenerator: getClientIp,
+  }),
+);
 
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async (c) => {
