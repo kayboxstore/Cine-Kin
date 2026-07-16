@@ -1,4 +1,4 @@
-import { FiShield, FiLock, FiHeadphones, FiRefreshCw, FiCheckCircle, FiStar } from "react-icons/fi";
+import { FiShield, FiLock, FiHeadphones, FiRefreshCw, FiCheckCircle } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
 
 const badges = [
@@ -7,7 +7,6 @@ const badges = [
   { icon: FiHeadphones, label: "Support 7j/7", desc: "08h - 23h" },
   { icon: FiRefreshCw, label: "Mise à jour", desc: "Automatique" },
   { icon: FiCheckCircle, label: "Activation", desc: "< 5 minutes" },
-  { icon: FiStar, label: "Note clients", desc: "4.8 / 5" },
 ];
 
 export default function TrustBadges() {
@@ -15,7 +14,7 @@ export default function TrustBadges() {
     <section className="py-12 bg-[#111d32]/30 border-y border-white/[0.04]">
       <div className="max-w-6xl mx-auto px-6 sm:px-8">
         <ScrollReveal>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {badges.map((badge, i) => (
               <div
                 key={i}

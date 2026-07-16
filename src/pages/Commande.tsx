@@ -78,7 +78,7 @@ export default function Commande() {
                     {planType === "client" ? (
                       <div>
                         <div className="font-display font-bold text-2xl text-white">{(plan as typeof CLIENT_PLANS[0]).priceLabel}</div>
-                        <div className="text-white/55 text-xs">{(plan as typeof CLIENT_PLANS[0]).duration}</div>
+                        <div className="text-white/55 text-xs">{(plan as typeof CLIENT_PLANS[0]).duration} · {(plan as typeof CLIENT_PLANS[0]).screensLabel}</div>
                       </div>
                     ) : (
                       <div>
