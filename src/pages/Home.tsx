@@ -3,14 +3,13 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FiMonitor, FiFilm, FiZap, FiSmartphone, FiShield, FiHeadphones,
-  FiCheck, FiChevronDown, FiChevronUp, FiArrowRight, FiUsers,
+  FiChevronDown, FiChevronUp, FiArrowRight, FiUsers,
   FiTv, FiAirplay, FiTablet, FiCpu, FiCast, FiWifi, FiPlay
 } from "react-icons/fi";
 import {
-  ADVANTAGES, HOW_IT_WORKS, CLIENT_PLANS, FAQ
+  ADVANTAGES, HOW_IT_WORKS, FAQ
 } from "@/data/siteData";
 import ScrollReveal from "@/components/ScrollReveal";
-import ScrambleText from "@/components/ScrambleText";
 import MagneticButton from "@/components/MagneticButton";
 import AnimatedCounter from "@/components/AnimatedCounter";
 const TestimonialCarousel = lazy(() => import("@/components/TestimonialCarousel"));
@@ -22,6 +21,8 @@ import ReferralSection from "@/components/ReferralSection";
 import PromoCode from "@/components/PromoCode";
 import ServerStatus from "@/components/ServerStatus";
 import ParallaxHero from "@/components/ParallaxHero";
+import HeroSection from "@/components/HeroSection";
+import OffersSection from "@/components/OffersSection";
 import SEO from "@/components/SEO";
 import SchemaOrg from "@/components/SchemaOrg";
 
@@ -50,152 +51,6 @@ const featureImages = [
    border-light:  white/[0.06]
 */
 
-/* ═══════════════════════════════════════════
-   HERO — Bleu de nuit + olive
-   ═══════════════════════════════════════════ */
-function HeroSection() {
-  return (
-    <section className="relative min-h-[100dvh] flex items-center overflow-hidden bg-[#0a1628]">
-      {/* Subtle stars / ambient glow */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse at 30% 20%, rgba(90,107,78,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(107,124,92,0.06) 0%, transparent 40%)",
-        }}
-      />
-      {/* Very subtle grid */}
-      <div className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
-          backgroundSize: "80px 80px",
-        }}
-      />
-
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 sm:px-8 pt-24 pb-16 text-center">
-        {/* Trust badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/[0.08] bg-white/[0.03] mb-10"
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6b7c5c] opacity-40" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#6b7c5c]" />
-          </span>
-          <span className="text-sm text-white/60 font-medium tracking-[0.15em] uppercase">15 000+ clients dans 40 pays</span>
-        </motion.div>
-
-        {/* Main headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.8, ease: "easeOut" }}
-          className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-[-0.03em] mb-6 leading-[1.0]"
-        >
-          <span className="text-white block">L'Expérience</span>
-          <span className="bg-gradient-to-r from-[#5a6b4e] via-[#7a8f6a] to-[#9aaf8a] bg-clip-text text-transparent block">
-            TV Ultime
-          </span>
-        </motion.h1>
-
-        {/* Scramble subtitle */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mb-12 max-w-lg mx-auto"
-        >
-          <ScrambleText
-            text="15 000+ chaînes, films et séries en 4K UHD"
-            className="text-base sm:text-lg text-white/60 font-light tracking-wide block"
-            duration={1.2}
-            delay={0.8}
-          />
-          <p className="text-white/55 text-base font-light mt-2 tracking-wide">
-            Tous vos appareils. Sans interruption. Partout.
-          </p>
-        </motion.div>
-
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3"
-        >
-          <Link to="/offres">
-            <MagneticButton
-              className="group px-8 py-4 text-base font-semibold text-white bg-[#5a6b4e] rounded-full hover:bg-[#4d5d42] transition-all duration-300 flex items-center gap-2.5 tracking-wide shadow-lg shadow-[#5a6b4e]/20"
-              strength={0.15}
-            >
-              <FiPlay className="w-4 h-4" />
-              Voir les offres
-              <FiArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </MagneticButton>
-          </Link>
-          <Link to="/revendeurs">
-            <MagneticButton
-              className="px-8 py-4 text-base font-medium text-white/60 border border-white/[0.08] rounded-full hover:border-[#5a6b4e]/30 hover:text-white/70 transition-all duration-300 flex items-center gap-2.5 tracking-wide bg-white/[0.02]"
-              strength={0.15}
-            >
-              <FiUsers className="w-4 h-4" />
-              Devenir revendeur
-            </MagneticButton>
-          </Link>
-        </motion.div>
-
-        {/* Floating mini card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1, duration: 0.7 }}
-          className="mt-16 max-w-xs mx-auto"
-        >
-          <div className="border border-white/[0.05] rounded-2xl p-5 hover:border-[#5a6b4e]/20 transition-all duration-500 group bg-[#111d32]/60 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#5a6b4e] to-[#7a8f6a] flex items-center justify-center shadow-md">
-                  <FiMonitor className="w-4 h-4 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-display font-semibold text-white text-sm">Premium 4K</div>
-                  <div className="text-white/55 text-xs">12 mois</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-display font-bold text-lg text-white">$69.99</div>
-                <div className="text-white/55 text-sm">/an</div>
-              </div>
-            </div>
-            <div className="flex gap-1.5 flex-wrap">
-              {["15K+ chaînes", "5 écrans", "4K UHD"].map((tag, i) => (
-                <span key={i} className="px-2.5 py-1 rounded-md border border-white/[0.05] text-xs text-white/60 tracking-wide bg-white/[0.02]">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="w-4 h-7 rounded-full border border-white/[0.08] flex items-start justify-center p-1"
-        >
-          <div className="w-[2px] h-1.5 bg-white/25 rounded-full" />
-        </motion.div>
-      </motion.div>
-    </section>
-  );
-}
 
 /* ═══════════════════════════════════════════
    STATS BAR — Bleu de nuit alt
@@ -321,92 +176,6 @@ function HowItWorksSection() {
   );
 }
 
-/* ═══════════════════════════════════════════
-   POPULAR PLANS
-   ═══════════════════════════════════════════ */
-function PopularPlansSection() {
-  const popular = CLIENT_PLANS.filter(p =>
-    p.popular || p.bestDeal || p.id === "trial" || p.id === "24months"
-  );
-
-  return (
-    <section className="relative py-32 bg-[#0a1628] overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(90,107,78,0.04) 0%, transparent 60%)" }}
-      />
-
-      <div className="relative z-10 max-w-5xl mx-auto px-6 sm:px-8">
-        <ScrollReveal className="text-center mb-20">
-          <p className="text-white/60 text-sm font-medium tracking-[0.2em] uppercase mb-5">
-            Nos formules
-          </p>
-          <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] leading-tight">
-            Choisissez <span className="text-white/55">votre plan</span>
-          </h2>
-        </ScrollReveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {popular.map((plan, i) => (
-            <ScrollReveal key={plan.id} delay={i * 0.12} direction="up" distance={30}>
-              <div className={`relative border rounded-xl p-6 transition-all duration-500 hover:-translate-y-1 bg-[#111d32]/50 ${
-                plan.popular
-                  ? "border-[#5a6b4e]/15 hover:border-[#5a6b4e]/25"
-                  : "border-white/[0.03] hover:border-white/[0.06]"
-              }`}>
-                {plan.popular && (
-                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-[#5a6b4e] rounded-full text-[10px] font-bold text-white tracking-wider shadow-sm">
-                    POPULAIRE
-                  </div>
-                )}
-                {plan.bestDeal && !plan.popular && (
-                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-[#7a8f6a] rounded-full text-[10px] font-bold text-white tracking-wider shadow-sm">
-                    BEST DEAL
-                  </div>
-                )}
-
-                <div className="text-center mb-6 pt-2">
-                  <h3 className="font-display font-medium text-base text-white/60 mb-3">{plan.name}</h3>
-                  <div className="font-display font-bold text-4xl text-white tracking-tight">{plan.priceLabel}</div>
-                  <div className="text-white/60 text-sm mt-1">{plan.duration}</div>
-                </div>
-
-                <ul className="space-y-2.5 mb-6">
-                  {plan.features.slice(0, 4).map((f, j) => (
-                    <li key={j} className="flex items-center gap-2.5 text-sm text-white/50">
-                      <FiCheck className="w-4 h-4 text-[#5a6b4e] flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to={`/commande?plan=${plan.id}`}
-                  className={`block w-full py-3.5 text-center text-sm font-semibold rounded-lg transition-all duration-300 tracking-wide ${
-                    plan.popular
-                      ? "bg-[#5a6b4e] text-white hover:bg-[#4d5d42]"
-                      : "border border-white/[0.06] text-white/50 hover:text-white/75 hover:border-[#5a6b4e]/15"
-                  }`}
-                >
-                  {plan.id === "trial" ? "ESSAI GRATUIT" : "COMMANDER"}
-                </Link>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-
-        <ScrollReveal delay={0.2} className="text-center mt-8">
-          <Link
-            to="/offres"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-[#5a6b4e] transition-colors text-sm font-medium tracking-wide group"
-          >
-            Voir toutes les offres
-            <FiArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </ScrollReveal>
-      </div>
-    </section>
-  );
-}
 
 /* ═══════════════════════════════════════════
    RESELLER CTA
@@ -609,7 +378,7 @@ export default function Home() {
       <StatsBar />
       <AdvantagesSection />
       <HowItWorksSection />
-      <PopularPlansSection />
+      <OffersSection />
       <PromoCode />
       <CompareTable />
       <SavingsCalculator />
