@@ -179,7 +179,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
           style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
           className="text-4xl sm:text-5xl font-bold tracking-wide text-white"
         >
-          Ciné<span className="font-light text-[#5a6b4e]">Kin</span>
+          Ciné<span className="font-light text-[#6b7c5c]">Kin</span>
         </motion.div>
 
         <motion.p
