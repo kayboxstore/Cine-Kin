@@ -1,11 +1,33 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Login from "./pages/Login"
 import NotFound from "./pages/NotFound"
+import SplashScreen from "./components/SplashScreen";
 import { useAnalytics } from "./hooks/useAnalytics";
+
+const SPLASH_SESSION_KEY = "ck_splash_seen";
+
+// Decide once per page load whether the splash shows. Memoized at module
+// scope so it stays idempotent across React StrictMode's double-invocation
+// of state initializers (dev) — the sessionStorage write happens exactly
+// once. Shows only on the first load of a browser session, never on internal
+// navigation (App stays mounted, so the state persists across route changes).
+let splashDecided = false;
+let splashShouldShow = false;
+function shouldShowSplash(): boolean {
+  if (splashDecided) return splashShouldShow;
+  splashDecided = true;
+  try {
+    splashShouldShow = !sessionStorage.getItem(SPLASH_SESSION_KEY);
+    if (splashShouldShow) sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+  } catch {
+    splashShouldShow = false;
+  }
+  return splashShouldShow;
+}
 
 // Lazy load pages for performance
 const Offres = lazy(() => import("./pages/Offres"));
@@ -70,9 +92,12 @@ function LazyPage({ children }: { children: React.ReactNode }) {
 export default function App() {
   const location = useLocation();
   useAnalytics();
+  const [showSplash, setShowSplash] = useState(shouldShowSplash);
 
   return (
-    <AnimatePresence mode="wait">
+    <>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route element={<Layout />}>
           <Route path="/" element={<AnimatedPage><Home /></AnimatedPage>} />
@@ -98,6 +123,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </AnimatePresence>
+      </AnimatePresence>
+    </>
   );
 }
