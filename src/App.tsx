@@ -48,6 +48,7 @@ const Faq = lazy(() => import("./pages/Faq"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const Status = lazy(() => import("./pages/Status"));
 const ResellerPortal = lazy(() => import("./pages/reseller/ResellerPortal"));
+const ClientPortal = lazy(() => import("./pages/client/ClientPortal"));
 
 const pageVariants = {
   initial: { opacity: 0, y: 30, scale: 0.98 },
@@ -122,6 +123,7 @@ export default function App() {
         </Route>
         <Route path="/admin" element={<LazyPage><AdminPanel /></LazyPage>} />
         <Route path="/revendeur" element={<LazyPage><ResellerPortal /></LazyPage>} />
+        <Route path="/espace-client" element={<LazyPage><ClientPortal /></LazyPage>} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
