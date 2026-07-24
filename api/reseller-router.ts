@@ -168,11 +168,22 @@ export const resellerRouter = createRouter({
       };
     }),
 
-  // Personal history only — never another reseller's.
+  // Personal history only — never another reseller's. Joins the client so the
+  // portal can search/display by name & email (activations only store the MAC).
   myActivations: resellerQuery.query(async ({ ctx }) => {
     return getDb()
-      .select()
+      .select({
+        id: activations.id,
+        appClientId: activations.appClientId,
+        mac: activations.mac,
+        licenseType: activations.licenseType,
+        creditsCharged: activations.creditsCharged,
+        createdAt: activations.createdAt,
+        clientName: appClients.name,
+        clientEmail: appClients.email,
+      })
       .from(activations)
+      .leftJoin(appClients, eq(activations.appClientId, appClients.id))
       .where(eq(activations.activatedByResellerId, ctx.reseller.id))
       .orderBy(desc(activations.createdAt));
   }),
