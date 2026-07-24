@@ -5,6 +5,8 @@ import {
   varchar,
   text,
   timestamp,
+  int,
+  bigint,
 } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
@@ -62,3 +64,96 @@ export const customers = mysqlTable("customers", {
 
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = typeof customers.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// Ciné-Kin APPLICATION licence system (distinct from the IPTV subscription
+// tables above). A device (TV/box) registers with a MAC + PIN, then gets an
+// application licence activated by an admin (free) or a reseller (credits).
+//
+// NOTE on foreign keys: this schema targets PlanetScale, which does not use
+// database-level FK constraints — like the existing tables, relationships are
+// expressed as indexed bigint columns and wired for query-time joins in
+// db/relations.ts. All secrets (PINs, passwords) are stored hashed, never in
+// clear; Xtream credentials are encrypted at rest (see api/lib/crypto.ts).
+// ---------------------------------------------------------------------------
+
+// A client of the application licence — one physical device, keyed by MAC.
+export const appClients = mysqlTable("app_clients", {
+  id: serial("id").primaryKey(),
+  // Unique + indexed device identifier.
+  mac: varchar("mac", { length: 64 }).notNull().unique(),
+  // Connection PIN, hashed (scrypt). Nullable: an admin/reseller may activate a
+  // MAC before the device has ever registered and claimed its PIN.
+  pinHash: varchar("pin_hash", { length: 255 }),
+  name: varchar("name", { length: 255 }),
+  // Unique when set; MySQL allows multiple NULLs so unregistered devices are fine.
+  email: varchar("email", { length: 320 }).unique(),
+  // null = registered but not yet activated.
+  licenseType: mysqlEnum("license_type", ["12_months", "unlimited"]),
+  activatedByType: mysqlEnum("activated_by_type", ["admin", "reseller"]),
+  activatedByResellerId: bigint("activated_by_reseller_id", {
+    mode: "number",
+    unsigned: true,
+  }),
+  activatedAt: timestamp("activated_at"),
+  // null for 'unlimited' (and while inactive).
+  expiresAt: timestamp("expires_at"),
+  // Parental-control PIN (4 digits), hashed, distinct from the login PIN.
+  parentalControlPinHash: varchar("parental_control_pin_hash", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AppClient = typeof appClients.$inferSelect;
+export type InsertAppClient = typeof appClients.$inferInsert;
+
+// Reseller accounts — authenticate separately from admins and clients.
+export const resellers = mysqlTable("resellers", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  contact: varchar("contact", { length: 255 }),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  credits: int("credits").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Reseller = typeof resellers.$inferSelect;
+export type InsertReseller = typeof resellers.$inferInsert;
+
+// Audit log — one row per activation/renewal.
+export const activations = mysqlTable("activations", {
+  id: serial("id").primaryKey(),
+  appClientId: bigint("app_client_id", { mode: "number", unsigned: true }).notNull(),
+  // Denormalised MAC so history survives even if the client row changes.
+  mac: varchar("mac", { length: 64 }).notNull(),
+  licenseType: mysqlEnum("license_type", ["12_months", "unlimited"]).notNull(),
+  // 0 when performed by an admin (free).
+  creditsCharged: int("credits_charged").default(0).notNull(),
+  activatedByType: mysqlEnum("activated_by_type", ["admin", "reseller"]).notNull(),
+  activatedByResellerId: bigint("activated_by_reseller_id", {
+    mode: "number",
+    unsigned: true,
+  }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Activation = typeof activations.$inferSelect;
+export type InsertActivation = typeof activations.$inferInsert;
+
+// Playlists attached to a client.
+export const playlists = mysqlTable("playlists", {
+  id: serial("id").primaryKey(),
+  appClientId: bigint("app_client_id", { mode: "number", unsigned: true }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  format: mysqlEnum("format", ["m3u", "xtream"]).notNull(),
+  source: mysqlEnum("source", ["cinekin", "external"]).notNull(),
+  m3uUrl: text("m3u_url"),
+  // Xtream credentials are stored ENCRYPTED at rest (AES-256-GCM).
+  xtreamServerUrl: text("xtream_server_url"),
+  xtreamUsername: text("xtream_username"),
+  xtreamPassword: text("xtream_password"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Playlist = typeof playlists.$inferSelect;
+export type InsertPlaylist = typeof playlists.$inferInsert;
