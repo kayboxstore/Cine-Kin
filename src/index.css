@@ -84,6 +84,15 @@ iframe[src*="kimi"] {
     --gold: 43 96% 56%;
     --cyan: 195 100% 50%;
     --violet: 263 70% 58%;
+    /* Admin panel sidebar — Ciné-Kin marine/olive palette */
+    --sidebar: 216 55% 9%;
+    --sidebar-foreground: 210 25% 82%;
+    --sidebar-primary: 84 16% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 84 14% 20%;
+    --sidebar-accent-foreground: 210 30% 92%;
+    --sidebar-border: 216 28% 17%;
+    --sidebar-ring: 84 20% 45%;
   }
 }
 
