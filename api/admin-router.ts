@@ -1,8 +1,30 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { createRouter, adminQuery } from "./middleware";
 import { getDb } from "./queries/connection";
-import { orders, customers } from "@db/schema";
+import { orders, customers, appClients, resellers, activations } from "@db/schema";
+import type { Reseller } from "@db/schema";
 import { eq, desc, count } from "drizzle-orm";
+import { hashSecret } from "./lib/crypto";
+import {
+  licenseTypeSchema,
+  computeExpiry,
+  normalizeMac,
+  autoEmail,
+  licenseStatus,
+} from "./lib/app-license";
+
+// Public reseller shape for admin responses — never leaks passwordHash.
+function resellerAdminView(r: Reseller) {
+  return {
+    id: r.id,
+    name: r.name,
+    contact: r.contact,
+    username: r.username,
+    credits: r.credits,
+    createdAt: r.createdAt,
+  };
+}
 
 // Generate a random activation code: CINE + 6 alphanumeric chars
 function generateActivationCode(): string {
@@ -155,4 +177,192 @@ export const adminRouter = createRouter({
       active: activeCustomers[0].count,
     };
   }),
+
+  // -------------------------------------------------------------------------
+  // Application licence — admin procedures (free, no credit deduction).
+  // -------------------------------------------------------------------------
+
+  appClientList: adminQuery.query(async () => {
+    return getDb().query.appClients.findMany({
+      orderBy: [desc(appClients.createdAt)],
+    });
+  }),
+
+  appClientActivate: adminQuery
+    .input(
+      z.object({
+        mac: z.string().trim().min(3).max(64),
+        name: z.string().trim().min(1).max(255).optional(),
+        email: z.string().email().optional(),
+        licenseType: licenseTypeSchema,
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const db = getDb();
+      const mac = normalizeMac(input.mac);
+      const now = new Date();
+      const expiresAt = computeExpiry(input.licenseType, now);
+      const email = input.email?.trim() || autoEmail(input.name, mac);
+
+      const existing = (
+        await db.select().from(appClients).where(eq(appClients.mac, mac)).limit(1)
+      ).at(0);
+
+      // Guard: don't silently re-create/overwrite an already-active licence.
+      if (existing && licenseStatus(existing) === "active") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cette MAC a déjà une licence active. Utilisez appClientRenew pour la renouveler.",
+        });
+      }
+
+      let appClientId: number;
+      if (!existing) {
+        const ins = await db
+          .insert(appClients)
+          .values({
+            mac,
+            name: input.name ?? null,
+            email,
+            licenseType: input.licenseType,
+            activatedByType: "admin",
+            activatedAt: now,
+            expiresAt,
+          })
+          .$returningId();
+        appClientId = ins[0].id;
+      } else {
+        appClientId = existing.id;
+        await db
+          .update(appClients)
+          .set({
+            name: input.name ?? existing.name,
+            email: existing.email ?? email,
+            licenseType: input.licenseType,
+            activatedByType: "admin",
+            activatedByResellerId: null,
+            activatedAt: now,
+            expiresAt,
+          })
+          .where(eq(appClients.id, existing.id));
+      }
+
+      await db.insert(activations).values({
+        appClientId,
+        mac,
+        licenseType: input.licenseType,
+        creditsCharged: 0,
+        activatedByType: "admin",
+      });
+
+      return { success: true, appClientId, licenseType: input.licenseType };
+    }),
+
+  appClientRenew: adminQuery
+    .input(
+      z.object({
+        appClientId: z.number().int().positive(),
+        licenseType: licenseTypeSchema,
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const db = getDb();
+      const client = (
+        await db.select().from(appClients).where(eq(appClients.id, input.appClientId)).limit(1)
+      ).at(0);
+      if (!client) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Client introuvable." });
+      }
+
+      const now = new Date();
+      const expiresAt = computeExpiry(input.licenseType, now);
+
+      await db
+        .update(appClients)
+        .set({
+          licenseType: input.licenseType,
+          activatedByType: "admin",
+          activatedByResellerId: null,
+          activatedAt: now,
+          expiresAt,
+        })
+        .where(eq(appClients.id, client.id));
+
+      await db.insert(activations).values({
+        appClientId: client.id,
+        mac: client.mac,
+        licenseType: input.licenseType,
+        creditsCharged: 0,
+        activatedByType: "admin",
+      });
+
+      return { success: true, appClientId: client.id, licenseType: input.licenseType };
+    }),
+
+  // Resellers ---------------------------------------------------------------
+
+  resellerList: adminQuery.query(async () => {
+    const rows = await getDb()
+      .select()
+      .from(resellers)
+      .orderBy(desc(resellers.createdAt));
+    return rows.map(resellerAdminView);
+  }),
+
+  resellerCreate: adminQuery
+    .input(
+      z.object({
+        name: z.string().trim().min(1).max(255),
+        contact: z.string().trim().max(255).optional(),
+        username: z.string().trim().min(3).max(100),
+        password: z.string().min(8).max(255),
+        initialCredits: z.number().int().min(0).default(0),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const result = await getDb()
+        .insert(resellers)
+        .values({
+          name: input.name,
+          contact: input.contact ?? null,
+          username: input.username,
+          passwordHash: hashSecret(input.password),
+          credits: input.initialCredits,
+        })
+        .$returningId();
+      return { id: result[0].id, username: input.username };
+    }),
+
+  resellerAddCredits: adminQuery
+    .input(
+      z.object({
+        resellerId: z.number().int().positive(),
+        amount: z.number().int().positive(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const db = getDb();
+      const reseller = (
+        await db.select().from(resellers).where(eq(resellers.id, input.resellerId)).limit(1)
+      ).at(0);
+      if (!reseller) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Revendeur introuvable." });
+      }
+      await db
+        .update(resellers)
+        .set({ credits: reseller.credits + input.amount })
+        .where(eq(resellers.id, input.resellerId));
+      return { success: true, credits: reseller.credits + input.amount };
+    }),
+
+  resellerActivationHistory: adminQuery
+    .input(z.object({ resellerId: z.number().int().positive() }))
+    .query(async ({ input }) => {
+      return getDb()
+        .select()
+        .from(activations)
+        .where(eq(activations.activatedByResellerId, input.resellerId))
+        .orderBy(desc(activations.createdAt));
+    }),
 });
