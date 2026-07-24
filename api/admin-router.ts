@@ -365,4 +365,15 @@ export const adminRouter = createRouter({
         .where(eq(activations.activatedByResellerId, input.resellerId))
         .orderBy(desc(activations.createdAt));
     }),
+
+  // Global feed of recent activations (admin + reseller), most recent first.
+  activationList: adminQuery
+    .input(z.object({ limit: z.number().int().min(1).max(500).default(100) }).optional())
+    .query(async ({ input }) => {
+      return getDb()
+        .select()
+        .from(activations)
+        .orderBy(desc(activations.createdAt))
+        .limit(input?.limit ?? 100);
+    }),
 });

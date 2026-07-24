@@ -178,6 +178,7 @@ export const resellerRouter = createRouter({
         mac: activations.mac,
         licenseType: activations.licenseType,
         creditsCharged: activations.creditsCharged,
+        activatedByResellerId: activations.activatedByResellerId,
         createdAt: activations.createdAt,
         clientName: appClients.name,
         clientEmail: appClients.email,
