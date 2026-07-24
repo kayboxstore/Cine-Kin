@@ -47,6 +47,7 @@ const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const Faq = lazy(() => import("./pages/Faq"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const Status = lazy(() => import("./pages/Status"));
+const ClientPortal = lazy(() => import("./pages/client/ClientPortal"));
 
 const pageVariants = {
   initial: { opacity: 0, y: 30, scale: 0.98 },
@@ -120,6 +121,7 @@ export default function App() {
           <Route path="/status" element={<LazyPage><AnimatedPage><Status /></AnimatedPage></LazyPage>} />
           <Route path="*" element={<LazyPage><AnimatedPage><NotFound /></AnimatedPage></LazyPage>} />
         </Route>
+        <Route path="/espace-client" element={<LazyPage><ClientPortal /></LazyPage>} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
