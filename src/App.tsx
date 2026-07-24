@@ -41,7 +41,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const Tutoriels = lazy(() => import("./pages/Tutoriels"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AdminPanel = lazy(() => import("./pages/admin/AdminPanel"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const Faq = lazy(() => import("./pages/Faq"));
@@ -112,7 +112,6 @@ export default function App() {
           <Route path="/politique-confidentialite" element={<LazyPage><AnimatedPage><PolitiqueConfidentialite /></AnimatedPage></LazyPage>} />
           <Route path="/mentions-legales" element={<LazyPage><AnimatedPage><MentionsLegales /></AnimatedPage></LazyPage>} />
           <Route path="/tutoriels" element={<LazyPage><AnimatedPage><Tutoriels /></AnimatedPage></LazyPage>} />
-          <Route path="/admin" element={<LazyPage><AnimatedPage><Dashboard /></AnimatedPage></LazyPage>} />
           <Route path="/blog" element={<LazyPage><AnimatedPage><Blog /></AnimatedPage></LazyPage>} />
           <Route path="/blog/:id" element={<LazyPage><AnimatedPage><BlogArticle /></AnimatedPage></LazyPage>} />
           <Route path="/faq" element={<LazyPage><AnimatedPage><Faq /></AnimatedPage></LazyPage>} />
@@ -120,6 +119,7 @@ export default function App() {
           <Route path="/status" element={<LazyPage><AnimatedPage><Status /></AnimatedPage></LazyPage>} />
           <Route path="*" element={<LazyPage><AnimatedPage><NotFound /></AnimatedPage></LazyPage>} />
         </Route>
+        <Route path="/admin" element={<LazyPage><AdminPanel /></LazyPage>} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
