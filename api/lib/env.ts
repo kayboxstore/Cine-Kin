@@ -19,4 +19,7 @@ export const env = {
   // Key material for encrypting Xtream credentials at rest. Prefer a dedicated
   // ENCRYPTION_KEY; falls back to APP_SECRET so the feature works out of the box.
   encryptionKey: process.env.ENCRYPTION_KEY || process.env.APP_SECRET || "",
+  // Password-based admin login (alternative to Kimi OAuth). When set, an admin
+  // can sign in to /admin with this password. Empty disables that path.
+  adminPassword: process.env.ADMIN_PASSWORD ?? "",
 };

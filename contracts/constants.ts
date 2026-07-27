@@ -15,6 +15,12 @@ export const ResellerSession = {
   maxAgeMs: 30 * 24 * 60 * 60 * 1000,
 } as const;
 
+// Password-based admin session (alternative to the Kimi OAuth session).
+export const AdminSession = {
+  cookieName: "ck_admin_sid",
+  maxAgeMs: 7 * 24 * 60 * 60 * 1000,
+} as const;
+
 export const ErrorMessages = {
   unauthenticated: "Authentication required",
   insufficientRole: "Insufficient permissions",

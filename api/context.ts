@@ -3,10 +3,29 @@ import * as cookie from "cookie";
 import { eq } from "drizzle-orm";
 import type { User, AppClient, Reseller } from "@db/schema";
 import { appClients, resellers } from "@db/schema";
-import { ClientSession, ResellerSession } from "@contracts/constants";
+import { ClientSession, ResellerSession, AdminSession } from "@contracts/constants";
 import { authenticateRequest } from "./kimi/auth";
-import { verifyClientSession, verifyResellerSession } from "./lib/app-sessions";
+import {
+  verifyClientSession,
+  verifyResellerSession,
+  verifyAdminSession,
+} from "./lib/app-sessions";
 import { getDb } from "./queries/connection";
+
+// Synthetic admin identity for the password-based admin session (no Kimi user
+// row). It satisfies the User shape and carries role "admin" so adminQuery and
+// auth.me treat it exactly like an OAuth admin.
+const PASSWORD_ADMIN_USER: User = {
+  id: 0,
+  unionId: "password-admin",
+  name: "Administrateur",
+  email: null,
+  avatar: null,
+  role: "admin",
+  createdAt: new Date(0),
+  updatedAt: new Date(0),
+  lastSignInAt: new Date(0),
+};
 
 export type TrpcContext = {
   req: Request;
@@ -48,6 +67,20 @@ export async function createContext(
 
   // Application-licence sessions — parsed only when their cookie is present.
   const cookies = cookie.parse(opts.req.headers.get("cookie") || "");
+
+  // Password-based admin session — grants an admin identity when no Kimi user
+  // is present.
+  if (!ctx.user) {
+    const adminToken = cookies[AdminSession.cookieName];
+    if (adminToken) {
+      try {
+        const claim = await verifyAdminSession(adminToken);
+        if (claim) ctx.user = PASSWORD_ADMIN_USER;
+      } catch {
+        // Optional
+      }
+    }
+  }
 
   const clientToken = cookies[ClientSession.cookieName];
   if (clientToken) {
