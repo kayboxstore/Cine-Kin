@@ -57,3 +57,26 @@ export async function verifyResellerSession(
     return null;
   }
 }
+
+export type AdminSessionPayload = { kind: "admin" };
+
+export async function signAdminSession(): Promise<string> {
+  return new jose.SignJWT({ kind: "admin" })
+    .setProtectedHeader({ alg: JWT_ALG })
+    .setIssuedAt()
+    .setExpirationTime(EXPIRATION)
+    .sign(secret());
+}
+
+export async function verifyAdminSession(
+  token: string | undefined,
+): Promise<AdminSessionPayload | null> {
+  if (!token) return null;
+  try {
+    const { payload } = await jose.jwtVerify(token, secret(), { algorithms: [JWT_ALG] });
+    if (payload.kind !== "admin") return null;
+    return { kind: "admin" };
+  } catch {
+    return null;
+  }
+}

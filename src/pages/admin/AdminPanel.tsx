@@ -6,6 +6,7 @@ import SEO from "@/components/SEO";
 import { ToastProvider } from "@/components/Toast";
 import AuthLayout, { type AdminMenuItem } from "@/components/admin/AuthLayout";
 import { AuthLayoutSkeleton } from "@/components/admin/AuthLayoutSkeleton";
+import AdminLogin from "./AdminLogin";
 import OverviewSection from "./sections/OverviewSection";
 import OrdersSection from "./sections/OrdersSection";
 import ClientsSection from "./sections/ClientsSection";
@@ -22,12 +23,16 @@ const MENU: AdminMenuItem[] = [
 
 function AdminPanelInner() {
   const navigate = useNavigate();
-  const { user, isLoading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const { user, isLoading, logout } = useAuth({ redirectPath: "/admin" });
   const [section, setSection] = useState("overview");
 
-  // Loading, or redirecting an unauthenticated visitor to /login.
-  if (isLoading || !user) {
+  if (isLoading) {
     return <AuthLayoutSkeleton />;
+  }
+
+  // Not signed in → show the password-based admin login (no Kimi redirect).
+  if (!user) {
+    return <AdminLogin />;
   }
 
   if (user.role !== "admin") {
