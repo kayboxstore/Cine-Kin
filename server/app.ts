@@ -11,9 +11,9 @@ import { createOAuthCallbackHandler } from "./kimi/auth";
 import { Paths } from "@contracts/constants";
 
 // The Hono application, with no server binding. Two entry points import it:
-//   - api/boot.ts  → attaches @hono/node-server for a persistent Node host
+//   - server/boot.ts  → attaches @hono/node-server for a persistent Node host
 //     (npm start / the esbuild bundle).
-//   - api/index.ts → wraps it with hono/vercel as a single Vercel Serverless
+//   - server/index.ts → wraps it with hono/vercel as a single Vercel Serverless
 //     Function.
 const app = new Hono<{ Bindings: HttpBindings }>();
 
