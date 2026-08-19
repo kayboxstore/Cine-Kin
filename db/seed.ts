@@ -1,4 +1,4 @@
-// TODO: import { getDb } from "../api/queries/connection" and tables from
+// TODO: import { getDb } from "../server/queries/connection" and tables from
 // "./schema" when seed data is added.
 
 async function seed() {

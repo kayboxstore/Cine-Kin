@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { eq } from "drizzle-orm";
-import { getDb } from "../api/queries/connection";
+import { getDb } from "../server/queries/connection";
 import { appClients, type InsertAppClient } from "../db/schema";
-import { hashSecret } from "../api/lib/crypto";
-import { normalizeMac, computeExpiry, type LicenseType } from "../api/lib/app-license";
+import { hashSecret } from "../server/lib/crypto";
+import { normalizeMac, computeExpiry, type LicenseType } from "../server/lib/app-license";
 
 // Seed / update a test app-client so the client portal (/espace-client) can be
 // tested with a known MAC + PIN. Mirrors app.registerDevice (scrypt-hashed PIN).
