@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && esbuild server/boot.ts --platform=node --bundle --format=esm --outdir=dist --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
-    "vercel-build": "vite build && node scripts/build-vercel.mjs",
+    "vercel-build": "vite build && node scripts/db-push-if-configured.mjs && node scripts/build-vercel.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "NODE_ENV=production node dist/boot.js",
