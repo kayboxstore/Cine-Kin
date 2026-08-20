@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && esbuild server/boot.ts --platform=node --bundle --format=esm --outdir=dist --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
-    "vercel-build": "vite build && node scripts/db-push-if-configured.mjs && node scripts/build-vercel.mjs",
+    "vercel-build": "vite build && node scripts/db-migrate-if-configured.mjs && node scripts/build-vercel.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "NODE_ENV=production node dist/boot.js",
@@ -14,8 +14,11 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:adopt": "node scripts/adopt-migration-baseline.mjs",
+    "db:audit": "node scripts/audit-migrated-db.mjs",
+    "db:test-migrations": "node scripts/test-migrations.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

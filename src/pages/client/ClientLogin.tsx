@@ -4,12 +4,7 @@ import { trpc } from "@/providers/trpc";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-
-// "aabbcc..." → "AA:BB:CC:DD:EE:FF" (max 6 hex pairs).
-function formatMac(raw: string): string {
-  const hex = raw.replace(/[^0-9a-fA-F]/g, "").toUpperCase().slice(0, 12);
-  return hex.match(/.{1,2}/g)?.join(":") ?? "";
-}
+import { formatMacInput, isValidMac } from "@/lib/licenseFormat";
 
 export default function ClientLogin() {
   const { toast } = useToast();
@@ -21,10 +16,10 @@ export default function ClientLogin() {
     onSuccess: async () => {
       await utils.clientPortal.getDashboard.invalidate();
     },
-    onError: (e) => toast(e.message || "Connexion impossible", "error"),
+    onError: e => toast(e.message || "Connexion impossible", "error"),
   });
 
-  const macComplete = mac.replace(/[^0-9a-fA-F]/g, "").length === 12;
+  const macComplete = isValidMac(mac);
   const pinComplete = pin.length === 6;
 
   const submit = (e: React.FormEvent) => {
@@ -54,11 +49,13 @@ export default function ClientLogin() {
           className="space-y-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6"
         >
           <div className="space-y-2">
-            <Label htmlFor="c-mac" className="text-white/70">Adresse MAC</Label>
+            <Label htmlFor="c-mac" className="text-white/70">
+              Adresse MAC
+            </Label>
             <input
               id="c-mac"
               value={mac}
-              onChange={(e) => setMac(formatMac(e.target.value))}
+              onChange={e => setMac(formatMacInput(e.target.value))}
               placeholder="00:11:22:33:44:55"
               inputMode="text"
               autoCapitalize="characters"
@@ -67,11 +64,15 @@ export default function ClientLogin() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="c-pin" className="text-white/70">Code PIN (6 chiffres)</Label>
+            <Label htmlFor="c-pin" className="text-white/70">
+              Code PIN (6 chiffres)
+            </Label>
             <input
               id="c-pin"
               value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onChange={e =>
+                setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               inputMode="numeric"
               autoComplete="one-time-code"
               placeholder="••••••"

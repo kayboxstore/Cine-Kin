@@ -7,7 +7,9 @@ import { env } from "./env";
 // so a token minted for one system can never satisfy another.
 
 const JWT_ALG = "HS256";
-const EXPIRATION = "30d";
+const CLIENT_EXPIRATION = "30d";
+const RESELLER_EXPIRATION = "30d";
+const ADMIN_EXPIRATION = "7d";
 
 function secret(): Uint8Array {
   return new TextEncoder().encode(env.appSecret);
@@ -20,17 +22,20 @@ export async function signClientSession(appClientId: number): Promise<string> {
   return new jose.SignJWT({ kind: "client", appClientId })
     .setProtectedHeader({ alg: JWT_ALG })
     .setIssuedAt()
-    .setExpirationTime(EXPIRATION)
+    .setExpirationTime(CLIENT_EXPIRATION)
     .sign(secret());
 }
 
 export async function verifyClientSession(
-  token: string | undefined,
+  token: string | undefined
 ): Promise<ClientSessionPayload | null> {
   if (!token) return null;
   try {
-    const { payload } = await jose.jwtVerify(token, secret(), { algorithms: [JWT_ALG] });
-    if (payload.kind !== "client" || typeof payload.appClientId !== "number") return null;
+    const { payload } = await jose.jwtVerify(token, secret(), {
+      algorithms: [JWT_ALG],
+    });
+    if (payload.kind !== "client" || typeof payload.appClientId !== "number")
+      return null;
     return { kind: "client", appClientId: payload.appClientId };
   } catch {
     return null;
@@ -41,17 +46,20 @@ export async function signResellerSession(resellerId: number): Promise<string> {
   return new jose.SignJWT({ kind: "reseller", resellerId })
     .setProtectedHeader({ alg: JWT_ALG })
     .setIssuedAt()
-    .setExpirationTime(EXPIRATION)
+    .setExpirationTime(RESELLER_EXPIRATION)
     .sign(secret());
 }
 
 export async function verifyResellerSession(
-  token: string | undefined,
+  token: string | undefined
 ): Promise<ResellerSessionPayload | null> {
   if (!token) return null;
   try {
-    const { payload } = await jose.jwtVerify(token, secret(), { algorithms: [JWT_ALG] });
-    if (payload.kind !== "reseller" || typeof payload.resellerId !== "number") return null;
+    const { payload } = await jose.jwtVerify(token, secret(), {
+      algorithms: [JWT_ALG],
+    });
+    if (payload.kind !== "reseller" || typeof payload.resellerId !== "number")
+      return null;
     return { kind: "reseller", resellerId: payload.resellerId };
   } catch {
     return null;
@@ -64,16 +72,18 @@ export async function signAdminSession(): Promise<string> {
   return new jose.SignJWT({ kind: "admin" })
     .setProtectedHeader({ alg: JWT_ALG })
     .setIssuedAt()
-    .setExpirationTime(EXPIRATION)
+    .setExpirationTime(ADMIN_EXPIRATION)
     .sign(secret());
 }
 
 export async function verifyAdminSession(
-  token: string | undefined,
+  token: string | undefined
 ): Promise<AdminSessionPayload | null> {
   if (!token) return null;
   try {
-    const { payload } = await jose.jwtVerify(token, secret(), { algorithms: [JWT_ALG] });
+    const { payload } = await jose.jwtVerify(token, secret(), {
+      algorithms: [JWT_ALG],
+    });
     if (payload.kind !== "admin") return null;
     return { kind: "admin" };
   } catch {

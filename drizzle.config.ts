@@ -2,15 +2,19 @@ import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is required to run drizzle commands");
-}
 
 export default defineConfig({
   schema: "./db/schema.ts",
   out: "./db/migrations",
   dialect: "mysql",
-  dbCredentials: {
-    url: connectionString,
-  },
+  // Snapshot generation and consistency checks do not need a live database.
+  // `drizzle-kit migrate` still requires DATABASE_URL and will fail clearly
+  // when credentials are absent.
+  ...(connectionString
+    ? {
+        dbCredentials: {
+          url: connectionString,
+        },
+      }
+    : {}),
 });

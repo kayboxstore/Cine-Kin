@@ -16,7 +16,26 @@ export function creditCost(type: Exclude<LicenseType, null>): number {
 }
 
 export function normalizeMac(mac: string): string {
-  return mac.trim().toLowerCase();
+  const value = mac.trim();
+  const valid =
+    /^(?:[0-9a-f]{12}|[0-9a-f]{2}(?::[0-9a-f]{2}){5}|[0-9a-f]{2}(?:-[0-9a-f]{2}){5})$/i.test(
+      value
+    );
+  if (!valid) return "";
+  const compact = value.replace(/[:-]/g, "").toLowerCase();
+  return compact.match(/.{2}/g)?.join(":") ?? "";
+}
+
+export function isValidMac(mac: string): boolean {
+  return normalizeMac(mac) !== "";
+}
+
+export function formatMacInput(raw: string): string {
+  const hex = raw
+    .replace(/[^0-9a-f]/gi, "")
+    .toUpperCase()
+    .slice(0, 12);
+  return hex.match(/.{1,2}/g)?.join(":") ?? "";
 }
 
 export function computeStatus(client: {
@@ -25,23 +44,41 @@ export function computeStatus(client: {
 }): LicenseStatus {
   if (!client.licenseType) return "inactive";
   if (client.licenseType === "unlimited" || !client.expiresAt) return "active";
-  return new Date(client.expiresAt).getTime() > Date.now() ? "active" : "expired";
+  return new Date(client.expiresAt).getTime() > Date.now()
+    ? "active"
+    : "expired";
 }
 
-export function statusMeta(status: LicenseStatus): { label: string; className: string } {
+export function statusMeta(status: LicenseStatus): {
+  label: string;
+  className: string;
+} {
   switch (status) {
     case "active":
-      return { label: "Active", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" };
+      return {
+        label: "Active",
+        className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+      };
     case "expired":
-      return { label: "Expirée", className: "border-red-500/30 bg-red-500/10 text-red-400" };
+      return {
+        label: "Expirée",
+        className: "border-red-500/30 bg-red-500/10 text-red-400",
+      };
     default:
-      return { label: "Inactive", className: "border-white/15 bg-white/5 text-white/50" };
+      return {
+        label: "Inactive",
+        className: "border-white/15 bg-white/5 text-white/50",
+      };
   }
 }
 
 export function formatDate(d: Date | string | null | undefined): string {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function formatDateTime(d: Date | string | null | undefined): string {

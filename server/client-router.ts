@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { createRouter, publicQuery, clientQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { appClients, playlists } from "@db/schema";
@@ -12,13 +12,16 @@ import {
   decryptSecret,
 } from "./lib/crypto";
 import { signClientSession } from "./lib/app-sessions";
+import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
-  appendSessionCookie,
-  clearSessionCookie,
-} from "./lib/cookies";
-import { normalizeMac, licenseStatus } from "./lib/app-license";
+  macAddressSchema,
+  macLookupVariants,
+  licenseStatus,
+} from "./lib/app-license";
 
-const parentalPinSchema = z.string().regex(/^\d{4}$/, "Le code parental doit faire 4 chiffres.");
+const parentalPinSchema = z
+  .string()
+  .regex(/^\d{4}$/, "Le code parental doit faire 4 chiffres.");
 
 const addPlaylistSchema = z
   .object({
@@ -33,7 +36,11 @@ const addPlaylistSchema = z
   .superRefine((val, ctx) => {
     if (val.format === "m3u") {
       if (!val.m3uUrl) {
-        ctx.addIssue({ code: "custom", path: ["m3uUrl"], message: "URL M3U requise." });
+        ctx.addIssue({
+          code: "custom",
+          path: ["m3uUrl"],
+          message: "URL M3U requise.",
+        });
       }
     } else {
       if (!val.xtreamServerUrl || !val.xtreamUsername || !val.xtreamPassword) {
@@ -49,14 +56,25 @@ const addPlaylistSchema = z
 export const clientRouter = createRouter({
   // Client portal login (MAC + PIN) → sets the client session cookie.
   login: publicQuery
-    .input(z.object({ mac: z.string().trim().min(3).max(64), pin: z.string().min(4).max(64) }))
+    .input(
+      z.object({
+        mac: macAddressSchema,
+        pin: z
+          .string()
+          .regex(/^\d{6}$/, "Le PIN doit contenir exactement 6 chiffres."),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      const mac = normalizeMac(input.mac);
+      const mac = input.mac;
       const client = (
-        await getDb().select().from(appClients).where(eq(appClients.mac, mac)).limit(1)
+        await getDb()
+          .select()
+          .from(appClients)
+          .where(inArray(appClients.mac, macLookupVariants(mac)))
+          .limit(1)
       ).at(0);
 
-      if (!client || !verifySecret(input.pin, client.pinHash)) {
+      if (!client?.claimedAt || !verifySecret(input.pin, client.pinHash)) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "MAC ou PIN incorrect.",
@@ -69,13 +87,17 @@ export const clientRouter = createRouter({
         ctx.req.headers,
         ClientSession.cookieName,
         token,
-        ClientSession.maxAgeMs,
+        ClientSession.maxAgeMs
       );
       return { success: true };
     }),
 
   logout: clientQuery.mutation(({ ctx }) => {
-    clearSessionCookie(ctx.resHeaders, ctx.req.headers, ClientSession.cookieName);
+    clearSessionCookie(
+      ctx.resHeaders,
+      ctx.req.headers,
+      ClientSession.cookieName
+    );
     return { success: true };
   }),
 
@@ -108,7 +130,7 @@ export const clientRouter = createRouter({
 
     // Decrypt server URL + username for the owner's own view; the Xtream
     // password stays write-only (never returned).
-    return rows.map((p) => ({
+    return rows.map(p => ({
       id: p.id,
       name: p.name,
       format: p.format,
@@ -121,31 +143,33 @@ export const clientRouter = createRouter({
     }));
   }),
 
-  addPlaylist: clientQuery.input(addPlaylistSchema).mutation(async ({ ctx, input }) => {
-    const result = await getDb()
-      .insert(playlists)
-      .values({
-        appClientId: ctx.appClient.id,
-        name: input.name,
-        format: input.format,
-        source: input.source,
-        m3uUrl: input.format === "m3u" ? input.m3uUrl ?? null : null,
-        xtreamServerUrl:
-          input.format === "xtream" && input.xtreamServerUrl
-            ? encryptSecret(input.xtreamServerUrl)
-            : null,
-        xtreamUsername:
-          input.format === "xtream" && input.xtreamUsername
-            ? encryptSecret(input.xtreamUsername)
-            : null,
-        xtreamPassword:
-          input.format === "xtream" && input.xtreamPassword
-            ? encryptSecret(input.xtreamPassword)
-            : null,
-      })
-      .$returningId();
-    return { id: result[0].id };
-  }),
+  addPlaylist: clientQuery
+    .input(addPlaylistSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await getDb()
+        .insert(playlists)
+        .values({
+          appClientId: ctx.appClient.id,
+          name: input.name,
+          format: input.format,
+          source: input.source,
+          m3uUrl: input.format === "m3u" ? (input.m3uUrl ?? null) : null,
+          xtreamServerUrl:
+            input.format === "xtream" && input.xtreamServerUrl
+              ? encryptSecret(input.xtreamServerUrl)
+              : null,
+          xtreamUsername:
+            input.format === "xtream" && input.xtreamUsername
+              ? encryptSecret(input.xtreamUsername)
+              : null,
+          xtreamPassword:
+            input.format === "xtream" && input.xtreamPassword
+              ? encryptSecret(input.xtreamPassword)
+              : null,
+        })
+        .$returningId();
+      return { id: result[0].id };
+    }),
 
   // Deletion is never blocked server-side — even for the bundled Ciné-Kin
   // playlist. The frontend shows a more explicit confirmation for that case.
@@ -154,7 +178,12 @@ export const clientRouter = createRouter({
     .mutation(async ({ ctx, input }) => {
       await getDb()
         .delete(playlists)
-        .where(and(eq(playlists.id, input.id), eq(playlists.appClientId, ctx.appClient.id)));
+        .where(
+          and(
+            eq(playlists.id, input.id),
+            eq(playlists.appClientId, ctx.appClient.id)
+          )
+        );
       return { success: true };
     }),
 
@@ -168,7 +197,7 @@ export const clientRouter = createRouter({
         // Empty when setting the code for the first time.
         currentCode: z.string().optional(),
         newCode: parentalPinSchema,
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const current = ctx.appClient.parentalControlPinHash;

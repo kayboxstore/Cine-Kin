@@ -36,7 +36,12 @@ const adminUser: User = {
   lastSignInAt: new Date(),
 };
 
-const normalUser: User = { ...adminUser, id: 2, unionId: "union-user", role: "user" };
+const normalUser: User = {
+  ...adminUser,
+  id: 2,
+  unionId: "union-user",
+  role: "user",
+};
 
 const sampleReseller: Reseller = {
   id: 10,
@@ -52,6 +57,9 @@ const sampleAppClient: AppClient = {
   id: 100,
   mac: "00:11:22:33:44:55",
   pinHash: "scrypt$deadbeef$cafe",
+  claimCodeHash: null,
+  claimCodeExpiresAt: null,
+  claimedAt: new Date(),
   name: "Device",
   email: "device@client.cine-kin.tv",
   licenseType: "12_months",
@@ -65,33 +73,61 @@ const sampleAppClient: AppClient = {
 
 // --- Procedure descriptors (valid inputs; auth rejects before validation). ---
 
-const RESELLER_PROCEDURES: { name: string; call: (c: Caller) => Promise<unknown> }[] = [
-  { name: "me", call: (c) => c.reseller.me() },
+const RESELLER_PROCEDURES: {
+  name: string;
+  call: (c: Caller) => Promise<unknown>;
+}[] = [
+  { name: "me", call: c => c.reseller.me() },
   {
     name: "activate",
-    call: (c) => c.reseller.activate({ mac: "00:11:22:33:44:55", licenseType: "12_months" }),
+    call: c =>
+      c.reseller.activate({
+        mac: "00:11:22:33:44:55",
+        licenseType: "12_months",
+      }),
   },
-  { name: "myActivations", call: (c) => c.reseller.myActivations() },
+  {
+    name: "issueClaimCode",
+    call: c => c.reseller.issueClaimCode({ appClientId: 1 }),
+  },
+  { name: "myActivations", call: c => c.reseller.myActivations() },
+  { name: "creditHistory", call: c => c.reseller.creditHistory() },
   {
     name: "changePassword",
-    call: (c) => c.reseller.changePassword({ currentPassword: "old", newPassword: "newpass12" }),
+    call: c =>
+      c.reseller.changePassword({
+        currentPassword: "old",
+        newPassword: "newpass12",
+      }),
   },
 ];
 
-const ADMIN_APP_PROCEDURES: { name: string; call: (c: Caller) => Promise<unknown> }[] = [
-  { name: "appClientList", call: (c) => c.admin.appClientList() },
+const ADMIN_APP_PROCEDURES: {
+  name: string;
+  call: (c: Caller) => Promise<unknown>;
+}[] = [
+  { name: "appClientList", call: c => c.admin.appClientList() },
   {
     name: "appClientActivate",
-    call: (c) => c.admin.appClientActivate({ mac: "00:11:22:33:44:55", licenseType: "12_months" }),
+    call: c =>
+      c.admin.appClientActivate({
+        mac: "00:11:22:33:44:55",
+        licenseType: "12_months",
+      }),
   },
   {
     name: "appClientRenew",
-    call: (c) => c.admin.appClientRenew({ appClientId: 1, licenseType: "unlimited" }),
+    call: c =>
+      c.admin.appClientRenew({ appClientId: 1, licenseType: "unlimited" }),
   },
-  { name: "resellerList", call: (c) => c.admin.resellerList() },
+  {
+    name: "appClientIssueClaimCode",
+    call: c => c.admin.appClientIssueClaimCode({ appClientId: 1 }),
+  },
+  { name: "resellerList", call: c => c.admin.resellerList() },
   {
     name: "resellerCreate",
-    call: (c) =>
+    call: c =>
       c.admin.resellerCreate({
         name: "R",
         username: "reseller9",
@@ -101,20 +137,32 @@ const ADMIN_APP_PROCEDURES: { name: string; call: (c: Caller) => Promise<unknown
   },
   {
     name: "resellerAddCredits",
-    call: (c) => c.admin.resellerAddCredits({ resellerId: 1, amount: 10 }),
+    call: c =>
+      c.admin.resellerAddCredits({
+        resellerId: 1,
+        amount: 10,
+        reason: "Recharge test",
+      }),
   },
   {
     name: "resellerActivationHistory",
-    call: (c) => c.admin.resellerActivationHistory({ resellerId: 1 }),
+    call: c => c.admin.resellerActivationHistory({ resellerId: 1 }),
+  },
+  {
+    name: "resellerCreditHistory",
+    call: c => c.admin.resellerCreditHistory({ resellerId: 1, limit: 20 }),
   },
 ];
 
-const CLIENT_PROCEDURES: { name: string; call: (c: Caller) => Promise<unknown> }[] = [
-  { name: "getDashboard", call: (c) => c.clientPortal.getDashboard() },
-  { name: "listPlaylists", call: (c) => c.clientPortal.listPlaylists() },
+const CLIENT_PROCEDURES: {
+  name: string;
+  call: (c: Caller) => Promise<unknown>;
+}[] = [
+  { name: "getDashboard", call: c => c.clientPortal.getDashboard() },
+  { name: "listPlaylists", call: c => c.clientPortal.listPlaylists() },
   {
     name: "addPlaylist",
-    call: (c) =>
+    call: c =>
       c.clientPortal.addPlaylist({
         name: "P",
         format: "m3u",
@@ -122,11 +170,17 @@ const CLIENT_PROCEDURES: { name: string; call: (c: Caller) => Promise<unknown> }
         m3uUrl: "https://example.tv/p.m3u",
       }),
   },
-  { name: "deletePlaylist", call: (c) => c.clientPortal.deletePlaylist({ id: 1 }) },
-  { name: "getParentalControl", call: (c) => c.clientPortal.getParentalControl() },
+  {
+    name: "deletePlaylist",
+    call: c => c.clientPortal.deletePlaylist({ id: 1 }),
+  },
+  {
+    name: "getParentalControl",
+    call: c => c.clientPortal.getParentalControl(),
+  },
   {
     name: "updateParentalControl",
-    call: (c) => c.clientPortal.updateParentalControl({ newCode: "1234" }),
+    call: c => c.clientPortal.updateParentalControl({ newCode: "1234" }),
   },
 ];
 
@@ -150,7 +204,11 @@ describe("reseller router — a valid reseller session passes the guard", () => 
   it("me resolves and never leaks the password hash", async () => {
     const caller = createCaller(makeCtx({ reseller: sampleReseller }));
     const profile = await caller.reseller.me();
-    expect(profile).toMatchObject({ id: 10, username: "reseller1", credits: 42 });
+    expect(profile).toMatchObject({
+      id: 10,
+      username: "reseller1",
+      credits: 42,
+    });
     expect(profile).not.toHaveProperty("passwordHash");
   });
 });
@@ -197,6 +255,8 @@ describe("client router — a reseller session cannot call client procedures", (
 describe("client router — a valid client session passes the guard", () => {
   it("getParentalControl resolves from the session context", async () => {
     const caller = createCaller(makeCtx({ appClient: sampleAppClient }));
-    await expect(caller.clientPortal.getParentalControl()).resolves.toEqual({ enabled: false });
+    await expect(caller.clientPortal.getParentalControl()).resolves.toEqual({
+      enabled: false,
+    });
   });
 });

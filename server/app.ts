@@ -9,6 +9,12 @@ import { appRouter } from "./router";
 import { createContext } from "./context";
 import { createOAuthCallbackHandler } from "./kimi/auth";
 import { Paths } from "@contracts/constants";
+import {
+  hasAllowedOrigin,
+  isSensitiveTrpcBatch,
+  isSensitiveTrpcRequest,
+  sensitiveProcedureKey,
+} from "./lib/trpc-security";
 
 // The Hono application, with no server binding. Two entry points import it:
 //   - server/boot.ts  → attaches @hono/node-server for a persistent Node host
@@ -48,7 +54,11 @@ app.use(
       baseUri: ["'self'"],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://www.googletagmanager.com",
+      ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
@@ -60,10 +70,54 @@ app.use(
         "https://*.analytics.google.com",
       ],
     },
-  }),
+  })
 );
 
-app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+// tRPC carries JSON only; there is no upload endpoint. Keeping this small
+// limits memory pressure before input validation.
+app.use(bodyLimit({ maxSize: 1024 * 1024 }));
+
+app.use("/api/trpc/*", async (c, next) => {
+  if (c.req.method !== "GET" && c.req.method !== "POST") return next();
+  if (!hasAllowedOrigin(c.req.raw.headers, c.req.url)) {
+    return c.json({ error: "Origine de requête non autorisée." }, 403);
+  }
+  return next();
+});
+
+// A single tRPC HTTP batch used to execute many password guesses while the
+// HTTP rate limiter counted only one request. Sensitive public procedures must
+// therefore use the non-batched transport.
+app.use("/api/trpc/*", async (c, next) => {
+  if (isSensitiveTrpcBatch(c.req.url)) {
+    return c.json(
+      {
+        error:
+          "Le batching tRPC est interdit pour les opérations d'authentification.",
+      },
+      400
+    );
+  }
+  return next();
+});
+
+// Dedicated protection for public authentication/device procedures. It is
+// deliberately stricter than the general API quota. The bundled store is
+// process-local; a shared store will replace it in the infrastructure round so
+// several serverless instances enforce one global counter.
+app.use(
+  "/api/trpc/*",
+  rateLimiter<{ Bindings: HttpBindings }>({
+    windowMs: 15 * 60_000,
+    limit: 10,
+    standardHeaders: "draft-6",
+    requestPropertyName: "authRateLimit",
+    requestStorePropertyName: "authRateLimitStore",
+    skip: c => !isSensitiveTrpcRequest(c.req.url),
+    keyGenerator: c => `${getClientIp(c)}:${sensitiveProcedureKey(c.req.url)}`,
+    message: { error: "Trop de tentatives. Réessayez dans 15 minutes." },
+  })
+);
 
 // Rate limiting on the tRPC API via hono-rate-limiter. Default in-memory
 // store (per process / per serverless instance); a shared store (e.g. Redis)
@@ -75,11 +129,11 @@ app.use(
     limit: 100, // max requests per IP per window
     standardHeaders: "draft-6",
     keyGenerator: getClientIp,
-  }),
+  })
 );
 
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
-app.use("/api/trpc/*", async (c) => {
+app.use("/api/trpc/*", async c => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: c.req.raw,
@@ -87,6 +141,6 @@ app.use("/api/trpc/*", async (c) => {
     createContext,
   });
 });
-app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
+app.all("/api/*", c => c.json({ error: "Not Found" }, 404));
 
 export default app;
