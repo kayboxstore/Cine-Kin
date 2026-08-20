@@ -26,39 +26,42 @@ npm ci
 
 Copier `.env.example` vers `.env` et renseigner les valeurs :
 
-| Variable | Description |
-|---|---|
-| `APP_ID` | Identifiant d'application OAuth |
-| `APP_SECRET` | Secret d'application (sert aussi à signer le JWT de session) |
-| `DATABASE_URL` | Chaîne MySQL `mysql://user:pass@host:port/db` |
-| `VITE_KIMI_AUTH_URL` | URL du serveur OAuth Kimi (exposée au navigateur) |
-| `VITE_APP_ID` | Identifiant OAuth (exposé au navigateur) |
-| `KIMI_AUTH_URL` | URL du serveur OAuth Kimi (backend) |
-| `KIMI_OPEN_URL` | URL de la plateforme Kimi Open |
-| `OWNER_UNION_ID` | Union ID du créateur ; ce compte reçoit le rôle `admin` à la 1ʳᵉ connexion |
+| Variable             | Description                                                                |
+| -------------------- | -------------------------------------------------------------------------- |
+| `APP_ID`             | Identifiant d'application OAuth                                            |
+| `APP_SECRET`         | Secret d'application (sert aussi à signer le JWT de session)               |
+| `DATABASE_URL`       | Chaîne MySQL `mysql://user:pass@host:port/db`                              |
+| `VITE_KIMI_AUTH_URL` | URL du serveur OAuth Kimi (exposée au navigateur)                          |
+| `VITE_APP_ID`        | Identifiant OAuth (exposé au navigateur)                                   |
+| `KIMI_AUTH_URL`      | URL du serveur OAuth Kimi (backend)                                        |
+| `KIMI_OPEN_URL`      | URL de la plateforme Kimi Open                                             |
+| `OWNER_UNION_ID`     | Union ID du créateur ; ce compte reçoit le rôle `admin` à la 1ʳᵉ connexion |
 
 > `.env` est ignoré par git. Ne jamais committer de secrets.
 
 ## Scripts
 
-| Commande | Rôle |
-|---|---|
-| `npm run dev` | Serveur de dev (Vite + API Hono) sur le port 3000 |
-| `npm run build` | Build frontend (`vite`) + bundle serveur (`esbuild`) dans `dist/` |
-| `npm start` | Démarre le serveur de production (`NODE_ENV=production`) |
-| `npm run check` | Vérification de types (`tsc -b`) |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier |
-| `npm test` | Tests Vitest |
-| `npm run db:generate` | Génère les migrations Drizzle |
-| `npm run db:migrate` | Applique les migrations |
-| `npm run db:push` | Pousse le schéma vers la base |
+| Commande                     | Rôle                                                              |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `npm run dev`                | Serveur de dev (Vite + API Hono) sur le port 3000                 |
+| `npm run build`              | Build frontend (`vite`) + bundle serveur (`esbuild`) dans `dist/` |
+| `npm start`                  | Démarre le serveur de production (`NODE_ENV=production`)          |
+| `npm run check`              | Vérification de types (`tsc -b`)                                  |
+| `npm run lint`               | ESLint                                                            |
+| `npm run format`             | Prettier                                                          |
+| `npm test`                   | Tests Vitest                                                      |
+| `npm run db:generate`        | Génère les migrations Drizzle                                     |
+| `npm run db:check`           | Vérifie la cohérence de l’historique des migrations               |
+| `npm run db:migrate`         | Applique les migrations                                           |
+| `npm run db:adopt`           | Contrôle/adopte une ancienne base non suivie par Drizzle          |
+| `npm run db:audit`           | Audite le schéma et le registre de crédits après migration        |
+| `npm run db:test-migrations` | Test destructif réservé à la base MySQL locale de CI              |
 
 ## Structure
 
 ```
-api/            Backend Hono + tRPC (routers, auth OAuth Kimi, accès DB)
-db/             Schéma Drizzle, relations, seed
+server/         Backend Hono + tRPC (routers, auth OAuth Kimi, accès DB)
+db/             Schéma, relations et migrations Drizzle versionnées
 contracts/      Constantes/types partagés front ↔ back
 src/            Application React
   components/   Composants UI (dont ui/ = shadcn)
@@ -72,6 +75,15 @@ public/         Assets statiques, sitemap.xml, robots.txt, service worker
 
 Le build produit `dist/public` (frontend statique) et `dist/boot.js` (serveur).
 En production, le serveur Hono sert les fichiers statiques et fait le fallback
-SPA vers `index.html`. Les migrations de base doivent être appliquées avant le
-démarrage. L'intégration continue (`.github/workflows/ci.yml`) exécute
-lint + typecheck + tests + build sur chaque pull request.
+SPA vers `index.html`. Les migrations versionnées sont appliquées pendant le
+build Vercel quand `DATABASE_URL` est configurée. Le build refuse volontairement
+une ancienne base sans historique afin d'empêcher une migration implicite.
+
+Pour reprendre une base créée auparavant avec `db:push`, suivre obligatoirement
+[`docs/database-migration-runbook.md`](docs/database-migration-runbook.md) sur
+une copie de staging avant la production. Ne plus utiliser `drizzle-kit push`
+sur une base partagée ou de production.
+
+L'intégration continue (`.github/workflows/ci.yml`) exécute lint, typecheck,
+tests et build, puis valide sur MySQL 8 une installation neuve et une mise à
+niveau depuis le schéma historique.

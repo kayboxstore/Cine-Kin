@@ -12,7 +12,9 @@ export function getSessionCookieOptions(headers: Headers): CookieOptions {
   return {
     httpOnly: true,
     path: "/",
-    sameSite: localhost ? "Lax" : "None",
+    // Frontend and API are same-origin. Lax blocks cross-site subrequests while
+    // still supporting top-level OAuth redirects back to the application.
+    sameSite: "Lax",
     secure: !localhost,
   };
 }
@@ -24,7 +26,7 @@ export function appendSessionCookie(
   reqHeaders: Headers,
   name: string,
   value: string,
-  maxAgeMs: number,
+  maxAgeMs: number
 ): void {
   const opts = getSessionCookieOptions(reqHeaders);
   resHeaders.append(
@@ -32,17 +34,17 @@ export function appendSessionCookie(
     cookie.serialize(name, value, {
       httpOnly: opts.httpOnly,
       path: opts.path,
-      sameSite: opts.sameSite?.toLowerCase() as "lax" | "none",
+      sameSite: opts.sameSite?.toLowerCase() as "lax",
       secure: opts.secure,
       maxAge: Math.floor(maxAgeMs / 1000),
-    }),
+    })
   );
 }
 
 export function clearSessionCookie(
   resHeaders: Headers,
   reqHeaders: Headers,
-  name: string,
+  name: string
 ): void {
   const opts = getSessionCookieOptions(reqHeaders);
   resHeaders.append(
@@ -50,9 +52,9 @@ export function clearSessionCookie(
     cookie.serialize(name, "", {
       httpOnly: opts.httpOnly,
       path: opts.path,
-      sameSite: opts.sameSite?.toLowerCase() as "lax" | "none",
+      sameSite: opts.sameSite?.toLowerCase() as "lax",
       secure: opts.secure,
       maxAge: 0,
-    }),
+    })
   );
 }

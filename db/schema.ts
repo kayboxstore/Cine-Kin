@@ -7,6 +7,8 @@ import {
   timestamp,
   int,
   bigint,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
@@ -35,10 +37,14 @@ export const orders = mysqlTable("orders", {
   customerPhone: varchar("customer_phone", { length: 50 }).notNull(),
   planId: varchar("plan_id", { length: 50 }).notNull(),
   planName: varchar("plan_name", { length: 255 }).notNull(),
-  planType: mysqlEnum("plan_type", ["client", "reseller"]).default("client").notNull(),
+  planType: mysqlEnum("plan_type", ["client", "reseller"])
+    .default("client")
+    .notNull(),
   price: varchar("price", { length: 50 }).notNull(),
   device: varchar("device", { length: 100 }),
-  status: mysqlEnum("status", ["pending", "active", "expired", "cancelled"]).default("pending").notNull(),
+  status: mysqlEnum("status", ["pending", "active", "expired", "cancelled"])
+    .default("pending")
+    .notNull(),
   activationCode: varchar("activation_code", { length: 50 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -56,7 +62,9 @@ export const customers = mysqlTable("customers", {
   device: varchar("device", { length: 100 }),
   planId: varchar("plan_id", { length: 50 }).notNull(),
   planName: varchar("plan_name", { length: 255 }).notNull(),
-  status: mysqlEnum("status", ["active", "expired", "suspended"]).default("active").notNull(),
+  status: mysqlEnum("status", ["active", "expired", "suspended"])
+    .default("active")
+    .notNull(),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -85,6 +93,13 @@ export const appClients = mysqlTable("app_clients", {
   // Connection PIN, hashed (scrypt). Nullable: an admin/reseller may activate a
   // MAC before the device has ever registered and claimed its PIN.
   pinHash: varchar("pin_hash", { length: 255 }),
+  // One-time proof issued by an admin/reseller for a pre-activated device.
+  // Only its scrypt hash is stored; the plaintext is displayed once.
+  claimCodeHash: varchar("claim_code_hash", { length: 255 }),
+  claimCodeExpiresAt: timestamp("claim_code_expires_at"),
+  // Set only after successful one-time-code verification. A device that merely
+  // self-registered a MAC is not trusted until this timestamp exists.
+  claimedAt: timestamp("claimed_at"),
   name: varchar("name", { length: 255 }),
   // Unique when set; MySQL allows multiple NULLs so unregistered devices are fine.
   email: varchar("email", { length: 320 }).unique(),
@@ -120,16 +135,66 @@ export const resellers = mysqlTable("resellers", {
 export type Reseller = typeof resellers.$inferSelect;
 export type InsertReseller = typeof resellers.$inferInsert;
 
+// Immutable financial ledger. The reseller.credits column is the current
+// balance; every mutation of that balance must append exactly one row here in
+// the same database transaction.
+export const resellerCreditLedger = mysqlTable(
+  "reseller_credit_ledger",
+  {
+    id: serial("id").primaryKey(),
+    resellerId: bigint("reseller_id", {
+      mode: "number",
+      unsigned: true,
+    }).notNull(),
+    delta: int("delta").notNull(),
+    balanceAfter: int("balance_after").notNull(),
+    entryType: mysqlEnum("entry_type", [
+      "initial_grant",
+      "admin_grant",
+      "activation",
+      "refund",
+      "adjustment",
+    ]).notNull(),
+    activationId: bigint("activation_id", { mode: "number", unsigned: true }),
+    actorType: mysqlEnum("actor_type", [
+      "admin",
+      "reseller",
+      "system",
+    ]).notNull(),
+    actorUserId: bigint("actor_user_id", { mode: "number", unsigned: true }),
+    reason: varchar("reason", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  table => [
+    index("credit_ledger_reseller_created_idx").on(
+      table.resellerId,
+      table.createdAt
+    ),
+    uniqueIndex("credit_ledger_activation_unique").on(table.activationId),
+  ]
+);
+
+export type ResellerCreditLedgerEntry =
+  typeof resellerCreditLedger.$inferSelect;
+export type InsertResellerCreditLedgerEntry =
+  typeof resellerCreditLedger.$inferInsert;
+
 // Audit log — one row per activation/renewal.
 export const activations = mysqlTable("activations", {
   id: serial("id").primaryKey(),
-  appClientId: bigint("app_client_id", { mode: "number", unsigned: true }).notNull(),
+  appClientId: bigint("app_client_id", {
+    mode: "number",
+    unsigned: true,
+  }).notNull(),
   // Denormalised MAC so history survives even if the client row changes.
   mac: varchar("mac", { length: 64 }).notNull(),
   licenseType: mysqlEnum("license_type", ["12_months", "unlimited"]).notNull(),
   // 0 when performed by an admin (free).
   creditsCharged: int("credits_charged").default(0).notNull(),
-  activatedByType: mysqlEnum("activated_by_type", ["admin", "reseller"]).notNull(),
+  activatedByType: mysqlEnum("activated_by_type", [
+    "admin",
+    "reseller",
+  ]).notNull(),
   activatedByResellerId: bigint("activated_by_reseller_id", {
     mode: "number",
     unsigned: true,
@@ -143,7 +208,10 @@ export type InsertActivation = typeof activations.$inferInsert;
 // Playlists attached to a client.
 export const playlists = mysqlTable("playlists", {
   id: serial("id").primaryKey(),
-  appClientId: bigint("app_client_id", { mode: "number", unsigned: true }).notNull(),
+  appClientId: bigint("app_client_id", {
+    mode: "number",
+    unsigned: true,
+  }).notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   format: mysqlEnum("format", ["m3u", "xtream"]).notNull(),
   source: mysqlEnum("source", ["cinekin", "external"]).notNull(),
