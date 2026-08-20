@@ -1,9 +1,13 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import * as cookie from "cookie";
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import type { User, AppClient, Reseller } from "@db/schema";
 import { appClients, resellers } from "@db/schema";
-import { ClientSession, ResellerSession, AdminSession } from "@contracts/constants";
+import {
+  ClientSession,
+  ResellerSession,
+  AdminSession,
+} from "@contracts/constants";
 import { authenticateRequest } from "./kimi/auth";
 import {
   verifyClientSession,
@@ -35,11 +39,13 @@ export type TrpcContext = {
   reseller?: Reseller;
 };
 
-async function loadAppClient(appClientId: number): Promise<AppClient | undefined> {
+async function loadAppClient(
+  appClientId: number
+): Promise<AppClient | undefined> {
   const rows = await getDb()
     .select()
     .from(appClients)
-    .where(eq(appClients.id, appClientId))
+    .where(and(eq(appClients.id, appClientId), isNotNull(appClients.claimedAt)))
     .limit(1);
   return rows.at(0);
 }
@@ -54,7 +60,7 @@ async function loadReseller(resellerId: number): Promise<Reseller | undefined> {
 }
 
 export async function createContext(
-  opts: FetchCreateContextFnOptions,
+  opts: FetchCreateContextFnOptions
 ): Promise<TrpcContext> {
   const ctx: TrpcContext = { req: opts.req, resHeaders: opts.resHeaders };
 

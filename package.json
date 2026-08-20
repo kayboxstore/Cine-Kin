@@ -14,8 +14,11 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:adopt": "node scripts/adopt-migration-baseline.mjs",
+    "db:audit": "node scripts/audit-migrated-db.mjs",
+    "db:test-migrations": "node scripts/test-migrations.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -1,5 +1,11 @@
 import { relations } from "drizzle-orm";
-import { appClients, resellers, activations, playlists } from "./schema";
+import {
+  appClients,
+  resellers,
+  activations,
+  playlists,
+  resellerCreditLedger,
+} from "./schema";
 
 // PlanetScale has no DB-level foreign keys; these relations power Drizzle's
 // query-time joins (db.query.*.findMany({ with: ... })).
@@ -16,6 +22,7 @@ export const appClientsRelations = relations(appClients, ({ one, many }) => ({
 export const resellersRelations = relations(resellers, ({ many }) => ({
   activations: many(activations),
   appClients: many(appClients),
+  creditLedger: many(resellerCreditLedger),
 }));
 
 export const activationsRelations = relations(activations, ({ one }) => ({
@@ -35,3 +42,17 @@ export const playlistsRelations = relations(playlists, ({ one }) => ({
     references: [appClients.id],
   }),
 }));
+
+export const resellerCreditLedgerRelations = relations(
+  resellerCreditLedger,
+  ({ one }) => ({
+    reseller: one(resellers, {
+      fields: [resellerCreditLedger.resellerId],
+      references: [resellers.id],
+    }),
+    activation: one(activations, {
+      fields: [resellerCreditLedger.activationId],
+      references: [activations.id],
+    }),
+  })
+);
