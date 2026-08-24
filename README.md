@@ -5,7 +5,7 @@ dashboard d'administration (commandes & clients) protégé par authentification.
 
 ## Stack technique
 
-- **Frontend** : React 19 + TypeScript, Vite 7, React Router 7 (`BrowserRouter`), Tailwind CSS 3, Framer Motion, GSAP, Swiper
+- **Frontend** : React 19 + TypeScript, Vite 7, React Router 7 (`BrowserRouter`), Tailwind CSS 3, Framer Motion, Swiper
 - **Backend** : Hono 4 (Node) + tRPC 11 + Zod 4
 - **Base de données** : MySQL via Drizzle ORM (mode PlanetScale)
 - **Auth** : OAuth2 « Kimi » avec `state` lié au navigateur et PKCE S256, plus connexion administrateur par mot de passe
@@ -73,6 +73,9 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 | `npm run db:adopt`           | Contrôle/adopte une ancienne base non suivie par Drizzle          |
 | `npm run db:audit`           | Audite le schéma et le registre de crédits après migration        |
 | `npm run db:test-migrations` | Test destructif réservé à la base MySQL locale de CI              |
+| `npm run staging:preflight`  | Valide les cibles et garde-fous de la répétition de staging       |
+| `npm run staging:rehearse`   | Sauvegarde, restaure, migre et audite une copie isolée            |
+| `npm run staging:smoke`      | Vérifie les parcours HTTP publics du déploiement de staging       |
 
 ## Structure
 
@@ -83,7 +86,7 @@ contracts/      Constantes/types partagés front ↔ back
 src/            Application React
   components/   Composants UI (dont ui/ = shadcn)
   pages/        Pages routées
-  hooks/        Hooks (auth, analytics…)
+  hooks/        Hooks applicatifs (auth, mobile, notifications…)
   providers/    Provider tRPC/React Query
 public/         Assets statiques, sitemap.xml, robots.txt, service worker
 ```
@@ -101,6 +104,10 @@ Pour reprendre une base créée auparavant avec `db:push`, suivre obligatoiremen
 [`docs/database-migration-runbook.md`](docs/database-migration-runbook.md) sur
 une copie de staging avant la production. Ne plus utiliser `drizzle-kit push`
 sur une base partagée ou de production.
+
+La répétition complète — sauvegarde chiffrée, restauration dans une base vide,
+migration, audit et smoke tests — est décrite dans
+[`docs/staging-rehearsal-runbook.md`](docs/staging-rehearsal-runbook.md).
 
 L'intégration continue (`.github/workflows/ci.yml`) exécute lint, typecheck,
 tests et build, puis valide sur MySQL 8 une installation neuve et une mise à

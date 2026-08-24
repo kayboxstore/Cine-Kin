@@ -3,6 +3,9 @@
 Cette procédure accompagne la vague 4B. Elle ne remplace pas la procédure de
 migration détaillée dans `database-migration-runbook.md`.
 
+La sauvegarde, la restauration isolée et les contrôles de staging sont décrits
+pas à pas dans `staging-rehearsal-runbook.md`.
+
 ## 1. Préparer les secrets
 
 Générer séparément `SESSION_SECRET` et `ENCRYPTION_KEY`. Ne jamais réutiliser
@@ -43,7 +46,7 @@ Les clés de compteur sont hachées avant stockage dans
 
 ## 4. Déployer sans migration implicite
 
-1. Sauvegarder la base et vérifier la restauration sur une base isolée.
+1. Exécuter la répétition complète de `staging-rehearsal-runbook.md`.
 2. Exécuter `npm ci`, puis la CI complète.
 3. Sur staging : `npm run db:deploy`.
 4. Vérifier `/api/health/live` puis `/api/health/ready`.

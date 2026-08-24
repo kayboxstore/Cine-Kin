@@ -4,6 +4,9 @@ Cette procédure concerne uniquement une base Ciné-Kin créée avant l'ajout de
 migrations Drizzle versionnées. Elle doit d'abord être exécutée sur une copie de
 staging restaurée depuis une sauvegarde récente de la production.
 
+Pour créer et contrôler cette copie sans dump SQL en clair sur disque, suivre
+d'abord la [procédure de répétition staging](staging-rehearsal-runbook.md).
+
 ## Ce que fait la migration
 
 - elle ajoute les colonnes de réclamation d'appareil à `app_clients` ;
@@ -109,9 +112,10 @@ pas le déploiement : l'API les recherche encore dans leurs trois formats.
 7. Revérifier les parcours fonctionnels essentiels.
 8. Organiser la distribution des codes de réclamation aux anciens appareils.
 
-Une base vide ou déjà suivie par Drizzle est migrée automatiquement pendant le
-build Vercel. Une base historique non adoptée ou un schéma divergent fait
-échouer le build avant toute migration.
+Le build Vercel ne migre jamais la base. Une base vide ou déjà suivie par
+Drizzle est migrée uniquement par `npm run db:deploy`, dans une étape de release
+distincte et explicitement autorisée. Une base historique non adoptée ou un
+schéma divergent fait échouer cette étape avant toute migration.
 
 ## Retour arrière
 
