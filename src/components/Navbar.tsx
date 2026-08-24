@@ -215,7 +215,7 @@ export default function Navbar() {
                     className="block px-4 py-2.5 rounded-lg text-xs text-white/60 hover:text-white bg-white/[0.03] transition-all flex items-center gap-2"
                   >
                     <FiLogIn className="w-3.5 h-3.5" />
-                    Connexion Admin
+                    Connexion
                   </Link>
                 )}
               </div>

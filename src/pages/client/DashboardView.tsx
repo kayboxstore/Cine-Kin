@@ -47,7 +47,7 @@ export default function DashboardView({
       label: "Contrôle parental",
       hint: dashboard.parentalControlEnabled ? "Activé" : "Non configuré",
     },
-    { view: "payment", icon: CreditCard, label: "Paiement", hint: "Gérer l'abonnement" },
+    { view: "payment", icon: CreditCard, label: "Renouvellement", hint: "Contacter le support" },
   ];
 
   return (

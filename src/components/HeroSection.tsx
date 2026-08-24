@@ -10,24 +10,23 @@ import {
 } from "react-icons/fi";
 import ScrambleText from "@/components/ScrambleText";
 import MagneticButton from "@/components/MagneticButton";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 
-// Real guarantees replacing the former fabricated social proof
-// ("15 000+ clients dans 40 pays" badge). See AUDIT §7.1.
 const GUARANTEES = [
   {
     icon: FiMessageCircle,
-    title: "Support WhatsApp direct",
-    desc: "Une équipe humaine qui répond, pas un robot.",
+    title: COMMERCIAL_INFO.support.label,
+    desc: `Disponible de ${COMMERCIAL_INFO.support.hoursShort}.`,
   },
   {
     icon: FiShield,
-    title: "Sans engagement",
-    desc: "Aucun abonnement forcé, vous arrêtez quand vous voulez.",
+    title: "Formules à durée fixe",
+    desc: "La durée et le prix sont affichés avant la commande.",
   },
   {
     icon: FiZap,
-    title: "Activation rapide",
-    desc: "Vos accès en quelques minutes après confirmation.",
+    title: COMMERCIAL_INFO.activation.label,
+    desc: COMMERCIAL_INFO.activation.description,
   },
 ];
 
@@ -73,20 +72,20 @@ export default function HeroSection() {
         >
           <span className="text-white block">L'Expérience</span>
           <span className="bg-gradient-to-r from-[#5a6b4e] via-[#7a8f6a] to-[#9aaf8a] bg-clip-text text-transparent block">
-            TV Ultime
+            À Votre Mesure
           </span>
         </motion.h1>
 
         {/* Subtitle */}
         <motion.div {...entrance(0.3)} className="mb-12 max-w-lg mx-auto">
           <ScrambleText
-            text="15 000+ chaînes, films et séries en 4K UHD"
+            text={COMMERCIAL_INFO.catalogue.headline}
             className="text-base sm:text-lg text-white/85 font-light tracking-wide block"
             duration={1.2}
             delay={0.6}
           />
           <p className="text-white/80 text-base font-light mt-2 tracking-wide">
-            Tous vos appareils. Sans interruption. Partout.
+            Sur vos appareils compatibles, selon la formule choisie.
           </p>
         </motion.div>
 

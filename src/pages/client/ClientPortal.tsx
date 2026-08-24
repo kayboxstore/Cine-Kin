@@ -15,7 +15,7 @@ const TITLES: Record<ClientView, string> = {
   dashboard: "Espace client",
   playlists: "Playlists",
   parental: "Contrôle parental",
-  payment: "Paiement",
+  payment: "Renouvellement",
 };
 
 function PortalInner() {

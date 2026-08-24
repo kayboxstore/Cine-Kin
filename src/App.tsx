@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Layout from "./components/Layout";
@@ -45,7 +45,6 @@ const AdminPanel = lazy(() => import("./pages/admin/AdminPanel"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const Faq = lazy(() => import("./pages/Faq"));
-const ThankYou = lazy(() => import("./pages/ThankYou"));
 const Status = lazy(() => import("./pages/Status"));
 const ResellerPortal = lazy(() => import("./pages/reseller/ResellerPortal"));
 const ClientPortal = lazy(() => import("./pages/client/ClientPortal"));
@@ -96,6 +95,19 @@ export default function App() {
   useAnalytics();
   const [showSplash, setShowSplash] = useState(shouldShowSplash);
 
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (location.hash) {
+        document
+          .getElementById(decodeURIComponent(location.hash.slice(1)))
+          ?.scrollIntoView();
+        return;
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.hash, location.pathname, location.search]);
+
   return (
     <>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
@@ -117,7 +129,6 @@ export default function App() {
           <Route path="/blog" element={<LazyPage><AnimatedPage><Blog /></AnimatedPage></LazyPage>} />
           <Route path="/blog/:id" element={<LazyPage><AnimatedPage><BlogArticle /></AnimatedPage></LazyPage>} />
           <Route path="/faq" element={<LazyPage><AnimatedPage><Faq /></AnimatedPage></LazyPage>} />
-          <Route path="/merci" element={<LazyPage><AnimatedPage><ThankYou /></AnimatedPage></LazyPage>} />
           <Route path="/status" element={<LazyPage><AnimatedPage><Status /></AnimatedPage></LazyPage>} />
           <Route path="*" element={<LazyPage><AnimatedPage><NotFound /></AnimatedPage></LazyPage>} />
         </Route>

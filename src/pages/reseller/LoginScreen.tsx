@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Store } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { useToast } from "@/components/Toast";
@@ -78,6 +79,11 @@ export default function LoginScreen() {
             {login.isPending ? "Connexion…" : "Se connecter"}
           </Button>
         </form>
+        <div className="mt-5 text-center">
+          <Link to="/login" className="text-sm text-white/50 transition-colors hover:text-[#8ba26f]">
+            Choisir un autre espace
+          </Link>
+        </div>
       </div>
     </div>
   );

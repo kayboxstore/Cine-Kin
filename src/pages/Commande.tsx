@@ -1,15 +1,16 @@
 import { useState } from "react";
 import SEO from "@/components/SEO";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiCheck, FiMessageCircle, FiSmartphone, FiMonitor, FiShield, FiArrowRight, FiZap } from "react-icons/fi";
 import { CLIENT_PLANS, RESELLER_PLANS, SITE_CONFIG } from "@/data/siteData";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export default function Commande() {
   const [searchParams] = useSearchParams();
   const [planType, setPlanType] = useState<"client" | "reseller">(
-    (searchParams.get("type") as "client" | "reseller") || "client"
+    searchParams.get("type") === "reseller" ? "reseller" : "client"
   );
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get("plan") || "");
   const [formData, setFormData] = useState({ name: "", phone: "" });
@@ -26,7 +27,7 @@ export default function Commande() {
     <div className="min-h-screen bg-[#0a1628] pt-20">
       <SEO
         title="Commander - Abonnement IPTV Premium"
-        description="Commandez votre abonnement IPTV en 1 clic via WhatsApp. Activation rapide, support 7j/7."
+        description="Choisissez une formule puis préparez votre demande sur WhatsApp. Le prix, le paiement et les conditions sont confirmés avant activation."
       />
 
       {/* Hero */}
@@ -41,10 +42,10 @@ export default function Commande() {
               <span className="text-xs text-[#6b7c5c] font-medium tracking-wider uppercase">Commande rapide</span>
             </div>
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4 tracking-[-0.02em]">
-              Commandez en <span className="text-[#6b7c5c]">1 clic</span>
+              Préparez votre <span className="text-[#6b7c5c]">commande</span>
             </h1>
             <p className="text-white/60 text-base font-light max-w-md mx-auto">
-              Sélectionnez votre formule et envoyez-nous un message WhatsApp. Notre équipe vous répond sous 5 min.
+              Sélectionnez une formule puis ouvrez WhatsApp. La demande n’est transmise qu’après avoir appuyé sur « Envoyer » dans WhatsApp.
             </p>
           </ScrollReveal>
         </div>
@@ -54,11 +55,11 @@ export default function Commande() {
         <div className="relative z-10 max-w-3xl mx-auto px-6 sm:px-8">
           {/* Toggle */}
           <div className="flex justify-center mb-8">
-                <div className="inline-flex bg-white/[0.03] rounded-full p-1 border border-white/[0.06]">
-                  <button onClick={() => { setPlanType("client"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "client" ? "bg-[#5a6b4e] text-white" : "text-white/60 hover:text-white/65"}`}>
+                <div className="inline-flex bg-white/[0.03] rounded-full p-1 border border-white/[0.06]" aria-label="Type de commande">
+                  <button type="button" aria-pressed={planType === "client"} onClick={() => { setPlanType("client"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "client" ? "bg-[#5a6b4e] text-white" : "text-white/60 hover:text-white/65"}`}>
                     Client
                   </button>
-                  <button onClick={() => { setPlanType("reseller"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "reseller" ? "bg-[#5a6b4e] text-white" : "text-white/60 hover:text-white/65"}`}>
+                  <button type="button" aria-pressed={planType === "reseller"} onClick={() => { setPlanType("reseller"); setSelectedPlan(""); }} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${planType === "reseller" ? "bg-[#5a6b4e] text-white" : "text-white/60 hover:text-white/65"}`}>
                     Revendeur
                   </button>
                 </div>
@@ -67,7 +68,7 @@ export default function Commande() {
               {/* Plans */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 {plans.map((plan) => (
-                  <button key={plan.id} onClick={() => setSelectedPlan(plan.id)}
+                  <button key={plan.id} type="button" aria-pressed={selectedPlan === plan.id} onClick={() => setSelectedPlan(plan.id)}
                     className={`relative border rounded-xl p-5 text-left transition-all duration-300 bg-[#111d32]/30 ${
                       selectedPlan === plan.id ? "ring-2 ring-[#5a6b4e] border-[#5a6b4e]/30" : "border-white/[0.04] hover:border-white/[0.08]"
                     }`}>
@@ -100,14 +101,14 @@ export default function Commande() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="border border-white/[0.06] rounded-xl p-6 mb-6 bg-white/[0.02]">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <label className="flex items-center gap-2 text-sm text-white/55 mb-2"><FiSmartphone className="w-4 h-4" /> Votre nom</label>
-                      <input type="text" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      <label htmlFor="order-name" className="flex items-center gap-2 text-sm text-white/55 mb-2"><FiSmartphone className="w-4 h-4" /> Votre nom</label>
+                      <input id="order-name" type="text" autoComplete="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                         className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-[#5a6b4e]/40 transition-all text-sm"
                         placeholder="Prénom" />
                     </div>
                     <div>
-                      <label className="flex items-center gap-2 text-sm text-white/55 mb-2"><FiSmartphone className="w-4 h-4" /> WhatsApp</label>
-                      <input type="tel" value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      <label htmlFor="order-phone" className="flex items-center gap-2 text-sm text-white/55 mb-2"><FiSmartphone className="w-4 h-4" /> WhatsApp</label>
+                      <input id="order-phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-[#5a6b4e]/40 transition-all text-sm"
                         placeholder="+243..." />
                     </div>
@@ -115,8 +116,16 @@ export default function Commande() {
 
                   <div className="flex items-center gap-3 p-3 bg-[#5a6b4e]/5 rounded-lg mb-4">
                     <FiShield className="w-4 h-4 text-[#6b7c5c] flex-shrink-0" />
-                    <span className="text-white/60 text-xs">Paiement sécurisé via WhatsApp. Aucune donnée bancaire requise.</span>
+                    <span className="text-white/60 text-xs">{COMMERCIAL_INFO.payment.description}</span>
                   </div>
+
+                  <p className="mb-4 text-xs leading-relaxed text-white/50">
+                    Les informations saisies servent uniquement à composer le message WhatsApp et ne sont pas enregistrées par ce formulaire. Consultez notre{" "}
+                    <Link to="/politique-confidentialite" className="text-[#8ba26f] hover:underline">
+                      politique de confidentialité
+                    </Link>
+                    .
+                  </p>
 
                   <a
                     href={getWhatsAppLink()}
@@ -125,7 +134,7 @@ export default function Commande() {
                     className="block w-full py-4 text-base font-bold text-white bg-[#25D366] rounded-xl hover:bg-[#128C7E] transition-all text-center flex items-center justify-center gap-2"
                   >
                     <FiMessageCircle className="w-5 h-5" />
-                    Commander sur WhatsApp
+                    Ouvrir la demande dans WhatsApp
                     <FiArrowRight className="w-4 h-4" />
                   </a>
                 </motion.div>
@@ -134,10 +143,10 @@ export default function Commande() {
           {/* Trust badges */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
             {[
-              { icon: FiCheck, text: "Activation < 5 min" },
-              { icon: FiShield, text: "Satisfait ou remboursé" },
-              { icon: FiMessageCircle, text: "Support 7j/7" },
-              { icon: FiMonitor, text: "Tous appareils" },
+              { icon: FiCheck, text: COMMERCIAL_INFO.activation.label },
+              { icon: FiShield, text: "Conditions avant paiement" },
+              { icon: FiMessageCircle, text: COMMERCIAL_INFO.support.label },
+              { icon: FiMonitor, text: COMMERCIAL_INFO.screens.label },
             ].map((badge, i) => (
               <div key={i} className="flex items-center gap-2 p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
                 <badge.icon className="w-4 h-4 text-[#6b7c5c] flex-shrink-0" />

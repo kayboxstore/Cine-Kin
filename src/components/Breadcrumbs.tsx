@@ -24,7 +24,7 @@ export default function Breadcrumbs() {
   if (pathnames.length === 0) return null;
 
   return (
-    <nav className="py-4 px-6 sm:px-8" aria-label="Breadcrumb">
+    <nav className="relative z-40 pt-20 pb-4 px-6 sm:px-8" aria-label="Fil d’Ariane">
       <ol className="flex items-center gap-2 text-xs">
         <li>
           <Link to="/" className="text-white/55 hover:text-white/60 transition-colors flex items-center gap-1">

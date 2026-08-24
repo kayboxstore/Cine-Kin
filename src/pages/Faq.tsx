@@ -3,22 +3,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiChevronDown, FiChevronUp, FiHelpCircle } from "react-icons/fi";
 import SEO from "@/components/SEO";
 import ScrollReveal from "@/components/ScrollReveal";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 
 const categories = ["Tous", "Général", "Installation", "Paiement", "Technique", "Revendeurs"];
 
 const faqs = [
-  { q: "Qu'est-ce que Ciné Kin Premium ?", a: "Ciné Kin Premium est un service d'abonnement IPTV qui vous donne accès à plus de 15 000 chaînes TV, films et séries en qualité HD et 4K UHD, depuis n'importe quel appareil connecté.", cat: "Général" },
+  { q: "Qu'est-ce que Ciné Kin Premium ?", a: `Ciné Kin Premium est un service d’abonnement IPTV donnant accès à un catalogue de chaînes TV, films et séries sur des appareils compatibles. ${COMMERCIAL_INFO.catalogue.caveat}`, cat: "Général" },
   { q: "L'essai gratuit de 24h est-il vraiment gratuit ?", a: "Oui, l'essai de 24 heures est complètement gratuit et sans engagement. Vous pouvez tester toutes les fonctionnalités du service avant de souscrire un abonnement.", cat: "Général" },
-  { q: "Quels appareils sont compatibles ?", a: "Notre service fonctionne sur Smart TV (Samsung, LG), Android TV, Amazon Fire Stick, Apple TV, iPhone, iPad, smartphones Android, PC, Mac, et via les navigateurs web.", cat: "Installation" },
-  { q: "Comment installer le service sur ma Smart TV ?", a: "Installez l'application IPTV Smarters Pro depuis le magasin d'applications de votre TV, entrez vos identifiants (fournis après l'achat), et profitez immédiatement du contenu. Le processus prend moins de 5 minutes.", cat: "Installation" },
-  { q: "Quels modes de paiement acceptez-vous ?", a: "Nous acceptons les paiements via Mobile Money (MPesa, Airtel Money, Orange Money), virement bancaire, et PayPal. Le paiement se fait en toute sécurité via WhatsApp avec confirmation.", cat: "Paiement" },
-  { q: "Puis-je annuler mon abonnement ?", a: "Oui, vous pouvez annuler votre abonnement à tout moment. Aucun remboursement n'est effectué pour les périodes en cours, mais vous conservez l'accès jusqu'à la fin de votre période payée.", cat: "Paiement" },
-  { q: "La qualité vidéo est-elle vraiment en 4K ?", a: "Oui, nous proposons du contenu en 4K UHD pour les chaînes et films disponibles en cette qualité. La lecture s'adapte automatiquement à votre connexion internet (minimum 10 Mbps recommandé pour le 4K).", cat: "Technique" },
-  { q: "Le service fonctionne-t-il avec une connexion lente ?", a: "Une connexion de 4 Mbps minimum est recommandée pour le HD, et 10 Mbps pour le 4K. Notre service s'adapte automatiquement à votre bande passante pour offrir la meilleure qualité possible.", cat: "Technique" },
-  { q: "Y a-t-il un guide des programmes (EPG) ?", a: "Oui, un guide électronique des programmes (EPG) complet est inclus, couvrant plus de 7 jours de programmation pour la plupart des chaînes.", cat: "Technique" },
-  { q: "Puis-je utiliser mon abonnement sur plusieurs appareils ?", a: "Chaque abonnement client permet l'utilisation sur un appareil à la fois. Les packs revendeurs permettent de générer plusieurs codes d'accès pour différents clients.", cat: "Technique" },
+  { q: "Quels appareils sont compatibles ?", a: "Le service peut être utilisé sur Smart TV, Android TV, Fire Stick, Apple TV, smartphone, tablette, PC et Mac avec une application compatible. Vérifiez votre modèle avec le support avant de commander.", cat: "Installation" },
+  { q: "Comment installer le service sur ma Smart TV ?", a: "Installez l’application compatible indiquée par le support, puis saisissez les identifiants fournis après l’activation. Le guide dépend du modèle de votre téléviseur.", cat: "Installation" },
+  { q: "Quels modes de paiement acceptez-vous ?", a: COMMERCIAL_INFO.payment.description, cat: "Paiement" },
+  { q: "Puis-je annuler mon abonnement ?", a: COMMERCIAL_INFO.refund.description, cat: "Paiement" },
+  { q: "La qualité vidéo est-elle disponible en 4K ?", a: COMMERCIAL_INFO.catalogue.caveat, cat: "Technique" },
+  { q: "Le service fonctionne-t-il avec une connexion lente ?", a: "La qualité dépend du débit, de la stabilité de la connexion, du contenu et de l’appareil. Utilisez l’essai gratuit pour vérifier votre installation avant de souscrire.", cat: "Technique" },
+  { q: "Y a-t-il un guide des programmes (EPG) ?", a: "Un guide électronique des programmes peut être proposé selon la chaîne et la source disponible.", cat: "Technique" },
+  { q: "Puis-je utiliser mon abonnement sur plusieurs appareils ?", a: `Les formules proposent ${COMMERCIAL_INFO.screens.label}. Le nombre exact est affiché sur chaque offre.`, cat: "Technique" },
   { q: "Comment devenir revendeur ?", a: "Choisissez un pack revendeur (Starter, Business, Pro ou VIP), contactez-nous via WhatsApp, et nous vous fournirons un panneau d'administration pour gérer vos codes et clients.", cat: "Revendeurs" },
-  { q: "Quelle marge puis-je faire en tant que revendeur ?", a: "Nos revendeurs réalisent une marge de 150% à 300% selon le pack choisi et leur stratégie de prix. Le pack Starter à $199.99 permet déjà de générer plus de $500 de revenus.", cat: "Revendeurs" },
+  { q: "Quelle marge puis-je faire en tant que revendeur ?", a: COMMERCIAL_INFO.reseller.description, cat: "Revendeurs" },
 ];
 
 export default function Faq() {

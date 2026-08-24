@@ -40,6 +40,14 @@ describe("Hono authentication perimeter", () => {
     expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 
+  it("exposes whether optional Kimi OAuth is configured without leaking configuration", async () => {
+    const response = await app.request("https://cine.test/api/oauth/status");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    await expect(response.json()).resolves.toEqual({ enabled: false });
+  });
+
   it("blocks a batched admin-login request before tRPC executes it", async () => {
     const response = await post(
       "http://cine.test/api/trpc/auth.adminLogin,auth.adminLogin?batch=1",
