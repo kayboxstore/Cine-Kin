@@ -268,7 +268,9 @@ function CredentialRow({
           {value}
         </code>
         <button
+          type="button"
           onClick={() => onCopy(value)}
+          aria-label={`Copier ${label}`}
           className="text-muted-foreground transition-colors hover:text-foreground"
           title="Copier"
         >
@@ -390,7 +392,10 @@ function ResellerCard({
 
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
-          <button className="flex w-full items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             <span className="flex items-center gap-2">
               <KeyRound className="h-4 w-4" />
               Historique d'activations et de crédits

@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import SEO from "@/components/SEO";
 import ScrollReveal from "@/components/ScrollReveal";
+import ResponsiveImage from "@/components/ResponsiveImage";
 import { SITE_CONFIG } from "@/data/siteData";
 import { COMMERCIAL_INFO } from "@/data/commercial";
 
@@ -54,9 +55,11 @@ export default function APropos() {
 
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0">
-          <img
+          <ResponsiveImage
             src="/images/about-hero.jpg"
             alt=""
+            loading="eager"
+            fetchPriority="high"
             className="w-full h-full object-cover opacity-15"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/80 via-[#0a1628]/60 to-[#0a1628]" />
@@ -75,10 +78,13 @@ export default function APropos() {
               <span className="text-sm text-white/50">Notre service</span>
             </div>
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
-              À propos de <span className="text-[#6b7c5c]">{SITE_CONFIG.name}</span>
+              À propos de{" "}
+              <span className="text-[#6b7c5c]">{SITE_CONFIG.name}</span>
             </h1>
             <p className="text-white/60 text-lg max-w-3xl mx-auto font-light leading-relaxed">
-              Une offre IPTV à durée fixe, accompagnée d’un support WhatsApp et d’un espace distinct pour les clients, les revendeurs et l’administration.
+              Une offre IPTV à durée fixe, accompagnée d’un support WhatsApp et
+              d’un espace distinct pour les clients, les revendeurs et
+              l’administration.
             </p>
           </ScrollReveal>
         </div>
@@ -88,12 +94,14 @@ export default function APropos() {
         <div className="relative z-10 max-w-5xl mx-auto px-6 sm:px-8">
           <ScrollReveal>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {facts.map((fact) => (
+              {facts.map(fact => (
                 <div key={fact.label} className="text-center">
                   <div className="font-display font-bold text-2xl sm:text-3xl text-white mb-1">
                     {fact.value}
                   </div>
-                  <div className="text-white/60 text-sm tracking-wide">{fact.label}</div>
+                  <div className="text-white/60 text-sm tracking-wide">
+                    {fact.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -108,7 +116,9 @@ export default function APropos() {
               Ce que nous <span className="text-[#6b7c5c]">proposons</span>
             </h2>
             <p className="text-white/60 text-lg leading-relaxed font-light">
-              {COMMERCIAL_INFO.catalogue.headline} Les disponibilités exactes sont vérifiées pendant l’essai et confirmées avant toute souscription payante.
+              {COMMERCIAL_INFO.catalogue.headline} Les disponibilités exactes
+              sont vérifiées pendant l’essai et confirmées avant toute
+              souscription payante.
             </p>
           </ScrollReveal>
         </div>
@@ -118,7 +128,8 @@ export default function APropos() {
         <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
           <ScrollReveal className="text-center mb-12">
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-4 tracking-[-0.02em]">
-              Nos engagements de <span className="text-[#6b7c5c]">transparence</span>
+              Nos engagements de{" "}
+              <span className="text-[#6b7c5c]">transparence</span>
             </h2>
           </ScrollReveal>
 

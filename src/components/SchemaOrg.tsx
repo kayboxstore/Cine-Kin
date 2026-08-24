@@ -1,16 +1,17 @@
 import { Helmet } from "react-helmet-async";
 import { CLIENT_PLANS, SITE_CONFIG } from "@/data/siteData";
 import { COMMERCIAL_INFO } from "@/data/commercial";
+import { getSiteOrigin } from "@/lib/siteUrl";
 
 export default function SchemaOrg() {
-  const siteUrl = window.location.origin;
+  const siteUrl = getSiteOrigin();
 
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_CONFIG.name,
     url: siteUrl,
-    logo: `${siteUrl}/favicon.png`,
+    logo: `${siteUrl}/favicon-512.png`,
     description: `${COMMERCIAL_INFO.catalogue.headline} Essai gratuit de 24 h.`,
     contactPoint: {
       "@type": "ContactPoint",
@@ -19,7 +20,6 @@ export default function SchemaOrg() {
       availableLanguage: ["French", "English"],
       areaServed: "CD",
     },
-    sameAs: [],
   };
 
   const serviceSchema = {
@@ -34,7 +34,7 @@ export default function SchemaOrg() {
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Forfaits IPTV",
-      itemListElement: CLIENT_PLANS.map((plan) => ({
+      itemListElement: CLIENT_PLANS.map(plan => ({
         "@type": "Offer",
         itemOffered: {
           "@type": "Service",

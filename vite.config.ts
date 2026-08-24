@@ -31,5 +31,25 @@ export default defineConfig(({ command }) => ({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-core": [
+            "react",
+            "react-dom",
+            "react-router",
+            "react-router-dom",
+            "react-helmet-async",
+          ],
+          motion: ["framer-motion"],
+          "data-client": [
+            "@tanstack/react-query",
+            "@trpc/client",
+            "@trpc/react-query",
+            "superjson",
+          ],
+        },
+      },
+    },
   },
 }));

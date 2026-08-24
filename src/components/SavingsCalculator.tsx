@@ -17,8 +17,8 @@ export default function SavingsCalculator() {
   const cineKinYearly = 70;
 
   const toggle = (i: number) => {
-    setSelected((prev) =>
-      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+    setSelected(prev =>
+      prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]
     );
   };
 
@@ -28,7 +28,8 @@ export default function SavingsCalculator() {
   );
   const cableYearly = cableMonthly * 12;
   const savings = cableYearly - cineKinYearly;
-  const percentage = cableYearly > 0 ? Math.round((savings / cableYearly) * 100) : 0;
+  const percentage =
+    cableYearly > 0 ? Math.round((savings / cableYearly) * 100) : 0;
 
   return (
     <section className="py-20 bg-[#111d32]/50">
@@ -45,7 +46,8 @@ export default function SavingsCalculator() {
               Comparez et <span className="text-[#6b7c5c]">économisez</span>
             </h2>
             <p className="text-white/60 text-base font-light max-w-lg mx-auto">
-              Sélectionnez vos abonnements actuels et voyez combien vous pourriez économiser.
+              Sélectionnez vos abonnements actuels et voyez combien vous
+              pourriez économiser.
             </p>
           </div>
         </ScrollReveal>
@@ -57,7 +59,9 @@ export default function SavingsCalculator() {
               {CABLE_PRICES.map((option, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => toggle(i)}
+                  aria-pressed={selected.includes(i)}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left transition-all ${
                     selected.includes(i)
                       ? "border-[#5a6b4e]/30 bg-[#5a6b4e]/10"
@@ -73,14 +77,28 @@ export default function SavingsCalculator() {
                       }`}
                     >
                       {selected.includes(i) && (
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-2.5 h-2.5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       )}
                     </div>
-                    <span className="text-white/70 text-sm">{option.label}</span>
+                    <span className="text-white/70 text-sm">
+                      {option.label}
+                    </span>
                   </div>
-                  <span className="text-white/60 text-xs">${option.monthly}/mois</span>
+                  <span className="text-white/60 text-xs">
+                    ${option.monthly}/mois
+                  </span>
                 </button>
               ))}
             </div>
@@ -89,7 +107,9 @@ export default function SavingsCalculator() {
             <div className="border-t border-white/[0.06] pt-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-center sm:text-left">
-                  <div className="text-white/55 text-xs mb-1">Vos abonnements actuels</div>
+                  <div className="text-white/55 text-xs mb-1">
+                    Vos abonnements actuels
+                  </div>
                   <div className="font-display font-bold text-2xl text-white/60">
                     ${cableYearly.toFixed(0)}/an
                   </div>
@@ -98,7 +118,9 @@ export default function SavingsCalculator() {
                 <FiTrendingDown className="w-5 h-5 text-[#6b7c5c] hidden sm:block" />
 
                 <div className="text-center sm:text-left">
-                  <div className="text-[#6b7c5c] text-xs mb-1">Ciné Kin Premium 12 mois</div>
+                  <div className="text-[#6b7c5c] text-xs mb-1">
+                    Ciné Kin Premium 12 mois
+                  </div>
                   <div className="font-display font-bold text-2xl text-white">
                     ${cineKinYearly}/an
                   </div>
@@ -112,11 +134,15 @@ export default function SavingsCalculator() {
                   initial={{ scale: 1.1 }}
                   animate={{ scale: 1 }}
                 >
-                  <div className="text-[#6b7c5c] text-xs mb-1">Vous économisez</div>
+                  <div className="text-[#6b7c5c] text-xs mb-1">
+                    Vous économisez
+                  </div>
                   <div className="font-display font-bold text-3xl text-[#6b7c5c]">
                     ${savings.toFixed(0)}/an
                   </div>
-                  <div className="text-white/55 text-xs">({percentage}% de moins)</div>
+                  <div className="text-white/55 text-xs">
+                    ({percentage}% de moins)
+                  </div>
                 </motion.div>
               </div>
             </div>

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LayoutDashboard, MonitorSmartphone, ShieldAlert, ShoppingCart, Store, Zap } from "lucide-react";
+import {
+  LayoutDashboard,
+  MonitorSmartphone,
+  ShieldAlert,
+  ShoppingCart,
+  Store,
+  Zap,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import SEO from "@/components/SEO";
 import { ToastProvider } from "@/components/Toast";
@@ -40,7 +47,9 @@ function AdminPanelInner() {
       <div className="flex min-h-screen items-center justify-center bg-background px-6">
         <div className="max-w-md text-center">
           <ShieldAlert className="mx-auto mb-4 h-12 w-12 text-red-400" />
-          <h1 className="font-display text-2xl font-bold text-foreground">Accès refusé</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">
+            Accès refusé
+          </h1>
           <p className="mt-2 text-muted-foreground">
             Vous devez être administrateur pour accéder à ce panneau.
           </p>
@@ -55,7 +64,7 @@ function AdminPanelInner() {
     );
   }
 
-  const active = MENU.find((m) => m.key === section) ?? MENU[0];
+  const active = MENU.find(m => m.key === section) ?? MENU[0];
 
   return (
     <AuthLayout
@@ -78,7 +87,11 @@ function AdminPanelInner() {
 export default function AdminPanel() {
   return (
     <ToastProvider>
-      <SEO title="Panel Admin — Licences" description="Gestion des licences application Ciné Kin" />
+      <SEO
+        title="Panel Admin — Licences"
+        description="Gestion des licences application Ciné Kin"
+        noIndex
+      />
       <AdminPanelInner />
     </ToastProvider>
   );
