@@ -144,6 +144,7 @@ function currentCommit() {
   const result = spawnSync("git", ["rev-parse", "HEAD"], {
     cwd: projectRoot,
     encoding: "utf8",
+    env: sanitizedCommandEnvironment(),
   });
   return result.status === 0 ? result.stdout.trim() : "unknown";
 }
@@ -251,6 +252,13 @@ export async function runStagingRehearsal(
     if ((await sha256File(backupPath)) !== backup.sha256) {
       throw new Error(
         "L’empreinte de la sauvegarde a changé avant la restauration."
+      );
+    }
+
+    const finalInspection = await inspectStagingTargets(validation);
+    if (!finalInspection.ok || finalInspection.restore.state !== "empty") {
+      throw new Error(
+        `La cible de restauration n’est plus vide juste avant l’import (état : ${finalInspection.restore?.state ?? "inconnu"}).`
       );
     }
 

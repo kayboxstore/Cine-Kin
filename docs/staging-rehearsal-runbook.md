@@ -13,11 +13,15 @@ l'audit d'intégrité.
 - le nom de cette base doit contenir `restore`, `rehearsal`, `validation` ou
   `sandbox` ;
 - les deux cibles doivent être distinctes ;
+- leurs noms doivent être différents, même si elles se trouvent sur des hôtes
+  distincts ;
 - aucun dump SQL en clair n'est écrit sur disque ;
 - la sauvegarde est chiffrée en AES-256-GCM et accompagnée d'une empreinte
   SHA-256 ;
 - aucun script de staging ne supprime une base et aucun build Vercel ne lance de
   migration.
+- le répertoire de sauvegarde ne peut pas être la racine du projet, un dossier
+  public, généré, interne à Git ou appartenant aux dépendances.
 
 Le format et les options de sauvegarde suivent les recommandations de la
 [documentation MySQL sur la sauvegarde et la reprise](https://dev.mysql.com/doc/refman/8.0/en/backup-and-recovery.html)
