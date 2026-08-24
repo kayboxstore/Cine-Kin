@@ -2,13 +2,25 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  FiMonitor, FiFilm, FiZap, FiSmartphone, FiShield, FiHeadphones,
-  FiChevronDown, FiChevronUp, FiArrowRight, FiUsers,
-  FiTv, FiAirplay, FiTablet, FiCpu, FiCast, FiWifi, FiPlay
+  FiMonitor,
+  FiFilm,
+  FiZap,
+  FiSmartphone,
+  FiShield,
+  FiHeadphones,
+  FiChevronDown,
+  FiChevronUp,
+  FiArrowRight,
+  FiUsers,
+  FiTv,
+  FiAirplay,
+  FiTablet,
+  FiCpu,
+  FiCast,
+  FiWifi,
+  FiPlay,
 } from "react-icons/fi";
-import {
-  ADVANTAGES, HOW_IT_WORKS, FAQ
-} from "@/data/siteData";
+import { ADVANTAGES, HOW_IT_WORKS, FAQ } from "@/data/siteData";
 import { COMMERCIAL_INFO } from "@/data/commercial";
 import ScrollReveal from "@/components/ScrollReveal";
 import MagneticButton from "@/components/MagneticButton";
@@ -17,14 +29,27 @@ import Gallery from "@/components/Gallery";
 import SavingsCalculator from "@/components/SavingsCalculator";
 import ServerStatus from "@/components/ServerStatus";
 import ParallaxHero from "@/components/ParallaxHero";
+import ResponsiveImage from "@/components/ResponsiveImage";
 import HeroSection from "@/components/HeroSection";
 import OffersSection from "@/components/OffersSection";
 import SEO from "@/components/SEO";
 import SchemaOrg from "@/components/SchemaOrg";
 
 const iconMap: Record<string, React.ElementType> = {
-  FiMonitor, FiFilm, FiZap, FiSmartphone, FiShield, FiHeadphones,
-  FiTv, FiAirplay, FiTablet, FiCpu, FiCast, FiWifi, FiUsers, FiPlay,
+  FiMonitor,
+  FiFilm,
+  FiZap,
+  FiSmartphone,
+  FiShield,
+  FiHeadphones,
+  FiTv,
+  FiAirplay,
+  FiTablet,
+  FiCpu,
+  FiCast,
+  FiWifi,
+  FiUsers,
+  FiPlay,
 };
 
 const featureImages = [
@@ -47,7 +72,6 @@ const featureImages = [
    border-light:  white/[0.06]
 */
 
-
 /* ═══════════════════════════════════════════
    STATS BAR — Bleu de nuit alt
    ═══════════════════════════════════════════ */
@@ -69,7 +93,9 @@ function StatsBar() {
                 <div className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight mb-1">
                   {stat.value}
                 </div>
-                <div className="text-white/60 text-[11px] tracking-[0.15em] uppercase">{stat.label}</div>
+                <div className="text-white/60 text-[11px] tracking-[0.15em] uppercase">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -85,8 +111,12 @@ function StatsBar() {
 function AdvantagesSection() {
   return (
     <section className="relative py-32 bg-[#0a1628] overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, rgba(90,107,78,0.06) 0%, transparent 60%)" }}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(90,107,78,0.06) 0%, transparent 60%)",
+        }}
       />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
@@ -98,7 +128,8 @@ function AdvantagesSection() {
             Sans <span className="text-white/55">compromis</span>
           </h2>
           <p className="text-white/60 text-base max-w-md mx-auto font-light">
-            Des formules lisibles, une compatibilité expliquée et un support identifiable.
+            Des formules lisibles, une compatibilité expliquée et un support
+            identifiable.
           </p>
         </ScrollReveal>
 
@@ -106,12 +137,18 @@ function AdvantagesSection() {
           {ADVANTAGES.map((adv, i) => {
             const Icon = iconMap[adv.icon] || FiMonitor;
             return (
-              <ScrollReveal key={i} delay={i * 0.08} direction="up" distance={30}>
+              <ScrollReveal
+                key={i}
+                delay={i * 0.08}
+                direction="up"
+                distance={30}
+              >
                 <div className="group border border-white/[0.04] rounded-xl overflow-hidden hover:border-[#5a6b4e]/20 transition-all duration-500 hover:-translate-y-1 bg-[#111d32]/50">
                   <div className="h-32 overflow-hidden relative">
-                    <img
+                    <ResponsiveImage
                       src={featureImages[i]}
                       alt={adv.title}
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-75"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#111d32] via-[#111d32]/40 to-transparent" />
@@ -120,8 +157,12 @@ function AdvantagesSection() {
                     <div className="w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center mb-3 group-hover:border-[#5a6b4e]/25 group-hover:bg-[#5a6b4e]/10 transition-colors">
                       <Icon className="w-3.5 h-3.5 text-[#6b7c5c]" />
                     </div>
-                    <h3 className="font-display font-semibold text-base text-white mb-2">{adv.title}</h3>
-                    <p className="text-white/60 text-sm leading-relaxed font-light">{adv.description}</p>
+                    <h3 className="font-display font-semibold text-base text-white mb-2">
+                      {adv.title}
+                    </h3>
+                    <p className="text-white/60 text-sm leading-relaxed font-light">
+                      {adv.description}
+                    </p>
                   </div>
                 </div>
               </ScrollReveal>
@@ -161,8 +202,12 @@ function HowItWorksSection() {
                     {String(step.step).padStart(2, "0")}
                   </div>
                 </div>
-                <h3 className="font-display font-semibold text-lg text-white mb-2">{step.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed max-w-[16rem] mx-auto font-light">{step.description}</p>
+                <h3 className="font-display font-semibold text-lg text-white mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-white/60 text-sm leading-relaxed max-w-[16rem] mx-auto font-light">
+                  {step.description}
+                </p>
               </div>
             </ScrollReveal>
           ))}
@@ -171,7 +216,6 @@ function HowItWorksSection() {
     </section>
   );
 }
-
 
 /* ═══════════════════════════════════════════
    RESELLER CTA
@@ -182,24 +226,35 @@ function ResellerCTASection() {
       <div className="relative z-10 max-w-5xl mx-auto px-6 sm:px-8">
         <ScrollReveal>
           <div className="border border-white/[0.03] rounded-2xl p-10 sm:p-14 lg:p-16 text-center relative overflow-hidden hover:border-[#5a6b4e]/10 transition-colors duration-500 bg-[#0a1628]/60">
-            <div className="absolute top-0 right-0 w-64 h-64 pointer-events-none"
-              style={{ background: "radial-gradient(circle, rgba(90,107,78,0.08) 0%, transparent 60%)" }}
+            <div
+              className="absolute top-0 right-0 w-64 h-64 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(90,107,78,0.08) 0%, transparent 60%)",
+              }}
             />
-            <div className="absolute bottom-0 left-0 w-64 h-64 pointer-events-none"
-              style={{ background: "radial-gradient(circle, rgba(107,124,92,0.04) 0%, transparent 60%)" }}
+            <div
+              className="absolute bottom-0 left-0 w-64 h-64 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(107,124,92,0.04) 0%, transparent 60%)",
+              }}
             />
 
             <div className="relative max-w-xl mx-auto">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#5a6b4e]/12 bg-white/[0.02] mb-8">
                 <FiUsers className="w-4 h-4 text-[#6b7c5c]/60" />
-                <span className="text-xs text-[#6b7c5c]/60 font-medium tracking-[0.15em] uppercase">Programme Revendeur</span>
+                <span className="text-xs text-[#6b7c5c]/60 font-medium tracking-[0.15em] uppercase">
+                  Programme Revendeur
+                </span>
               </div>
 
               <h2 className="font-display font-bold text-4xl sm:text-5xl text-white mb-5 tracking-[-0.02em] leading-tight">
                 Devenez <span className="text-white/55">revendeur</span>
               </h2>
               <p className="text-white/50 text-base mb-10 leading-relaxed max-w-md mx-auto font-light">
-                Gérez vos codes et vos activations depuis un portail dédié. Vous gardez la maîtrise de vos tarifs de revente.
+                Gérez vos codes et vos activations depuis un portail dédié. Vous
+                gardez la maîtrise de vos tarifs de revente.
               </p>
 
               <Link to="/revendeurs">
@@ -220,8 +275,12 @@ function ResellerCTASection() {
                   { value: "7j/7", label: "Support" },
                 ].map((stat, i) => (
                   <div key={i} className="text-center">
-                    <div className="font-display font-bold text-xl text-white/70">{stat.value}</div>
-                    <div className="text-white/60 text-xs mt-1 tracking-[0.1em] uppercase">{stat.label}</div>
+                    <div className="font-display font-bold text-xl text-white/70">
+                      {stat.value}
+                    </div>
+                    <div className="text-white/60 text-xs mt-1 tracking-[0.1em] uppercase">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -256,10 +315,16 @@ function FAQSection() {
             <ScrollReveal key={i} delay={i * 0.04} direction="up" distance={15}>
               <div className="border border-white/[0.03] rounded-lg overflow-hidden hover:border-white/[0.06] transition-colors bg-[#0a1628]/50">
                 <button
+                  type="button"
                   onClick={() => setOpenIndex(openIndex === i ? null : i)}
                   className="w-full flex items-center justify-between p-4 text-left"
+                  id={`home-faq-button-${i}`}
+                  aria-expanded={openIndex === i}
+                  aria-controls={`home-faq-panel-${i}`}
                 >
-                  <span className="font-display font-medium text-white/65 text-base pr-4">{item.question}</span>
+                  <span className="font-display font-medium text-white/65 text-base pr-4">
+                    {item.question}
+                  </span>
                   {openIndex === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
@@ -268,12 +333,17 @@ function FAQSection() {
                 </button>
                 {openIndex === i && (
                   <motion.div
+                    id={`home-faq-panel-${i}`}
+                    role="region"
+                    aria-labelledby={`home-faq-button-${i}`}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     transition={{ duration: 0.3 }}
                     className="px-4 pb-4"
                   >
-                    <p className="text-white/50 text-base leading-relaxed font-light">{item.answer}</p>
+                    <p className="text-white/50 text-base leading-relaxed font-light">
+                      {item.answer}
+                    </p>
                   </motion.div>
                 )}
               </div>
@@ -291,9 +361,11 @@ function FAQSection() {
 function FinalCTASection() {
   return (
     <section className="relative py-32 bg-[#0a1628] overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] pointer-events-none"
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse, rgba(90,107,78,0.06) 0%, rgba(107,124,92,0.03) 50%, transparent 70%)",
+          background:
+            "radial-gradient(ellipse, rgba(90,107,78,0.06) 0%, rgba(107,124,92,0.03) 50%, transparent 70%)",
         }}
       />
 
@@ -303,7 +375,8 @@ function FinalCTASection() {
             Prêt à <span className="text-white/55">commencer</span> ?
           </h2>
           <p className="text-white/50 text-base mb-10 max-w-md mx-auto font-light">
-            Essayez gratuitement pendant 24h ou choisissez l'offre qui vous convient.
+            Essayez gratuitement pendant 24h ou choisissez l'offre qui vous
+            convient.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/commande?plan=trial">

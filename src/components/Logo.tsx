@@ -4,13 +4,17 @@ interface LogoProps {
   variant?: "full" | "icon";
 }
 
-export default function Logo({ className = "", size = 40, variant = "full" }: LogoProps) {
+export default function Logo({
+  className = "",
+  size = 40,
+  variant = "full",
+}: LogoProps) {
   const s = size;
 
   if (variant === "icon") {
     return (
       <img
-        src="/images/logo-main.png"
+        src="/images/logo-main-256.png"
         alt="Ciné Kin Premium"
         width={s}
         height={s}
@@ -23,7 +27,7 @@ export default function Logo({ className = "", size = 40, variant = "full" }: Lo
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <img
-        src="/images/logo-main.png"
+        src="/images/logo-main-256.png"
         alt=""
         width={s}
         height={s}

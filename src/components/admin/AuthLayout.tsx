@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { LogOut, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export type AdminMenuItem = { key: string; label: string; icon: LucideIcon };
 
-type AdminUser = { name?: string | null; email?: string | null; avatar?: string | null };
+type AdminUser = {
+  name?: string | null;
+  email?: string | null;
+  avatar?: string | null;
+};
 
 export default function AuthLayout({
   menu,
@@ -31,15 +35,34 @@ export default function AuthLayout({
   children: ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const initial = (user?.name || "A").charAt(0).toUpperCase();
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    closeButtonRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        openButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileOpen]);
+
   const nav = (
-    <nav className="flex flex-col gap-1 px-3 py-2">
-      {menu.map((item) => {
+    <nav
+      className="flex flex-col gap-1 px-3 py-2"
+      aria-label="Sections d’administration"
+    >
+      {menu.map(item => {
         const isActive = item.key === active;
         return (
           <button
             key={item.key}
+            type="button"
             onClick={() => {
               onSelect(item.key);
               setMobileOpen(false);
@@ -77,7 +100,9 @@ export default function AuthLayout({
           </p>
         </div>
         <button
+          type="button"
           onClick={onLogout}
+          aria-label="Se déconnecter"
           title="Déconnexion"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/60 transition-colors hover:bg-red-500/10 hover:text-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
@@ -108,7 +133,9 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-sidebar md:flex">{sidebarInner}</aside>
+      <aside className="hidden w-64 shrink-0 flex-col bg-sidebar md:flex">
+        {sidebarInner}
+      </aside>
 
       {/* Mobile drawer */}
       {mobileOpen && (
@@ -118,8 +145,16 @@ export default function AuthLayout({
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-sidebar shadow-xl">
+          <aside
+            id="admin-mobile-navigation"
+            className="absolute inset-y-0 left-0 flex w-64 flex-col bg-sidebar shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu d’administration"
+          >
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={() => setMobileOpen(false)}
               className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/60 hover:bg-sidebar-accent"
               aria-label="Fermer le menu"
@@ -135,13 +170,19 @@ export default function AuthLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur md:h-16 md:px-8">
           <button
+            ref={openButtonRef}
+            type="button"
             onClick={() => setMobileOpen(true)}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground/70 hover:bg-accent/10 md:hidden"
             aria-label="Ouvrir le menu"
+            aria-expanded={mobileOpen}
+            aria-controls="admin-mobile-navigation"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <h1 className="font-display text-lg font-bold text-foreground md:text-xl">{title}</h1>
+          <h1 className="font-display text-lg font-bold text-foreground md:text-xl">
+            {title}
+          </h1>
         </header>
         <main className="flex-1 p-4 md:p-8">{children}</main>
       </div>

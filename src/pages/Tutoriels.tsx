@@ -1,8 +1,17 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiMonitor, FiSmartphone, FiTv, FiBox, FiChevronDown, FiChevronUp,
-  FiDownload, FiSettings, FiWifi, FiPlay, FiCheckCircle
+  FiMonitor,
+  FiSmartphone,
+  FiTv,
+  FiBox,
+  FiChevronDown,
+  FiChevronUp,
+  FiDownload,
+  FiSettings,
+  FiWifi,
+  FiPlay,
+  FiCheckCircle,
 } from "react-icons/fi";
 import ScrollReveal from "@/components/ScrollReveal";
 import SEO from "@/components/SEO";
@@ -104,20 +113,28 @@ export default function Tutoriels() {
 
       {/* Hero */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(90,107,78,0.06) 0%, transparent 50%)" }}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 30%, rgba(90,107,78,0.06) 0%, transparent 50%)",
+          }}
         />
         <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-8 text-center">
           <ScrollReveal>
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] mb-8">
               <FiSettings className="w-4 h-4 text-[#6b7c5c]" />
-              <span className="text-sm text-white/50">Guides d'installation</span>
+              <span className="text-sm text-white/50">
+                Guides d'installation
+              </span>
             </div>
             <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-5 tracking-[-0.02em]">
               Comment <span className="text-[#6b7c5c]">installer</span> IPTV
             </h1>
             <p className="text-white/60 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-              Suivez nos guides étape par étape. La procédure et sa durée dépendent de votre appareil, de son système et de l’application compatible.
+              Suivez nos guides étape par étape. La procédure et sa durée
+              dépendent de votre appareil, de son système et de l’application
+              compatible.
             </p>
           </ScrollReveal>
         </div>
@@ -129,15 +146,25 @@ export default function Tutoriels() {
           <ScrollReveal>
             <div className="border border-[#5a6b4e]/15 rounded-2xl p-6 sm:p-8 bg-[#5a6b4e]/5">
               <h2 className="font-display font-semibold text-xl text-white mb-5 flex items-center gap-3">
-                <FiCheckCircle className="w-6 h-6 text-[#6b7c5c]" /> Avant de commencer
+                <FiCheckCircle className="w-6 h-6 text-[#6b7c5c]" /> Avant de
+                commencer
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { icon: FiWifi, text: "Connexion internet stable (min 10 Mbps)" },
-                  { icon: FiDownload, text: "Vos identifiants reçus par WhatsApp" },
+                  {
+                    icon: FiWifi,
+                    text: "Connexion internet stable (min 10 Mbps)",
+                  },
+                  {
+                    icon: FiDownload,
+                    text: "Vos identifiants reçus par WhatsApp",
+                  },
                   { icon: FiPlay, text: "L'application IPTV recommandée" },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 p-4 bg-white/[0.02] rounded-xl border border-white/[0.04]">
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-4 bg-white/[0.02] rounded-xl border border-white/[0.04]"
+                  >
                     <item.icon className="w-5 h-5 text-[#6b7c5c] flex-shrink-0 mt-0.5" />
                     <span className="text-white/60 text-sm">{item.text}</span>
                   </div>
@@ -152,20 +179,30 @@ export default function Tutoriels() {
       <section className="relative py-8 pb-24">
         <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-8">
           <div className="space-y-4">
-            {tutorials.map((tutorial) => (
+            {tutorials.map(tutorial => (
               <div
                 key={tutorial.id}
                 className="border border-white/[0.06] rounded-2xl overflow-hidden bg-white/[0.02] hover:border-white/[0.10] transition-all duration-300"
               >
                 <button
-                  onClick={() => setOpenTutorial(openTutorial === tutorial.id ? null : tutorial.id)}
+                  type="button"
+                  onClick={() =>
+                    setOpenTutorial(
+                      openTutorial === tutorial.id ? null : tutorial.id
+                    )
+                  }
                   className="w-full flex items-center justify-between p-5 sm:p-6 text-left"
+                  id={`tutorial-button-${tutorial.id}`}
+                  aria-expanded={openTutorial === tutorial.id}
+                  aria-controls={`tutorial-panel-${tutorial.id}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-[#5a6b4e]/10 flex items-center justify-center flex-shrink-0">
                       <tutorial.icon className="w-6 h-6 text-[#6b7c5c]" />
                     </div>
-                    <span className="font-display font-semibold text-lg text-white">{tutorial.name}</span>
+                    <span className="font-display font-semibold text-lg text-white">
+                      {tutorial.name}
+                    </span>
                   </div>
                   {openTutorial === tutorial.id ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
@@ -177,6 +214,9 @@ export default function Tutoriels() {
                 <AnimatePresence>
                   {openTutorial === tutorial.id && (
                     <motion.div
+                      id={`tutorial-panel-${tutorial.id}`}
+                      role="region"
+                      aria-labelledby={`tutorial-button-${tutorial.id}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -196,14 +236,19 @@ export default function Tutoriels() {
                                 <span className="w-7 h-7 rounded-full bg-[#5a6b4e]/15 text-[#6b7c5c] text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                                   {i + 1}
                                 </span>
-                                <span className="text-white/55 text-sm leading-relaxed">{step}</span>
+                                <span className="text-white/55 text-sm leading-relaxed">
+                                  {step}
+                                </span>
                               </motion.li>
                             ))}
                           </ol>
 
                           <div className="mt-5 p-4 bg-[#5a6b4e]/8 rounded-xl border border-[#5a6b4e]/10">
                             <p className="text-[#6b7c5c]/80 text-sm">
-                              <strong className="text-[#6b7c5c]">Astuce :</strong> {tutorial.tips}
+                              <strong className="text-[#6b7c5c]">
+                                Astuce :
+                              </strong>{" "}
+                              {tutorial.tips}
                             </p>
                           </div>
                         </div>
@@ -225,7 +270,8 @@ export default function Tutoriels() {
               Besoin d'<span className="text-[#6b7c5c]">aide</span> ?
             </h2>
             <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto font-light">
-              Notre équipe de support est disponible 7j/7 pour vous accompagner dans l'installation.
+              Notre équipe de support est disponible 7j/7 pour vous accompagner
+              dans l'installation.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a

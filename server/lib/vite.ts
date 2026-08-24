@@ -9,6 +9,34 @@ type App = Hono<{
   Variables: { requestId: string };
 }>;
 
+const SPA_ROUTES = new Set([
+  "/",
+  "/a-propos",
+  "/admin",
+  "/blog",
+  "/commande",
+  "/conditions",
+  "/contact",
+  "/espace-client",
+  "/faq",
+  "/login",
+  "/mentions-legales",
+  "/offres",
+  "/paiement",
+  "/politique-confidentialite",
+  "/revendeur",
+  "/revendeurs",
+  "/status",
+  "/support",
+  "/tutoriels",
+]);
+
+export function isKnownSpaRoute(pathname: string): boolean {
+  const normalized =
+    pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
+  return SPA_ROUTES.has(normalized) || /^\/blog\/[1-6]$/.test(normalized);
+}
+
 export function serveStaticFiles(app: App) {
   const distPath = path.resolve(import.meta.dirname, "../dist/public");
 
@@ -21,6 +49,9 @@ export function serveStaticFiles(app: App) {
     }
     const indexPath = path.resolve(distPath, "index.html");
     const content = fs.readFileSync(indexPath, "utf-8");
-    return c.html(content);
+    return c.html(
+      content,
+      isKnownSpaRoute(new URL(c.req.url).pathname) ? 200 : 404
+    );
   });
 }

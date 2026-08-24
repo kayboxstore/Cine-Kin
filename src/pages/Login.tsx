@@ -38,7 +38,7 @@ export default function Login() {
   useEffect(() => {
     const controller = new AbortController();
     fetch(Paths.oauthStatus, { cache: "no-store", signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
+      .then(response => (response.ok ? response.json() : null))
       .then((result: { enabled?: boolean } | null) => {
         if (result?.enabled) setKimiEnabled(true);
       })
@@ -51,6 +51,7 @@ export default function Login() {
       <SEO
         title="Connexion"
         description="Choisissez votre espace client, revendeur ou administration Ciné Kin Premium."
+        noIndex
       />
 
       <div className="w-full max-w-4xl">
@@ -60,12 +61,13 @@ export default function Login() {
             Choisissez votre espace
           </h1>
           <p className="text-white/60 text-sm">
-            Chaque portail utilise ses propres identifiants et sa propre session.
+            Chaque portail utilise ses propres identifiants et sa propre
+            session.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {portals.map((portal) => {
+          {portals.map(portal => {
             const Icon = portal.icon;
             return (
               <Link

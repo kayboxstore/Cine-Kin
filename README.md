@@ -31,6 +31,7 @@ Copier `.env.example` vers `.env` et renseigner les valeurs :
 | `APP_ID`            | Identifiant d'application OAuth                                            |
 | `APP_SECRET`        | Secret client OAuth uniquement                                             |
 | `APP_BASE_URL`      | Origine HTTPS canonique utilisée pour le callback OAuth                    |
+| `VITE_SITE_URL`     | Origine publique utilisée par les canonical et métadonnées sociales        |
 | `SESSION_SECRET`    | Secret dédié à la signature des sessions et transactions OAuth             |
 | `ENCRYPTION_KEY`    | Clé dédiée au chiffrement AES-GCM des identifiants de playlists            |
 | `ADMIN_PASSWORD`    | Mot de passe administrateur alternatif, optionnel                          |

@@ -1,89 +1,74 @@
-const CACHE_NAME = 'cine-kin-premium-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-];
+const CACHE_NAME = "cine-kin-shell-v2";
+const OFFLINE_SHELL = "/index.html";
+const PRECACHE = [OFFLINE_SHELL, "/manifest.json", "/favicon-192.png"];
 
-// Install - cache static assets
-self.addEventListener('install', (event) => {
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .catch(() => {
-        // Silently fail for individual cache items
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE))
   );
   self.skipWaiting();
 });
 
-// Activate - clean up old caches
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches
+      .keys()
+      .then(names =>
+        Promise.all(
+          names
+            .filter(name => name !== CACHE_NAME)
+            .map(name => caches.delete(name))
+        )
+      )
   );
   self.clients.claim();
 });
 
-// Fetch - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+async function networkFirst(request, fallback) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(fallback, response.clone());
+    }
+    return response;
+  } catch {
+    return (
+      (await caches.match(fallback)) ??
+      new Response("Hors ligne", { status: 503 })
+    );
+  }
+}
 
-  // Skip API requests
-  if (event.request.url.includes('/api/')) return;
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok) {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.put(request, response.clone());
+  }
+  return response;
+}
 
-  // Skip external requests
-  if (!event.request.url.startsWith(self.location.origin)) return;
+self.addEventListener("fetch", event => {
+  const { request } = event;
+  if (request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // Return cached version if available
-      if (cachedResponse) {
-        // Fetch new version in background
-        fetch(event.request)
-          .then((response) => {
-            if (response.ok) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, response);
-              });
-            }
-          })
-          .catch(() => {});
-        return cachedResponse;
-      }
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) {
+    return;
+  }
 
-      // Otherwise fetch from network
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200) {
-            return response;
-          }
+  // Navigations must see the latest deployment. The cached shell is used only
+  // when the network is genuinely unavailable.
+  if (request.mode === "navigate") {
+    event.respondWith(networkFirst(request, OFFLINE_SHELL));
+    return;
+  }
 
-          // Clone and cache the response
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-
-          return response;
-        })
-        .catch(() => {
-          // Offline fallback for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-          return new Response('Hors ligne', { status: 503 });
-        });
-    })
-  );
+  // Vite assets are content-hashed and therefore safe to cache immutably.
+  if (url.pathname.startsWith("/assets/")) {
+    event.respondWith(cacheFirst(request));
+  }
 });
