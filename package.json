@@ -19,7 +19,10 @@
     "db:deploy": "node scripts/db-migrate-if-configured.mjs && node scripts/audit-migrated-db.mjs",
     "db:adopt": "node scripts/adopt-migration-baseline.mjs",
     "db:audit": "node scripts/audit-migrated-db.mjs",
-    "db:test-migrations": "node scripts/test-migrations.mjs"
+    "db:test-migrations": "node scripts/test-migrations.mjs",
+    "staging:preflight": "node scripts/staging-preflight.mjs",
+    "staging:rehearse": "node scripts/staging-rehearsal.mjs",
+    "staging:smoke": "node scripts/staging-smoke.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.15",
