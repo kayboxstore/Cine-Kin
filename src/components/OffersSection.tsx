@@ -10,6 +10,7 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 import { CLIENT_PLANS, SITE_CONFIG } from "@/data/siteData";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 import ScrollReveal from "@/components/ScrollReveal";
 
 // Single source of truth = CLIENT_PLANS (siteData). The monthly equivalent
@@ -189,8 +190,8 @@ export default function OffersSection() {
                     />
                     <DetailRow
                       icon={FiShield}
-                      label="Garantie"
-                      value={selected.guarantee === "Aucune" ? "Aucune garantie" : `Garantie ${selected.guarantee}`}
+                      label="Conditions"
+                      value={isTrial(selected) ? "Essai sans paiement" : COMMERCIAL_INFO.refund.label}
                     />
                   </div>
 
@@ -206,7 +207,7 @@ export default function OffersSection() {
                     <FiArrowRight className="w-4 h-4" />
                   </a>
                   <p className="text-center text-white/70 text-xs mt-3">
-                    Sans engagement · Activation rapide · Support WhatsApp direct
+                    Prix affiché · Activation après validation · Support WhatsApp
                   </p>
                 </motion.div>
               </AnimatePresence>

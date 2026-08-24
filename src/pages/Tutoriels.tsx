@@ -6,6 +6,7 @@ import {
 } from "react-icons/fi";
 import ScrollReveal from "@/components/ScrollReveal";
 import SEO from "@/components/SEO";
+import { SITE_CONFIG } from "@/data/siteData";
 
 const tutorials = [
   {
@@ -97,7 +98,7 @@ export default function Tutoriels() {
   return (
     <div className="min-h-screen bg-[#0a1628] pt-20">
       <SEO
-        title="Guides d'Installation - Tous Appareils"
+        title="Guides d'installation IPTV"
         description="Guides d'installation étape par étape pour Smart TV, Android TV, Fire Stick, iPhone, iPad, PC et Mac."
       />
 
@@ -116,7 +117,7 @@ export default function Tutoriels() {
               Comment <span className="text-[#6b7c5c]">installer</span> IPTV
             </h1>
             <p className="text-white/60 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-              Suivez nos guides étape par étape pour installer et configurer votre abonnement IPTV sur n'importe quel appareil. L'installation prend moins de 5 minutes.
+              Suivez nos guides étape par étape. La procédure et sa durée dépendent de votre appareil, de son système et de l’application compatible.
             </p>
           </ScrollReveal>
         </div>
@@ -228,7 +229,7 @@ export default function Tutoriels() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
-                href="https://wa.me/243830240073"
+                href={`https://wa.me/${SITE_CONFIG.whatsappNumber.replace(/[+\s]/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-4 bg-[#5a6b4e] text-white font-semibold rounded-xl hover:bg-[#4d5d42] transition-all text-base"

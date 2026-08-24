@@ -19,7 +19,7 @@ import {
   isSensitiveTrpcRequest,
   sensitiveProcedureKey,
 } from "./lib/trpc-security";
-import { env } from "./lib/env";
+import { env, isKimiOAuthConfigured } from "./lib/env";
 import { getTrustedClientIp } from "./lib/client-ip";
 import { createRateLimitStore } from "./lib/database-rate-limit-store";
 import { createReadinessHandler } from "./lib/health";
@@ -170,6 +170,10 @@ app.get("/api/health/live", c => {
   return c.json({ ok: true });
 });
 app.get("/api/health/ready", createReadinessHandler());
+app.get(Paths.oauthStatus, c => {
+  c.header("Cache-Control", "no-store");
+  return c.json({ enabled: isKimiOAuthConfigured() });
+});
 app.get(Paths.oauthStart, createOAuthStartHandler());
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async c => {

@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -9,15 +9,12 @@ import {
 import {
   ADVANTAGES, HOW_IT_WORKS, FAQ
 } from "@/data/siteData";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 import ScrollReveal from "@/components/ScrollReveal";
 import MagneticButton from "@/components/MagneticButton";
-import AnimatedCounter from "@/components/AnimatedCounter";
-const TestimonialCarousel = lazy(() => import("@/components/TestimonialCarousel"));
 import TrustBadges from "@/components/TrustBadges";
 import Gallery from "@/components/Gallery";
 import SavingsCalculator from "@/components/SavingsCalculator";
-import ReferralSection from "@/components/ReferralSection";
-import PromoCode from "@/components/PromoCode";
 import ServerStatus from "@/components/ServerStatus";
 import ParallaxHero from "@/components/ParallaxHero";
 import HeroSection from "@/components/HeroSection";
@@ -56,10 +53,10 @@ const featureImages = [
    ═══════════════════════════════════════════ */
 function StatsBar() {
   const stats = [
-    { target: 15000, suffix: "+", label: "Chaînes TV" },
-    { target: 50000, suffix: "+", label: "Films & Séries" },
-    { target: 99, suffix: "%", label: "Uptime SLA" },
-    { target: 24, suffix: "/7", label: "Support" },
+    { value: "24 h", label: "Essai gratuit" },
+    { value: "1 ou 2", label: "Écrans" },
+    { value: "Jusqu’à 4K", label: "Qualité" },
+    { value: "08h–23h", label: "Support 7j/7" },
   ];
 
   return (
@@ -70,7 +67,7 @@ function StatsBar() {
             {stats.map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight mb-1">
-                  <AnimatedCounter end={stat.target} suffix={stat.suffix} />
+                  {stat.value}
                 </div>
                 <div className="text-white/60 text-[11px] tracking-[0.15em] uppercase">{stat.label}</div>
               </div>
@@ -101,7 +98,7 @@ function AdvantagesSection() {
             Sans <span className="text-white/55">compromis</span>
           </h2>
           <p className="text-white/60 text-base max-w-md mx-auto font-light">
-            Tout ce dont vous avez besoin pour un divertissement illimité.
+            Des formules lisibles, une compatibilité expliquée et un support identifiable.
           </p>
         </ScrollReveal>
 
@@ -202,7 +199,7 @@ function ResellerCTASection() {
                 Devenez <span className="text-white/55">revendeur</span>
               </h2>
               <p className="text-white/50 text-base mb-10 leading-relaxed max-w-md mx-auto font-light">
-                Rejoignez notre réseau et bénéficiez de marges de plus de 150%.
+                Gérez vos codes et vos activations depuis un portail dédié. Vous gardez la maîtrise de vos tarifs de revente.
               </p>
 
               <Link to="/revendeurs">
@@ -217,10 +214,10 @@ function ResellerCTASection() {
 
               <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
                 {[
-                  { value: "150%+", label: "Marge" },
-                  { value: "1 000+", label: "Revendeurs" },
-                  { value: "Instantané", label: "Activation" },
-                  { value: "24/7", label: "Support" },
+                  { value: "20–500", label: "Codes / pack" },
+                  { value: "4", label: "Formules" },
+                  { value: "Dédié", label: "Portail" },
+                  { value: "7j/7", label: "Support" },
                 ].map((stat, i) => (
                   <div key={i} className="text-center">
                     <div className="font-display font-bold text-xl text-white/70">{stat.value}</div>
@@ -230,32 +227,6 @@ function ResellerCTASection() {
               </div>
             </div>
           </div>
-        </ScrollReveal>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════
-   TESTIMONIALS
-   ═══════════════════════════════════════════ */
-function TestimonialsSection() {
-  return (
-    <section className="relative py-32 bg-[#0a1628] overflow-hidden">
-      <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
-        <ScrollReveal className="text-center mb-16">
-          <p className="text-[#6b7c5c]/50 text-sm font-medium tracking-[0.2em] uppercase mb-5">
-            Témoignages
-          </p>
-          <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl text-white tracking-[-0.02em] leading-tight">
-            Ils nous <span className="text-white/55">font confiance</span>
-          </h2>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.15}>
-          <Suspense fallback={<div className="h-64" />}>
-            <TestimonialCarousel />
-          </Suspense>
         </ScrollReveal>
       </div>
     </section>
@@ -367,8 +338,8 @@ export default function Home() {
     <>
       <SchemaOrg />
       <SEO
-        title="Abonnement IPTV Premium - 15000+ Chaînes en 4K"
-        description="Ciné Kin Premium offre le meilleur service IPTV avec 15000+ chaînes, films et séries en 4K UHD. Essai gratuit 24h. Compatible tous appareils."
+        title="Abonnement IPTV Premium"
+        description={`${COMMERCIAL_INFO.catalogue.headline} Essai gratuit de 24 h et formules de 1 ou 2 écrans.`}
       />
       <ParallaxHero>
         <HeroSection />
@@ -378,14 +349,11 @@ export default function Home() {
       <AdvantagesSection />
       <HowItWorksSection />
       <OffersSection />
-      <PromoCode />
       <SavingsCalculator />
       <Gallery />
       <ResellerCTASection />
-      <TestimonialsSection />
       <ServerStatus />
       <FAQSection />
-      <ReferralSection />
       <FinalCTASection />
     </>
   );

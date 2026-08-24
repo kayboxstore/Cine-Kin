@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiTv, FiFilm, FiMonitor, FiGrid } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
 import LazyImage from "./LazyImage";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 
 const galleryItems = [
   {
@@ -22,14 +23,14 @@ const galleryItems = [
   {
     id: 3,
     title: "Multi-écrans simultanés",
-    description: "Regardez sur jusqu'à 5 appareils en simultané avec un seul abonnement.",
+    description: `Regardez sur jusqu’à ${COMMERCIAL_INFO.screens.max} écrans selon la formule choisie.`,
     icon: FiMonitor,
     image: "/images/gallery-multi.jpg",
   },
   {
     id: 4,
     title: "Grille de chaînes complète",
-    description: "15 000+ chaînes organisées par pays et catégorie pour un accès rapide.",
+    description: "Des chaînes organisées par pays et catégorie pour un accès rapide.",
     icon: FiGrid,
     image: "/images/gallery-grid.jpg",
   },

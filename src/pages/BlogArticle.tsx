@@ -7,6 +7,7 @@ import {
 } from "react-icons/fi";
 import SEO from "@/components/SEO";
 import ScrollReveal from "@/components/ScrollReveal";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 
 const articles = [
   {
@@ -35,18 +36,18 @@ const articles = [
       },
       {
         heading: "Avantages par rapport au câble traditionnel",
-        text: "L'IPTV offre de nombreux avantages : un catalogue bien plus vaste de chaînes internationales, une qualité d'image supérieure jusqu'en 4K, la compatibilité avec tous les appareils connectés, et des fonctionnalités avancées comme le replay, le catch-up TV et l'EPG (guide électronique des programmes)."
+        text: "L'IPTV peut proposer un catalogue à la demande, plusieurs niveaux de qualité et des fonctions comme le replay ou l'EPG. Leur disponibilité dépend toutefois du fournisseur, de la source, de l'appareil et de la formule."
       },
       {
         heading: "Pourquoi choisir Ciné Kin Premium ?",
-        text: "Avec Ciné Kin Premium, vous accédez à plus de 15 000 chaînes, des milliers de films et séries en VOD, le tout en qualité HD, Full HD et 4K. Notre service est compatible avec tous vos appareils et notre support technique est disponible 7j/7 pour vous accompagner."
+        text: `${COMMERCIAL_INFO.catalogue.headline} ${COMMERCIAL_INFO.support.description}`
       }
     ]
   },
   {
     id: 2,
-    title: "Top 10 des chaînes sportives en 4K",
-    excerpt: "Le sport en ultra haute définition change l'expérience visuelle.",
+    title: "Bien préparer le streaming sportif en 4K",
+    excerpt: "Les points à vérifier avant de regarder un contenu sportif en ultra haute définition.",
     date: "8 juillet 2026",
     readTime: "4 min",
     icon: FiWifi,
@@ -60,16 +61,16 @@ const articles = [
         text: "Regarder le sport en 4K, c'est vivre l'action comme si vous y étiez. Avec une résolution quatre fois supérieure à la Full HD, chaque détail est visible : le gazon du terrain, les expressions des joueurs, la texture des maillots. L'immersion est totale."
       },
       {
-        heading: "Les chaînes incontournables",
-        text: "Notre sélection comprend les meilleures chaînes sportives internationales : beIN Sports, ESPN, Sky Sports, BT Sport, Canal+ Sport, RMC Sport, Eleven Sports, DAZN, Fox Sports et NBC Sports. Chacune offre une couverture complète des événements majeurs."
+        heading: "Vérifier la disponibilité",
+        text: "Une chaîne ou un événement n'est pas systématiquement disponible en 4K. Vérifiez le catalogue pendant l'essai et demandez confirmation au support avant de choisir une formule."
       },
       {
-        heading: "Football, basketball, tennis et plus",
-        text: "Accédez à toutes les ligues majeures : Ligue 1, Premier League, Liga, Serie A, Bundesliga, NBA, NFL, Grand Chelem tennis, F1, MotoGP et bien plus encore. Ne manquez jamais un match important."
+        heading: "Connexion et stabilité",
+        text: "Le débit utile, la stabilité du Wi-Fi et la charge du réseau influencent la lecture. Une connexion Ethernet peut être préférable lorsque le téléviseur est éloigné du routeur."
       },
       {
-        heading: "Qualité de streaming optimale",
-        text: "Pour profiter pleinement du 4K, une connexion d'au moins 25 Mbps est recommandée. Notre technologie anti-freeze garantit un streaming fluide même pendant les pics d'audience des grands événements."
+        heading: "Équipement compatible",
+        text: "Le téléviseur, l'application, le câble HDMI et le boîtier doivent tous prendre en charge la définition visée. Utilisez l'essai gratuit pour contrôler l'ensemble de la chaîne de lecture."
       }
     ]
   },
@@ -91,11 +92,11 @@ const articles = [
       },
       {
         heading: "Utiliser un VPN",
-        text: "Un VPN (Virtual Private Network) chiffre votre connexion Internet et masque votre adresse IP. Cela rend vos activités en ligne privées et sécurisées. Choisissez un VPN fiable avec des serveurs rapides pour ne pas dégrader la qualité du stream."
+        text: "Un VPN (Virtual Private Network) peut chiffrer le trafic entre votre appareil et le serveur VPN et masquer votre adresse IP publique au service consulté. Il ne remplace pas les mises à jour, des mots de passe robustes ni la prudence face aux applications non officielles."
       },
       {
         heading: "Choisir un fournisseur fiable",
-        text: "Optez toujours pour un fournisseur IPTV réputé et établi. Évitez les services gratuits suspects qui peuvent contenir des malwares ou vendre vos données personnelles. Ciné Kin Premium garantit la sécurité et la confidentialité de vos données."
+        text: "Vérifiez l'identité du fournisseur, les conditions, la politique de confidentialité et les moyens de contact avant de payer. Aucun service ne peut garantir une sécurité absolue."
       },
       {
         heading: "Protéger vos appareils",
@@ -125,7 +126,7 @@ const articles = [
       },
       {
         heading: "Comparaison des fonctionnalités",
-        text: "La Smart TV offre une expérience plus épurée avec une seule télécommande. L'Android TV Box offre plus de flexibilité, des applications supplémentaires et un meilleur rapport performance/prix. Les deux solutions fonctionnent parfaitement avec Ciné Kin Premium."
+        text: "La Smart TV offre une expérience plus épurée avec une seule télécommande. L'Android TV Box peut offrir davantage de flexibilité. La compatibilité dépend du modèle, du système et de l'application disponible."
       },
       {
         heading: "Notre recommandation",
@@ -135,38 +136,38 @@ const articles = [
   },
   {
     id: 5,
-    title: "Les nouveautés Ciné Kin Premium ce mois-ci",
-    excerpt: "De nouvelles chaînes, des films récents et des séries exclusives.",
+    title: "Comment vérifier le catalogue avant de souscrire",
+    excerpt: "Une méthode simple pour vérifier contenus, qualité et compatibilité pendant l'essai.",
     date: "1 juillet 2026",
     readTime: "3 min",
     icon: FiTv,
-    category: "Actualités",
+    category: "Guide",
     author: "Ciné Kin Team",
     authorRole: "Équipe Éditoriale",
     image: "/images/iptv-interface.jpg",
     content: [
       {
-        heading: "Nouvelles chaînes ajoutées",
-        text: "Ce mois-ci, nous avons ajouté plus de 500 nouvelles chaînes à notre catalogue, portant le total à plus de 15 000. Parmi les nouveautés : de nouvelles chaînes africaines, des chaînes de sport supplémentaires et des chaînes cinéma en plusieurs langues."
+        heading: "Préparez votre liste",
+        text: "Notez les chaînes, langues, catégories et appareils qui comptent pour vous. Une liste concrète permet de vérifier l'offre sans se fier à un volume global."
       },
       {
-        heading: "Nouveautés VOD",
-        text: "Notre bibliothèque VOD s'enrichit chaque semaine avec les dernières sorties cinéma et les nouveaux épisodes de séries populaires. Retrouvez les blockbusters du moment et les séries les plus regardées."
+        heading: "Utilisez l'essai gratuit",
+        text: "Testez les contenus prioritaires, les heures de forte audience, la qualité disponible et votre appareil habituel pendant les 24 heures d'essai."
       },
       {
-        heading: "Améliorations techniques",
-        text: "Nous avons optimisé nos serveurs pour une latence réduite et une qualité de stream encore meilleure. Notre système anti-freeze a été mis à jour pour garantir une expérience sans interruption."
+        heading: "Vérifiez les limites",
+        text: "Contrôlez le nombre d'écrans simultanés, la présence de l'EPG et les fonctions de replay dont vous avez réellement besoin."
       },
       {
-        heading: "Prochainement",
-        text: "Dans les semaines à venir, nous déploierons une nouvelle interface utilisateur plus intuitive, des fonctionnalités de personnalisation avancées et une application mobile dédiée. Restez connectés !"
+        heading: "Demandez une confirmation",
+        text: "Avant de payer, demandez au support de confirmer la formule, le prix, la durée et les conditions applicables à votre commande."
       }
     ]
   },
   {
     id: 6,
     title: "Comment devenir revendeur IPTV",
-    excerpt: "Le marché de l'IPTV connaît une croissance exponentielle.",
+    excerpt: "Comprendre les outils, les coûts et les responsabilités d'un pack revendeur.",
     date: "28 juin 2026",
     readTime: "8 min",
     icon: FiWifi,
@@ -176,20 +177,20 @@ const articles = [
     image: "/images/iptv-interface.jpg",
     content: [
       {
-        heading: "Un marché en pleine expansion",
-        text: "Le marché mondial de l'IPTV devrait atteindre plus de 100 milliards de dollars d'ici 2028. Cette croissance exponentielle crée des opportunités exceptionnelles pour les entrepreneurs qui souhaitent se positionner sur ce marché en plein essor."
+        heading: "Évaluer le projet",
+        text: "Avant d'acheter un pack, estimez vos coûts, votre prix de vente, le support que vous devrez fournir et les obligations applicables dans votre pays."
       },
       {
         heading: "Pourquoi devenir revendeur ?",
-        text: "Devenir revendeur IPTV vous permet de générer des revenus récurrents avec des marges supérieures à 150%. Vous travaillez à votre propre rythme, depuis n'importe où dans le monde, avec des investissements initiaux minimes."
+        text: `Le portail permet de gérer des codes et des activations pour vos clients. ${COMMERCIAL_INFO.reseller.description}`
       },
       {
         heading: "Nos packs revendeur",
-        text: "Ciné Kin Premium propose quatre packs adaptés à vos ambitions : Starter (20 codes), Business (50 codes), Pro (100 codes) et VIP (500 codes). Chaque pack inclut un panneau revendeur, un support dédié et des outils de gestion complets."
+        text: "Ciné Kin Premium affiche quatre packs : Starter (20 codes), Business (50 codes), Pro (100 codes) et VIP (500 codes). Consultez la page Revendeurs pour voir les prix et les fonctions actuellement annoncées."
       },
       {
         heading: "Comment démarrer",
-        text: "Rendez-vous sur notre page Revendeurs, choisissez le pack qui vous convient et créez votre compte. Notre équipe vous accompagne dans la configuration de votre panneau et vous fournit tous les guides nécessaires pour réussir."
+        text: "Rendez-vous sur la page Revendeurs, comparez les packs et préparez une demande WhatsApp. Vérifiez le prix, les fonctions, le support et les conditions avant paiement."
       }
     ]
   },
@@ -214,6 +215,8 @@ export default function BlogArticle() {
   const relatedArticles = articles
     .filter(a => a.id !== article.id && a.category === article.category)
     .slice(0, 2);
+  const shareUrl = encodeURIComponent(window.location.href);
+  const shareTitle = encodeURIComponent(article.title);
 
   return (
     <div className="min-h-screen bg-[#0a1628] pt-20">
@@ -319,15 +322,33 @@ export default function BlogArticle() {
                 <div className="flex items-center gap-2">
                   <FiShare2 className="w-4 h-4 text-white/55" />
                   <span className="text-white/60 text-sm">Partager :</span>
-                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10 transition-all">
+                  <a
+                    href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Partager sur X"
+                    className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10 transition-all"
+                  >
                     <FiTwitter className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#4267B2] hover:bg-[#4267B2]/10 transition-all">
+                  </a>
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Partager sur Facebook"
+                    className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#4267B2] hover:bg-[#4267B2]/10 transition-all"
+                  >
                     <FiFacebook className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#0077b5] hover:bg-[#0077b5]/10 transition-all">
+                  </a>
+                  <a
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Partager sur LinkedIn"
+                    className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-white/55 hover:text-[#0077b5] hover:bg-[#0077b5]/10 transition-all"
+                  >
                     <FiLinkedin className="w-4 h-4" />
-                  </button>
+                  </a>
                 </div>
                 <Link
                   to="/blog"
