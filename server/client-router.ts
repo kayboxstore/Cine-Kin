@@ -11,7 +11,10 @@ import {
   encryptSecret,
   decryptSecret,
 } from "./lib/crypto";
-import { signClientSession } from "./lib/app-sessions";
+import {
+  sessionVersionForCredential,
+  signClientSession,
+} from "./lib/app-sessions";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
   macAddressSchema,
@@ -81,7 +84,10 @@ export const clientRouter = createRouter({
         });
       }
 
-      const token = await signClientSession(client.id);
+      const token = await signClientSession(
+        client.id,
+        sessionVersionForCredential(client.pinHash ?? "")
+      );
       appendSessionCookie(
         ctx.resHeaders,
         ctx.req.headers,

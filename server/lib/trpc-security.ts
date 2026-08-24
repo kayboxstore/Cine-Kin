@@ -48,17 +48,29 @@ export function isSensitiveTrpcBatch(input: string | URL): boolean {
 // effective Host (including the forwarded host on Vercel/proxies).
 export function hasAllowedOrigin(
   headers: Headers,
-  requestUrl: string | URL
+  requestUrl: string | URL,
+  trustProxy = false
 ): boolean {
   const origin = headers.get("origin");
   if (!origin) return true;
 
-  const forwardedHost = headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const request = asUrl(requestUrl);
+  const forwardedHost = trustProxy
+    ? headers.get("x-forwarded-host")?.split(",")[0]?.trim()
+    : undefined;
+  const forwardedProtocol = trustProxy
+    ? headers.get("x-forwarded-proto")?.split(",")[0]?.trim()
+    : undefined;
   const directHost = headers.get("host")?.split(",")[0]?.trim();
-  const expectedHost = forwardedHost || directHost || asUrl(requestUrl).host;
+  const expectedHost = forwardedHost || directHost || request.host;
+  const expectedProtocol = forwardedProtocol
+    ? `${forwardedProtocol.replace(/:$/, "")}:`
+    : request.protocol;
 
   try {
-    return new URL(origin).host === expectedHost;
+    const expectedOrigin = new URL(`${expectedProtocol}//${expectedHost}`)
+      .origin;
+    return new URL(origin).origin === expectedOrigin;
   } catch {
     return false;
   }

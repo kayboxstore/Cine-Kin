@@ -60,15 +60,20 @@ function inspectionFromSnapshot(snapshot) {
 }
 
 describe("migration history", () => {
-  it("contains a baseline and a separate security/data migration", async () => {
+  it("contains the baseline, data-hardening and rate-limit migrations", async () => {
     const definitions = await loadMigrationDefinitions();
+    const securityDataMigration = definitions.all[1];
+
+    expect(definitions.all).toHaveLength(3);
     expect(Object.keys(definitions.baseline.snapshot.tables)).toHaveLength(7);
-    expect(Object.keys(definitions.current.snapshot.tables)).toHaveLength(8);
+    expect(Object.keys(securityDataMigration.snapshot.tables)).toHaveLength(8);
+    expect(Object.keys(definitions.current.snapshot.tables)).toHaveLength(9);
     expect(definitions.baseline.hash).toMatch(/^[a-f0-9]{64}$/);
-    expect(definitions.current.sql).toContain(
+    expect(securityDataMigration.sql).toContain(
       "Solde historique repris lors de la migration"
     );
-    expect(definitions.current.sql).toContain("claimed_at");
+    expect(securityDataMigration.sql).toContain("claimed_at");
+    expect(definitions.current.sql).toContain("rate_limit_counters");
   });
 
   it("matches the generated current snapshot exactly", async () => {

@@ -795,13 +795,20 @@ describe("reseller.changePassword", () => {
     shared.store.resellers.push(reseller);
 
     // The session context carries the current (old) hash.
-    const authed = createCaller(makeCtx({ reseller: { ...reseller } }));
+    const authenticatedContext = makeCtx({ reseller: { ...reseller } });
+    const authed = createCaller(authenticatedContext);
     await expect(
       authed.reseller.changePassword({
         currentPassword: oldPw,
         newPassword: newPw,
       })
     ).resolves.toEqual({ success: true });
+    expect(authenticatedContext.resHeaders.get("set-cookie")).toContain(
+      "ck_reseller_sid=;"
+    );
+    expect(authenticatedContext.resHeaders.get("set-cookie")).toContain(
+      "Max-Age=0"
+    );
 
     // The stored hash now matches only the new password.
     expect(verifySecret(newPw, shared.store.resellers[0].passwordHash)).toBe(

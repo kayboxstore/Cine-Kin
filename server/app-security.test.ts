@@ -2,7 +2,9 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
   process.env.APP_SECRET = "test-app-secret-0123456789-abcdefghij";
+  process.env.SESSION_SECRET = "test-session-secret-0123456789-abcdefghij";
   process.env.ADMIN_PASSWORD = "correct-password";
+  process.env.TRUST_PROXY = "true";
 });
 
 import app from "./app";
@@ -28,6 +30,16 @@ function post(
 }
 
 describe("Hono authentication perimeter", () => {
+  it("serves a liveness probe with a correlation id and strict script CSP", async () => {
+    const response = await app.request("https://cine.test/api/health/live");
+    const csp = response.headers.get("content-security-policy") ?? "";
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-request-id")).toMatch(/^[0-9a-f-]{36}$/);
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
+  });
+
   it("blocks a batched admin-login request before tRPC executes it", async () => {
     const response = await post(
       "http://cine.test/api/trpc/auth.adminLogin,auth.adminLogin?batch=1",

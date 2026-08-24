@@ -135,6 +135,20 @@ export const resellers = mysqlTable("resellers", {
 export type Reseller = typeof resellers.$inferSelect;
 export type InsertReseller = typeof resellers.$inferInsert;
 
+// Shared counters for authentication/API rate limiting. Keys are SHA-256
+// digests, so raw IP addresses and procedure names are not persisted.
+export const rateLimitCounters = mysqlTable(
+  "rate_limit_counters",
+  {
+    key: varchar("counter_key", { length: 64 }).primaryKey(),
+    hits: int("hits", { unsigned: true }).notNull(),
+    resetAt: timestamp("reset_at", { fsp: 3 }).notNull(),
+  },
+  table => [index("rate_limit_reset_idx").on(table.resetAt)]
+);
+
+export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+
 // Immutable financial ledger. The reseller.credits column is the current
 // balance; every mutation of that balance must append exactly one row here in
 // the same database transaction.

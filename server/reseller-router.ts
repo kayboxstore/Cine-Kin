@@ -12,7 +12,10 @@ import {
 import type { Reseller } from "@db/schema";
 import { ResellerSession } from "@contracts/constants";
 import { hashSecret, verifySecret } from "./lib/crypto";
-import { signResellerSession } from "./lib/app-sessions";
+import {
+  sessionVersionForCredential,
+  signResellerSession,
+} from "./lib/app-sessions";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
   licenseTypeSchema,
@@ -63,7 +66,10 @@ export const resellerRouter = createRouter({
         });
       }
 
-      const token = await signResellerSession(reseller.id);
+      const token = await signResellerSession(
+        reseller.id,
+        sessionVersionForCredential(reseller.passwordHash)
+      );
       appendSessionCookie(
         ctx.resHeaders,
         ctx.req.headers,
@@ -387,6 +393,11 @@ export const resellerRouter = createRouter({
         .update(resellers)
         .set({ passwordHash: hashSecret(input.newPassword) })
         .where(eq(resellers.id, ctx.reseller.id));
+      clearSessionCookie(
+        ctx.resHeaders,
+        ctx.req.headers,
+        ResellerSession.cookieName
+      );
       return { success: true };
     }),
 });
