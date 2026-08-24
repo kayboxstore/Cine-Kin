@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
+import { randomUUID } from "node:crypto";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { rateLimiter } from "hono-rate-limiter";
@@ -7,7 +8,10 @@ import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
-import { createOAuthCallbackHandler } from "./kimi/auth";
+import {
+  createOAuthCallbackHandler,
+  createOAuthStartHandler,
+} from "./kimi/auth";
 import { Paths } from "@contracts/constants";
 import {
   hasAllowedOrigin,
@@ -15,35 +19,74 @@ import {
   isSensitiveTrpcRequest,
   sensitiveProcedureKey,
 } from "./lib/trpc-security";
+import { env } from "./lib/env";
+import { getTrustedClientIp } from "./lib/client-ip";
+import { createRateLimitStore } from "./lib/database-rate-limit-store";
+import { createReadinessHandler } from "./lib/health";
+import { errorSummary, logEvent } from "./lib/observability";
+
+type AppEnv = {
+  Bindings: HttpBindings;
+  Variables: { requestId: string };
+};
 
 // The Hono application, with no server binding. Two entry points import it:
 //   - server/boot.ts  → attaches @hono/node-server for a persistent Node host
 //     (npm start / the esbuild bundle).
 //   - server/index.ts → wraps it with hono/vercel as a single Vercel Serverless
 //     Function.
-const app = new Hono<{ Bindings: HttpBindings }>();
+const app = new Hono<AppEnv>();
 
-// Extract the client IP used as the rate-limiter key: the first
-// X-Forwarded-For entry when behind a proxy, otherwise the socket address.
-function getClientIp(c: Context<{ Bindings: HttpBindings }>): string {
-  const xff = c.req.header("x-forwarded-for");
-  if (xff) return xff.split(",")[0]!.trim();
-  return c.env?.incoming?.socket?.remoteAddress ?? "unknown";
+// Extract the client IP used as the rate-limiter key. Forwarded headers are
+// ignored unless the deployment explicitly trusts a known number of proxies.
+function getClientIp(c: Context<AppEnv>): string {
+  return getTrustedClientIp({
+    forwardedFor: c.req.header("x-forwarded-for"),
+    remoteAddress: c.env?.incoming?.socket?.remoteAddress,
+    trustProxy: env.trustProxy,
+    trustedHops: env.trustProxyHops,
+  });
 }
+
+// One correlation id per request, emitted both in the response and as JSON
+// logs. Raw request bodies, cookies and authorization data are never logged.
+app.use("*", async (c, next) => {
+  const requestId = randomUUID();
+  const startedAt = performance.now();
+  c.set("requestId", requestId);
+  c.header("X-Request-ID", requestId);
+  await next();
+  logEvent("info", "http_request", {
+    requestId,
+    method: c.req.method,
+    path: new URL(c.req.url).pathname,
+    status: c.res.status,
+    durationMs: Math.round(performance.now() - startedAt),
+  });
+});
+
+app.onError((error, c) => {
+  const requestId = c.get("requestId") || randomUUID();
+  logEvent("error", "unhandled_request_error", {
+    requestId,
+    method: c.req.method,
+    path: new URL(c.req.url).pathname,
+    ...errorSummary(error),
+  });
+  c.header("X-Request-ID", requestId);
+  return c.json({ error: "Erreur interne.", requestId }, 500);
+});
 
 // Security headers on every response (X-Frame-Options, nosniff, HSTS,
 // Referrer-Policy, …) plus a tailored Content-Security-Policy that
 // allow-lists exactly the external origins the app actually uses and
 // nothing else:
 //   - Google Fonts  → styles from fonts.googleapis.com, files from fonts.gstatic.com
-//   - Google Analytics → gtag from googletagmanager.com, beacons to *.google-analytics.com
 //   - external avatar images (user.avatar from the Kimi profile) → img-src https:
 //
-// NOTE: index.html ships three inline <script> blocks (GA config, the
-// Kimi-widget cleanup IIFE, the font `onload` handler) and the app relies on
-// inline `style` attributes (React/Framer Motion), so script-src/style-src
-// must keep 'unsafe-inline'. Replacing that with nonces/hashes requires
-// editing index.html — recommended as a follow-up hardening step.
+// React/Framer Motion still use inline style attributes, so style-src keeps
+// 'unsafe-inline'. index.html no longer contains inline scripts, allowing a
+// strict script-src without 'unsafe-inline'.
 //
 // No CORS middleware exists: the frontend and the tRPC API are served from
 // the same origin, so there is no CORS/secureHeaders ordering concern.
@@ -54,21 +97,11 @@ app.use(
       baseUri: ["'self'"],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "https://www.googletagmanager.com",
-      ],
+      scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: [
-        "'self'",
-        "https://www.googletagmanager.com",
-        "https://www.google-analytics.com",
-        "https://*.google-analytics.com",
-        "https://*.analytics.google.com",
-      ],
+      connectSrc: ["'self'"],
     },
   })
 );
@@ -79,7 +112,7 @@ app.use(bodyLimit({ maxSize: 1024 * 1024 }));
 
 app.use("/api/trpc/*", async (c, next) => {
   if (c.req.method !== "GET" && c.req.method !== "POST") return next();
-  if (!hasAllowedOrigin(c.req.raw.headers, c.req.url)) {
+  if (!hasAllowedOrigin(c.req.raw.headers, c.req.url, env.trustProxy)) {
     return c.json({ error: "Origine de requête non autorisée." }, 403);
   }
   return next();
@@ -102,36 +135,42 @@ app.use("/api/trpc/*", async (c, next) => {
 });
 
 // Dedicated protection for public authentication/device procedures. It is
-// deliberately stricter than the general API quota. The bundled store is
-// process-local; a shared store will replace it in the infrastructure round so
-// several serverless instances enforce one global counter.
+// deliberately stricter than the general API quota. Production uses the shared
+// MySQL store so all serverless instances enforce one global counter.
 app.use(
   "/api/trpc/*",
-  rateLimiter<{ Bindings: HttpBindings }>({
+  rateLimiter<AppEnv>({
     windowMs: 15 * 60_000,
     limit: 10,
     standardHeaders: "draft-6",
     requestPropertyName: "authRateLimit",
     requestStorePropertyName: "authRateLimitStore",
+    store: createRateLimitStore<AppEnv>("auth"),
     skip: c => !isSensitiveTrpcRequest(c.req.url),
     keyGenerator: c => `${getClientIp(c)}:${sensitiveProcedureKey(c.req.url)}`,
     message: { error: "Trop de tentatives. Réessayez dans 15 minutes." },
   })
 );
 
-// Rate limiting on the tRPC API via hono-rate-limiter. Default in-memory
-// store (per process / per serverless instance); a shared store (e.g. Redis)
-// would be required to enforce a global limit across multiple instances.
+// General tRPC rate limiting. Production uses the same shared MySQL store with
+// a distinct key prefix; local development keeps the in-memory implementation.
 app.use(
   "/api/trpc/*",
-  rateLimiter<{ Bindings: HttpBindings }>({
+  rateLimiter<AppEnv>({
     windowMs: 60_000, // 1 minute
     limit: 100, // max requests per IP per window
     standardHeaders: "draft-6",
     keyGenerator: getClientIp,
+    store: createRateLimitStore<AppEnv>("api"),
   })
 );
 
+app.get("/api/health/live", c => {
+  c.header("Cache-Control", "no-store");
+  return c.json({ ok: true });
+});
+app.get("/api/health/ready", createReadinessHandler());
+app.get(Paths.oauthStart, createOAuthStartHandler());
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async c => {
   return fetchRequestHandler({

@@ -63,11 +63,34 @@ describe("same-origin browser guard", () => {
     const headers = new Headers({
       host: "internal.local",
       "x-forwarded-host": "cine.example, proxy.local",
+      "x-forwarded-proto": "https",
       origin: "https://cine.example",
     });
     expect(
-      hasAllowedOrigin(headers, "http://internal.local/api/trpc/ping")
+      hasAllowedOrigin(headers, "http://internal.local/api/trpc/ping", true)
     ).toBe(true);
+  });
+
+  it("ignores spoofed forwarded origin data when proxy trust is disabled", () => {
+    const headers = new Headers({
+      host: "cine.test",
+      "x-forwarded-host": "attacker.test",
+      "x-forwarded-proto": "https",
+      origin: "https://attacker.test",
+    });
+    expect(hasAllowedOrigin(headers, "https://cine.test/api/trpc/ping")).toBe(
+      false
+    );
+  });
+
+  it("rejects a different origin scheme even when the host matches", () => {
+    const headers = new Headers({
+      host: "cine.test",
+      origin: "http://cine.test",
+    });
+    expect(hasAllowedOrigin(headers, "https://cine.test/api/trpc/ping")).toBe(
+      false
+    );
   });
 
   it("rejects a cross-site browser origin", () => {
