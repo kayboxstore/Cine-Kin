@@ -2,26 +2,13 @@ import { FiLogIn } from "react-icons/fi";
 import Logo from "@/components/Logo";
 import SEO from "@/components/SEO";
 
-function getOAuthUrl() {
-  const kimiAuthUrl = import.meta.env.VITE_KIMI_AUTH_URL;
-  const appID = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(redirectUri);
-
-  const url = new URL(`${kimiAuthUrl}/api/oauth/authorize`);
-  url.searchParams.set("client_id", appID);
-  url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "profile");
-  url.searchParams.set("state", state);
-
-  return url.toString();
-}
-
 export default function Login() {
   return (
     <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-6">
-      <SEO title="Connexion Admin" description="Connectez-vous au dashboard d'administration Ciné Kin Premium" />
+      <SEO
+        title="Connexion Admin"
+        description="Connectez-vous au dashboard d'administration Ciné Kin Premium"
+      />
 
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
@@ -35,13 +22,13 @@ export default function Login() {
         </div>
 
         <div className="border border-white/[0.06] rounded-2xl p-8 bg-white/[0.02]">
-          <button
-            onClick={() => { window.location.href = getOAuthUrl(); }}
+          <a
+            href="/api/oauth/start"
             className="w-full py-4 bg-[#5a6b4e] text-white font-semibold rounded-xl hover:bg-[#4d5d42] transition-all flex items-center justify-center gap-3 text-base"
           >
             <FiLogIn className="w-5 h-5" />
             Se connecter avec Kimi
-          </button>
+          </a>
 
           <p className="text-white/55 text-xs text-center mt-6">
             Authentification sécurisée via OAuth 2.0

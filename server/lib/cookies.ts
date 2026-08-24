@@ -1,5 +1,6 @@
 import type { CookieOptions } from "hono/utils/cookie";
 import * as cookie from "cookie";
+import { env } from "./env";
 
 function isLocalhost(headers: Headers): boolean {
   const host = headers.get("host") || "";
@@ -15,7 +16,8 @@ export function getSessionCookieOptions(headers: Headers): CookieOptions {
     // Frontend and API are same-origin. Lax blocks cross-site subrequests while
     // still supporting top-level OAuth redirects back to the application.
     sameSite: "Lax",
-    secure: !localhost,
+    // Never let a spoofed Host header downgrade production cookies.
+    secure: env.isProduction || !localhost,
   };
 }
 
