@@ -89,7 +89,7 @@ describe("staging argument and environment guards", () => {
     expect(validation.ok).toBe(false);
     expect(validation.errors.join(" ")).toContain("restauration doit contenir");
     expect(validation.errors.join(" ")).toContain(
-      "source et la base de restauration doivent être distinctes"
+      "doivent porter des noms distincts"
     );
     expect(validation.errors.join(" ")).toContain(
       "STAGING_REHEARSAL_ALLOW_APPLY=1"
@@ -127,6 +127,28 @@ describe("staging argument and environment guards", () => {
     );
     expect(validation.ok).toBe(false);
     expect(validation.errors.join(" ")).toContain("nom de base MySQL simple");
+  });
+
+  it("rejects same-named targets across host aliases and exposed backup paths", () => {
+    const environment = validEnvironment();
+    environment.STAGING_DATABASE_URL =
+      "mysql://source_user:source-password@source.example/cinekin_restore_validation";
+    environment.STAGING_RESTORE_DATABASE_URL =
+      "mysql://restore_user:restore-password@restore.example/cinekin_restore_validation";
+    environment.STAGING_BACKUP_DIR = "public/staging-backups";
+    const validation = validateStagingEnvironment(
+      environment,
+      parseStagingArguments([
+        "--confirm-source",
+        "cinekin_restore_validation",
+        "--confirm-restore",
+        "cinekin_restore_validation",
+      ])
+    );
+    const errors = validation.errors.join(" ");
+    expect(validation.ok).toBe(false);
+    expect(errors).toContain("doivent porter des noms distincts");
+    expect(errors).toContain("STAGING_BACKUP_DIR");
   });
 
   it("never starts a rehearsal without the explicit apply flag", async () => {

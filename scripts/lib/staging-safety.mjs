@@ -1,8 +1,16 @@
-import { databaseTarget } from "./migration-database.mjs";
+import path from "node:path";
+import { databaseTarget, projectRoot } from "./migration-database.mjs";
 
 const SAFE_RESTORE_DATABASE = /(restore|rehearsal|validation|sandbox)/i;
 const SAFE_DATABASE_NAME = /^[A-Za-z0-9_$][A-Za-z0-9_$-]{0,63}$/;
 const FALSE_VALUES = new Set(["0", "false", "no", "off"]);
+const FORBIDDEN_BACKUP_ROOTS = [
+  path.join(projectRoot, ".git"),
+  path.join(projectRoot, ".vercel"),
+  path.join(projectRoot, "dist"),
+  path.join(projectRoot, "node_modules"),
+  path.join(projectRoot, "public"),
+];
 
 function booleanValue(value, defaultValue = false) {
   if (value === undefined || value === "") return defaultValue;
@@ -74,6 +82,22 @@ function parseTarget(name, value, errors) {
     );
     return null;
   }
+}
+
+function backupDirectory(value, errors) {
+  const configured = value?.trim() || "artifacts/staging-backups";
+  const resolved = path.resolve(projectRoot, configured);
+  const forbidden =
+    resolved === projectRoot ||
+    FORBIDDEN_BACKUP_ROOTS.some(
+      root => resolved === root || resolved.startsWith(`${root}${path.sep}`)
+    );
+  if (forbidden) {
+    errors.push(
+      "STAGING_BACKUP_DIR ne peut pas être la racine du projet ni un répertoire public, généré ou interne."
+    );
+  }
+  return configured;
 }
 
 export function parseStagingArguments(argv) {
@@ -152,15 +176,9 @@ export function validateStagingEnvironment(
       "Le nom de la base de restauration doit contenir restore, rehearsal, validation ou sandbox."
     );
   }
-  if (
-    source &&
-    restore &&
-    source.host === restore.host &&
-    source.port === restore.port &&
-    source.database === restore.database
-  ) {
+  if (source && restore && source.database === restore.database) {
     errors.push(
-      "La source et la base de restauration doivent être distinctes."
+      "La source et la base de restauration doivent porter des noms distincts, même sur des hôtes différents."
     );
   }
 
@@ -275,8 +293,7 @@ export function validateStagingEnvironment(
 
   return {
     configuration: {
-      backupDirectory:
-        environment.STAGING_BACKUP_DIR || "artifacts/staging-backups",
+      backupDirectory: backupDirectory(environment.STAGING_BACKUP_DIR, errors),
       backupPassphrase,
       restore,
       smokeOrigin,
