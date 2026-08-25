@@ -31,7 +31,7 @@ Copier `.env.example` vers `.env` et renseigner les valeurs :
 | `APP_ID`            | Identifiant d'application OAuth                                            |
 | `APP_SECRET`        | Secret client OAuth uniquement                                             |
 | `APP_BASE_URL`      | Origine HTTPS canonique utilisée pour le callback OAuth                    |
-| `VITE_SITE_URL`     | Origine publique utilisée par les canonical et métadonnées sociales        |
+| `VITE_SITE_URL`     | Origine HTTPS injectée au build dans canonical, réseaux sociaux et sitemap |
 | `SESSION_SECRET`    | Secret dédié à la signature des sessions et transactions OAuth             |
 | `ENCRYPTION_KEY`    | Clé dédiée au chiffrement AES-GCM des identifiants de playlists            |
 | `ADMIN_PASSWORD`    | Mot de passe administrateur alternatif, optionnel                          |
@@ -66,6 +66,7 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 | `npm run lint`               | ESLint                                                            |
 | `npm run format`             | Prettier                                                          |
 | `npm test`                   | Tests Vitest                                                      |
+| `npm run e2e:public`         | Démarre et contrôle réellement le build public final              |
 | `npm run db:generate`        | Génère les migrations Drizzle                                     |
 | `npm run db:check`           | Vérifie la cohérence de l’historique des migrations               |
 | `npm run db:migrate`         | Applique les migrations                                           |
@@ -95,10 +96,12 @@ public/         Assets statiques, sitemap.xml, robots.txt, service worker
 
 Le build produit `dist/public` (frontend statique) et `dist/boot.js` (serveur).
 En production, le serveur Hono sert les fichiers statiques et fait le fallback
-SPA vers `index.html`. Le build Vercel **n'applique plus de migration** : une
-preview ne doit jamais pouvoir modifier une base partagée. La migration et son
-audit sont exécutés séparément avec `npm run db:deploy`, d'abord sur staging,
-puis sur production dans une étape de release explicitement autorisée.
+SPA vers `index.html`. `VITE_SITE_URL` est validée puis injectée dans le HTML,
+`robots.txt` et `sitemap.xml` pendant ce build ; elle doit donc être définie
+avant le build de production. Le build Vercel **n'applique plus de migration** :
+une preview ne doit jamais pouvoir modifier une base partagée. La migration et
+son audit sont exécutés séparément avec `npm run db:deploy`, d'abord sur
+staging, puis sur production dans une étape de release explicitement autorisée.
 
 Pour reprendre une base créée auparavant avec `db:push`, suivre obligatoirement
 [`docs/database-migration-runbook.md`](docs/database-migration-runbook.md) sur
@@ -110,8 +113,8 @@ migration, audit et smoke tests — est décrite dans
 [`docs/staging-rehearsal-runbook.md`](docs/staging-rehearsal-runbook.md).
 
 L'intégration continue (`.github/workflows/ci.yml`) exécute lint, typecheck,
-tests et build, puis valide sur MySQL 8 une installation neuve et une mise à
-niveau depuis le schéma historique.
+tests, build et E2E HTTP du build final, puis valide sur MySQL 8 une installation
+neuve et une mise à niveau depuis le schéma historique.
 
 Les sondes d'exploitation sont `GET /api/health/live` (processus) et
 `GET /api/health/ready` (connexion MySQL réelle). Chaque réponse HTTP porte un
