@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { getAbsoluteAssetUrl, getCanonicalUrl } from "@/lib/siteUrl";
 
@@ -26,6 +27,12 @@ export default function SEO({
   const ogImageUrl = getAbsoluteAssetUrl(ogImage);
   const robots = noIndex ? "noindex, nofollow" : "index, follow";
 
+  useEffect(() => {
+    document
+      .querySelectorAll("[data-static-seo]")
+      .forEach(element => element.remove());
+  }, []);
+
   return (
     <Helmet>
       <title>{fullTitle}</title>
@@ -48,6 +55,7 @@ export default function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImageUrl} />
+      <meta name="twitter:url" content={canonicalUrl} />
 
       {/* Canonical */}
       <link rel="canonical" href={canonicalUrl} />

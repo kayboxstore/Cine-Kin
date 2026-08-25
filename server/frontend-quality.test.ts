@@ -43,6 +43,15 @@ describe("frontend quality safeguards", () => {
     expect(seo).not.toContain("window.location.href");
   });
 
+  it("replaces the static crawler fallback with one route-specific SEO set", () => {
+    const index = read("index.html");
+    const seo = read("src/components/SEO.tsx");
+    expect(index.match(/data-static-seo="true"/g)).toHaveLength(16);
+    expect(seo).toContain('.querySelectorAll("[data-static-seo]")');
+    expect(seo).toContain(".forEach(element => element.remove())");
+    expect(seo).toContain('<meta name="twitter:url" content={canonicalUrl} />');
+  });
+
   it("keeps authenticated entry points out of search results", () => {
     const privatePages = [
       "src/pages/Login.tsx",
