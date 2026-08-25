@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "L'essai gratuit de 24h est-il vraiment gratuit ?",
-    a: "Oui, l'essai de 24 heures est complètement gratuit et sans engagement. Vous pouvez tester toutes les fonctionnalités du service avant de souscrire un abonnement.",
+    a: "Oui, l’essai de 24 heures est gratuit et sans engagement. Utilisez-le pour vérifier le catalogue disponible, la qualité et la compatibilité sur votre appareil avant de souscrire.",
     cat: "Général",
   },
   {

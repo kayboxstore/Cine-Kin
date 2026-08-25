@@ -19,7 +19,7 @@ const galleryItems = [
     id: 2,
     title: "Catalogue VOD Films & Séries",
     description:
-      "Des milliers de films et séries disponibles à la demande, organisés par genre.",
+      "Parcourez les films et séries disponibles à la demande, organisés par genre.",
     icon: FiFilm,
     image: "/images/gallery-vod.jpg",
   },

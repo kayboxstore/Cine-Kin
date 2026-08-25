@@ -8,7 +8,8 @@ import { COMMERCIAL_INFO } from "./commercial";
 export const SITE_CONFIG = {
   name: "Ciné Kin Premium",
   tagline: "Vos contenus sur vos appareils compatibles",
-  description: "Accédez à des milliers de chaînes TV, films et séries en haute définition. Une solution premium pour toute la famille.",
+  description:
+    "Accédez à un catalogue de chaînes TV, films et séries sur vos appareils compatibles.",
   whatsappNumber: "+243830240073", // ← WhatsApp Ciné Kin Premium
   email: "kayboxstore@outlook.fr",
   supportHours: COMMERCIAL_INFO.support.hours,
@@ -287,12 +288,14 @@ export const HOW_IT_WORKS = [
   {
     step: 2,
     title: "Recevez vos accès",
-    description: "Après confirmation, vous recevez vos identifiants sous quelques minutes.",
+    description:
+      "Après validation de la formule et du paiement, l’équipe confirme l’activation et vous transmet les identifiants.",
   },
   {
     step: 3,
     title: "Profitez du contenu",
-    description: "Installez l'application et accédez immédiatement à tout le contenu.",
+    description:
+      "Installez l’application compatible puis vérifiez le catalogue disponible sur votre appareil.",
   },
 ] as const;
 
@@ -304,7 +307,8 @@ export const FAQ = [
   },
   {
     question: "Comment puis-je commencer ?",
-    answer: "Choisissez simplement l'offre qui vous convient, remplissez le formulaire de commande et notre équipe vous contactera rapidement pour finaliser votre activation.",
+    answer:
+      "Choisissez l’offre qui vous convient et préparez votre demande. L’équipe vous recontactera pendant les horaires de support pour confirmer la formule, le paiement et l’activation.",
   },
   {
     question: "Sur quels appareils puis-je regarder ?",
@@ -382,7 +386,7 @@ export const INSTALL_GUIDES = [
       "Utilisez VLC Media Player ou l'application web",
       "Chargez la playlist M3U fournie",
       "Ou connectez-vous avec vos identifiants",
-      "Le contenu est accessible immédiatement",
+      "Rechargez la liste et vérifiez le contenu disponible",
     ],
   },
 ] as const;
