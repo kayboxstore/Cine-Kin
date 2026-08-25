@@ -4,7 +4,7 @@
 export const COMMERCIAL_INFO = {
   catalogue: {
     headline:
-      "Des milliers de chaînes, films et séries, avec une qualité jusqu’à 4K selon les contenus et les appareils.",
+      "Un catalogue de chaînes, films et séries, avec une qualité jusqu’à 4K selon les contenus et les appareils.",
     planLabel: "Catalogue inclus",
     feature: "Catalogue de chaînes TV",
     caveat:
