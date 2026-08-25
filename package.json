@@ -13,6 +13,7 @@
     "check": "tsc -b",
     "format": "prettier --write .",
     "test": "vitest run",
+    "e2e:public": "node scripts/test-built-app.mjs",
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check",
     "db:migrate": "drizzle-kit migrate",
