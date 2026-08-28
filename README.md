@@ -160,15 +160,21 @@ signé est encore techniquement valide.
 
 Conséquences à connaître pour l'exploitation :
 
-- **Jetons antérieurs à cette fonctionnalité** : un ancien cookie signé avant
-  l'introduction du `jti` ne peut pas être révoqué individuellement ; il reste
-  accepté jusqu'à son expiration naturelle. Le déploiement de cette
-  fonctionnalité n'invalide donc pas rétroactivement les sessions déjà
-  ouvertes le jour du déploiement — les nouveaux jetons émis après le
-  déploiement portent tous un `jti` et bénéficient pleinement de la
-  révocation. Un opérateur qui souhaite forcer une reconnexion unique et
-  immédiate de tous les utilisateurs doit faire tourner `SESSION_SECRET` (voir
-  ci-dessous), qui invalide tous les jetons, avec ou sans `jti`.
+- **Jetons antérieurs à cette fonctionnalité — invalidation immédiate, aucune
+  tolérance temporaire.** La vérification de chaque session (admin, client,
+  revendeur, Kimi) exige un `jti` de forme UUID v4 valide **et** une
+  revendication `exp` valide ; un jeton signé qui ne porte pas ces deux
+  éléments est rejeté d'emblée, quelle que soit sa signature — il n'existe
+  aucun chemin qui l'accepte « jusqu'à son expiration naturelle ». Concrètement,
+  au premier déploiement de cette fonctionnalité, **tout cookie émis
+  auparavant devient inutilisable immédiatement** : ses porteurs doivent se
+  reconnecter une fois. C'est une conséquence assumée du modèle de sécurité
+  (la révocation est indexée uniquement par `jti` ; un jeton qui n'en porte
+  pas ne peut être ni vérifié comme non révoqué, ni révoqué individuellement,
+  donc il ne peut pas être accepté). Preuve par test : voir
+  `server/lib/app-sessions.test.ts` et `server/kimi/session.test.ts`
+  (« rejects a validly signed token with no jti/exp », pour les quatre types
+  de session).
 - **Session déjà révoquée** : une requête portant un cookie déjà révoqué
   (deuxième onglet, clic répété, déconnexion déclenchée ailleurs) reçoit
   `UNAUTHORIZED`. Le frontend traite explicitement ce cas comme une
