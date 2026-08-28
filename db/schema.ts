@@ -244,10 +244,13 @@ export type InsertPlaylist = typeof playlists.$inferInsert;
 // reseller, kimi). Sessions are NOT recorded at login — only a token whose
 // owner explicitly logged out gets a row here, keyed by its own `jti`. This
 // is deliberately additive-only and denylist-based (not a full session
-// table): every token already in circulation before this table existed
-// keeps working unchanged, since it simply has no row here. A row past its
-// own `expires_at` is provably redundant (the JWT's own `exp` claim already
-// rejects it) and safe to purge in bounded batches.
+// table): no row here means simply "not revoked", not "valid" — a token
+// still has to carry a valid `jti` and `exp` to be accepted at all, which
+// the verification code enforces unconditionally regardless of this table
+// (any signed token missing either is rejected outright, with no grace
+// period). A row past its own `expires_at` is provably redundant (the
+// JWT's own `exp` claim already rejects it) and safe to purge in bounded
+// batches.
 export const revokedAuthSessions = mysqlTable(
   "revoked_auth_sessions",
   {

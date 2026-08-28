@@ -6,8 +6,11 @@ export type SessionKind = "admin" | "client" | "reseller" | "kimi";
 
 // Denylist-based revocation: sessions are NOT recorded at login, only a
 // token whose owner explicitly logged out gets a row here, keyed by its own
-// `jti`. Every token already in circulation before this table existed keeps
-// working unchanged (no row = not revoked). See db/schema.ts for the full
+// `jti` (no row = not revoked). This table only has anything to say about a
+// token that actually carries a valid `jti`/`exp` in the first place — the
+// four `verify*Session` functions (server/lib/app-sessions.ts,
+// server/kimi/session.ts) reject any signed token missing either outright,
+// before this table is even consulted. See db/schema.ts for the full
 // rationale.
 
 // Idempotent by construction: ON DUPLICATE KEY UPDATE (not INSERT IGNORE,
