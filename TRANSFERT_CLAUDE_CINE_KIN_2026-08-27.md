@@ -1,7 +1,7 @@
 # PASSATION COMPLÈTE À CLAUDE CODE — CINÉ KIN
 
-Date du point de contrôle : **27 août 2026**  
-Dépôt : `https://github.com/kayboxstore/Cine-Kin`  
+Date du point de contrôle : **27 août 2026**
+Dépôt : `https://github.com/kayboxstore/Cine-Kin`
 Poste de travail Windows : `A:\Projets\Cine-Kin`
 
 ## Message à Claude Code
