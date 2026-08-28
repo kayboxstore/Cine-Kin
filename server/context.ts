@@ -121,36 +121,41 @@ export async function createContext(
   // Application-licence sessions — parsed only when their cookie is present.
   const cookies = cookie.parse(opts.req.headers.get("cookie") || "");
 
-  // Password-based admin session — grants an admin identity when no Kimi user
-  // is present.
-  if (!ctx.user) {
-    const adminToken = cookies[AdminSession.cookieName];
-    if (adminToken) {
-      try {
-        const claim = await verifyAdminSession(adminToken);
-        if (claim) {
-          // Recorded as soon as the signature/shape verify, independent of
-          // the deeper checks below — logout must be able to revoke the
-          // exact token presented even if it already failed one of them.
-          ctx.adminSession = { jti: claim.jti, expiresAt: claim.expiresAt };
-        }
-        if (
-          claim &&
-          env.adminPassword &&
-          sessionVersionMatches(
-            claim.sessionVersion,
-            sessionVersionForCredential(env.adminPassword)
-          ) &&
-          // Fail-closed: a thrown error (crypto or DB) is caught below and
-          // simply leaves ctx.user unset — never falls through to "not
-          // revoked, so allow".
-          !(await isSessionRevoked(claim.jti))
-        ) {
-          ctx.user = PASSWORD_ADMIN_USER;
-        }
-      } catch {
-        // Optional
+  // Password-based admin session. Verified whenever the cookie is present,
+  // independent of whether a Kimi identity already took ctx.user above —
+  // both sessions can be simultaneously valid (e.g. an operator who also
+  // logged in with the password form), and logout must be able to revoke
+  // whichever of them was actually presented. Only the *grant* of ctx.user
+  // is conditional: a Kimi identity, once set, always stays the priority
+  // identity and is never overwritten by the password-admin session.
+  const adminToken = cookies[AdminSession.cookieName];
+  if (adminToken) {
+    try {
+      const claim = await verifyAdminSession(adminToken);
+      if (claim) {
+        // Recorded as soon as the signature/shape verify, independent of
+        // ctx.user and of the deeper checks below — logout must be able to
+        // revoke the exact token presented even if it already failed one
+        // of them.
+        ctx.adminSession = { jti: claim.jti, expiresAt: claim.expiresAt };
       }
+      if (
+        claim &&
+        !ctx.user &&
+        env.adminPassword &&
+        sessionVersionMatches(
+          claim.sessionVersion,
+          sessionVersionForCredential(env.adminPassword)
+        ) &&
+        // Fail-closed: a thrown error (crypto or DB) is caught below and
+        // simply leaves ctx.user unset — never falls through to "not
+        // revoked, so allow".
+        !(await isSessionRevoked(claim.jti))
+      ) {
+        ctx.user = PASSWORD_ADMIN_USER;
+      }
+    } catch {
+      // Optional
     }
   }
 

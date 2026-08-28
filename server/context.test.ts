@@ -3,6 +3,7 @@ import * as cookie from "cookie";
 
 vi.hoisted(() => {
   process.env.NODE_ENV = "test";
+  process.env.APP_ID = "cinekin-test-app";
   process.env.APP_SECRET = "test-app-secret-0123456789-abcdefghij";
   process.env.SESSION_SECRET = "test-session-secret-0123456789-abcdefghij";
   process.env.ADMIN_PASSWORD = "test-only-fake-admin-password";
@@ -14,6 +15,17 @@ const shared = vi.hoisted(() => ({
   revoked: new Set<string>(),
   dbError: null as Error | null,
   insertError: null as Error | null,
+  kimiUser: {
+    id: 1,
+    unionId: "kimi-union-1",
+    name: "Kimi User",
+    email: null,
+    avatar: null,
+    role: "user",
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
+    lastSignInAt: new Date(0),
+  },
 }));
 
 vi.mock("drizzle-orm", async importOriginal => {
@@ -41,10 +53,17 @@ vi.mock("./queries/connection", () => ({
       select: () => ({
         from: () => ({
           where: (cond: { col: string; val: unknown }) => ({
-            limit: async () =>
-              cond.col === "jti" && shared.revoked.has(cond.val as string)
-                ? [{ jti: cond.val }]
-                : [],
+            limit: async () => {
+              if (cond.col === "jti") {
+                return shared.revoked.has(cond.val as string)
+                  ? [{ jti: cond.val }]
+                  : [];
+              }
+              if (cond.col === "unionId" && cond.val === shared.kimiUser.unionId) {
+                return [shared.kimiUser];
+              }
+              return [];
+            },
           }),
         }),
       }),
@@ -56,6 +75,7 @@ vi.mock("./queries/connection", () => ({
 import { appRouter } from "./router";
 import { createCallerFactory } from "./middleware";
 import { createContext } from "./context";
+import { signSessionToken } from "./kimi/session";
 
 const createCaller = createCallerFactory(appRouter);
 
@@ -81,6 +101,18 @@ async function loginAdmin() {
   const token = parsed?.ck_admin_sid;
   if (!token) throw new Error("admin login did not set a cookie");
   return `ck_admin_sid=${token}`;
+}
+
+// Signs a Kimi session token directly — equivalent to what the OAuth
+// callback sets as a cookie once the handshake has completed — without
+// re-exercising the full OAuth flow, which server/kimi/auth.test.ts already
+// covers on its own.
+async function loginKimi() {
+  const token = await signSessionToken({
+    unionId: shared.kimiUser.unionId,
+    clientId: process.env.APP_ID!,
+  });
+  return `kimi_sid=${token}`;
 }
 
 describe("session revocation — end to end", () => {
@@ -188,5 +220,48 @@ describe("session revocation — end to end", () => {
     // fully intact rather than half-applied.
     const replayed = await contextFrom(cookieHeader);
     expect(replayed.user).toBeDefined();
+  });
+
+  it("revokes and clears both cookies when a valid Kimi session and a valid admin session are presented together", async () => {
+    const kimiCookie = await loginKimi();
+    const adminCookie = await loginAdmin();
+    const combinedHeader = `${kimiCookie}; ${adminCookie}`;
+
+    const resHeaders = new Headers();
+    const ctx = await createContext({
+      req: new Request("http://localhost/api/trpc/auth.logout", {
+        headers: { cookie: combinedHeader },
+      }),
+      resHeaders,
+    } as never);
+
+    // Both sessions are independently recognized on the same request...
+    expect(ctx.kimiSession).toBeDefined();
+    expect(ctx.adminSession).toBeDefined();
+    expect(ctx.kimiSession!.jti).not.toBe(ctx.adminSession!.jti);
+    // ...and the Kimi identity stays the priority identity for ctx.user —
+    // the password-admin session never overwrites it merely by being
+    // present too.
+    expect(ctx.user).toMatchObject({ unionId: shared.kimiUser.unionId });
+
+    await createCaller(ctx).auth.logout();
+
+    const setCookies = resHeaders.getSetCookie();
+    const kimiClear = setCookies.find(c => c.startsWith("kimi_sid="));
+    const adminClear = setCookies.find(c => c.startsWith("ck_admin_sid="));
+    expect(kimiClear).toBeDefined();
+    expect(kimiClear).toContain("Max-Age=0");
+    expect(adminClear).toBeDefined();
+    expect(adminClear).toContain("Max-Age=0");
+
+    // Both jtis were actually revoked, independently.
+    expect(shared.revoked.has(ctx.kimiSession!.jti)).toBe(true);
+    expect(shared.revoked.has(ctx.adminSession!.jti)).toBe(true);
+
+    // Replaying either old cookie alone is now rejected.
+    const replayedKimi = await contextFrom(kimiCookie);
+    expect(replayedKimi.user).toBeUndefined();
+    const replayedAdmin = await contextFrom(adminCookie);
+    expect(replayedAdmin.user).toBeUndefined();
   });
 });
