@@ -19,12 +19,24 @@ export function useClientPortal() {
   });
 
   const logoutMutation = trpc.clientPortal.logout.useMutation({
-    onSuccess: async () => {
-      await utils.invalidate();
+    onSuccess: () => {
+      // Immediate, synchronous cache clear — see useAuth.ts for why this
+      // replaces invalidate().
+      utils.clientPortal.getDashboard.reset();
+    },
+    onError: error => {
+      if (error.data?.code === "UNAUTHORIZED") {
+        utils.clientPortal.getDashboard.reset();
+      }
     },
   });
 
   const logout = useCallback(() => logoutMutation.mutate(), [logoutMutation]);
+
+  const logoutError =
+    logoutMutation.isError && logoutMutation.error.data?.code !== "UNAUTHORIZED"
+      ? logoutMutation.error
+      : null;
 
   return useMemo(
     () => ({
@@ -33,8 +45,9 @@ export function useClientPortal() {
       isLoading: isLoading || logoutMutation.isPending,
       error,
       logout,
+      logoutError,
       refresh: refetch,
     }),
-    [dashboard, isLoading, logoutMutation.isPending, error, logout, refetch],
+    [dashboard, isLoading, logoutMutation.isPending, error, logout, logoutError, refetch],
   );
 }
