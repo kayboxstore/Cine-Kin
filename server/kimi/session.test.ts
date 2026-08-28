@@ -94,4 +94,23 @@ describe("Kimi administrator sessions", () => {
 
     await expect(verifySessionToken(token)).resolves.toBeNull();
   });
+
+  it("rejects a well-formed but non-v4 UUID as jti (e.g. v1: version nibble 1, not 4)", async () => {
+    const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
+    const token = await new jose.SignJWT({
+      unionId: "user-42",
+      clientId: "cinekin-test-app",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("cine-kin")
+      .setAudience("cine-kin:kimi-admin")
+      // Structurally a valid UUID (8-4-4-4-12 hex, valid RFC 4122 variant
+      // nibble `8`) but version nibble is `1`, not `4`.
+      .setJti("55555555-5555-1555-8555-555555555555")
+      .setIssuedAt()
+      .setExpirationTime("1h")
+      .sign(secret);
+
+    await expect(verifySessionToken(token)).resolves.toBeNull();
+  });
 });
