@@ -58,14 +58,14 @@ export async function purgeExpiredRevocations(): Promise<void> {
     .limit(PURGE_BATCH_SIZE);
 }
 
-// Opportunistic, non-blocking: called from logout handlers with low
-// probability so cleanup happens over time without adding a scheduler
-// dependency or making any single logout request depend on it. Never allowed
-// to fail the logout it's piggybacked on.
-const PURGE_PROBABILITY = 0.02;
-
-export function maybePurgeExpiredRevocations(): void {
-  if (Math.random() >= PURGE_PROBABILITY) return;
+// Deterministic, non-blocking: callers fire this only after a revocation they
+// just recorded has actually succeeded (never on every request, and never as
+// a substitute for a successful revocation) — see the logout resolvers in
+// auth-router.ts, client-router.ts and reseller-router.ts. Deliberately not
+// awaited by the caller and always swallows its own error: a purge failure
+// must never undo the revocation that already committed, and must never turn
+// a successful logout response into a failed one.
+export function schedulePurgeAfterRevocation(): void {
   purgeExpiredRevocations().catch(() => {
     // Best-effort only. A failed purge is not a security or correctness
     // issue (the JWT's own exp already protects against replay), so it must

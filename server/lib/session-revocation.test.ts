@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // called with the right arguments".
 const shared = vi.hoisted(() => ({
   rows: new Map<string, { jti: string; sessionKind: string; expiresAt: Date; revokedAt: Date }>(),
+  deleteError: null as Error | null,
 }));
 
 vi.mock("drizzle-orm", async importOriginal => {
@@ -47,6 +48,7 @@ vi.mock("../queries/connection", () => ({
     delete: () => ({
       where: (cond: { __c: string; col: string; val: unknown }) => ({
         limit: async (n: number) => {
+          if (shared.deleteError) throw shared.deleteError;
           if (cond.__c !== "lt" || cond.col !== "expires_at") return;
           let removed = 0;
           for (const [jti, row] of shared.rows) {
@@ -66,11 +68,13 @@ import {
   revokeSession,
   isSessionRevoked,
   purgeExpiredRevocations,
+  schedulePurgeAfterRevocation,
 } from "./session-revocation";
 
 describe("session revocation", () => {
   beforeEach(() => {
     shared.rows.clear();
+    shared.deleteError = null;
   });
 
   it("reports an unrevoked jti as not revoked", async () => {
@@ -120,5 +124,28 @@ describe("session revocation", () => {
     expect(shared.rows.has(expired)).toBe(false);
     // A still-valid session's revocation must survive the purge.
     expect(shared.rows.has(stillValid)).toBe(true);
+  });
+
+  describe("schedulePurgeAfterRevocation — deterministic, non-blocking trigger", () => {
+    it("purges expired rows every time it is called, with no randomness", async () => {
+      const expired = "77777777-7777-4777-8777-777777777777";
+      await revokeSession(expired, "admin", new Date(Date.now() - 1000));
+
+      schedulePurgeAfterRevocation();
+      // The purge runs asynchronously (fire-and-forget); give its promise a
+      // tick to settle before asserting.
+      await new Promise(r => setTimeout(r, 0));
+
+      expect(shared.rows.has(expired)).toBe(false);
+    });
+
+    it("never throws or rejects even when the underlying purge fails", () => {
+      shared.deleteError = new Error("simulated MySQL outage during purge");
+
+      // Must return synchronously without throwing — a caller in a logout
+      // resolver invokes this without awaiting it, so a rejected promise
+      // here would become an unhandled rejection, not a caught error.
+      expect(() => schedulePurgeAfterRevocation()).not.toThrow();
+    });
   });
 });
