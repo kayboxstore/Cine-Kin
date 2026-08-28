@@ -13,6 +13,7 @@ vi.hoisted(() => {
 const shared = vi.hoisted(() => ({
   revoked: new Set<string>(),
   dbError: null as Error | null,
+  insertError: null as Error | null,
 }));
 
 vi.mock("drizzle-orm", async importOriginal => {
@@ -32,6 +33,7 @@ vi.mock("./queries/connection", () => ({
       insert: () => ({
         values: (row: { jti: string }) => ({
           onDuplicateKeyUpdate: async () => {
+            if (shared.insertError) throw shared.insertError;
             shared.revoked.add(row.jti);
           },
         }),
@@ -85,6 +87,7 @@ describe("session revocation — end to end", () => {
   beforeEach(() => {
     shared.revoked.clear();
     shared.dbError = null;
+    shared.insertError = null;
   });
 
   it("rejects a captured cookie replayed after logout (the reported vulnerability, now fixed)", async () => {
@@ -151,5 +154,39 @@ describe("session revocation — end to end", () => {
     await expect(createCaller(ctx).auth.logout()).resolves.toEqual({
       success: true,
     });
+  });
+
+  it("never clears the cookie or reports success when the revocation insert fails", async () => {
+    const cookieHeader = await loginAdmin();
+    const resHeaders = new Headers();
+    const ctx = await createContext({
+      req: new Request("http://localhost/api/trpc/auth.logout", {
+        headers: { cookie: cookieHeader },
+      }),
+      resHeaders,
+    } as never);
+    expect(ctx.user).toBeDefined();
+
+    shared.insertError = new Error("simulated MySQL outage on revocation insert");
+
+    // The resolver must propagate the failure rather than swallowing it into
+    // a false { success: true } response.
+    await expect(createCaller(ctx).auth.logout()).rejects.toThrow(
+      "simulated MySQL outage on revocation insert"
+    );
+
+    // No Set-Cookie was ever written for this failed attempt — the cookie
+    // was never cleared.
+    expect(
+      resHeaders.getSetCookie().some(c => c.startsWith("ck_admin_sid="))
+    ).toBe(false);
+
+    // The jti was never actually recorded as revoked...
+    shared.insertError = null;
+    // ...so the exact same cookie, replayed on a fresh request, must still
+    // authenticate — proving the failed logout attempt left the session
+    // fully intact rather than half-applied.
+    const replayed = await contextFrom(cookieHeader);
+    expect(replayed.user).toBeDefined();
   });
 });

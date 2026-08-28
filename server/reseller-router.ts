@@ -19,7 +19,7 @@ import {
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
   revokeSession,
-  maybePurgeExpiredRevocations,
+  schedulePurgeAfterRevocation,
 } from "./lib/session-revocation";
 import {
   licenseTypeSchema,
@@ -95,8 +95,10 @@ export const resellerRouter = createRouter({
         ctx.req.headers,
         ResellerSession.cookieName
       );
+      // Deterministic, bounded, best-effort — only after a revocation this
+      // request actually recorded.
+      schedulePurgeAfterRevocation();
     }
-    maybePurgeExpiredRevocations();
     return { success: true };
   }),
 

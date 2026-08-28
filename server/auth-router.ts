@@ -6,7 +6,7 @@ import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import { sessionVersionForCredential, signAdminSession } from "./lib/app-sessions";
 import {
   revokeSession,
-  maybePurgeExpiredRevocations,
+  schedulePurgeAfterRevocation,
 } from "./lib/session-revocation";
 import { env } from "./lib/env";
 import { createRouter, publicQuery, authedQuery } from "./middleware";
@@ -59,11 +59,14 @@ export const authRouter = createRouter({
     // actually happen. If revokeSession() throws (e.g. MySQL unreachable),
     // it propagates out of this resolver: no cookie is cleared, no success
     // response is sent.
+    let revoked = false;
     if (ctx.kimiSession) {
       await revokeSession(ctx.kimiSession.jti, "kimi", ctx.kimiSession.expiresAt);
+      revoked = true;
     }
     if (ctx.adminSession) {
       await revokeSession(ctx.adminSession.jti, "admin", ctx.adminSession.expiresAt);
+      revoked = true;
     }
 
     // Only after every revocation above has been confirmed do we clear the
@@ -79,8 +82,12 @@ export const authRouter = createRouter({
       );
     }
 
-    // Best-effort, bounded, never allowed to fail this response.
-    maybePurgeExpiredRevocations();
+    // Deterministic (not random), bounded, and only after a revocation this
+    // request actually recorded — never on a no-op logout. Best-effort: a
+    // purge failure can never undo the revocation above or fail this response.
+    if (revoked) {
+      schedulePurgeAfterRevocation();
+    }
 
     return { success: true };
   }),

@@ -18,7 +18,7 @@ import {
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
   revokeSession,
-  maybePurgeExpiredRevocations,
+  schedulePurgeAfterRevocation,
 } from "./lib/session-revocation";
 import {
   macAddressSchema,
@@ -115,8 +115,10 @@ export const clientRouter = createRouter({
         ctx.req.headers,
         ClientSession.cookieName
       );
+      // Deterministic, bounded, best-effort — only after a revocation this
+      // request actually recorded.
+      schedulePurgeAfterRevocation();
     }
-    maybePurgeExpiredRevocations();
     return { success: true };
   }),
 
