@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import * as jose from "jose";
 
 vi.hoisted(() => {
   process.env.NODE_ENV = "test";
@@ -15,6 +16,27 @@ import {
   verifyClientSession,
   verifyResellerSession,
 } from "./app-sessions";
+
+const secretBytes = () =>
+  new TextEncoder().encode(process.env.SESSION_SECRET);
+
+// Simulates a token minted before the jti/revocation feature existed: same
+// issuer, audience, algorithm and application claims a legitimate signer
+// would use, but missing what only the current signing code adds.
+function craftLegacyToken(
+  audience: string,
+  claims: Record<string, unknown>,
+  { omitJti = false, omitExp = false } = {}
+) {
+  let builder = new jose.SignJWT(claims)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuer("cine-kin")
+    .setAudience(audience)
+    .setIssuedAt();
+  if (!omitJti) builder = builder.setJti("11111111-1111-4111-8111-111111111111");
+  if (!omitExp) builder = builder.setExpirationTime("1h");
+  return builder.sign(secretBytes());
+}
 
 const ANY_JTI = expect.stringMatching(
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -73,5 +95,90 @@ describe("application sessions", () => {
 
     await expect(verifyClientSession(undefined)).resolves.toBeNull();
     await expect(verifyClientSession(tampered)).resolves.toBeNull();
+  });
+
+  // Security model: revocation is keyed purely by `jti`, so a token this
+  // codebase cannot key into that table must never be treated as valid —
+  // there is no fallback path that lets an old, jti-less token slide through
+  // until its own `exp`. Any deployment that ever minted tokens without a
+  // `jti` (there was no such release) or with a missing `exp` is fully
+  // invalidated by these checks, forcing a one-time reconnection.
+  describe("legacy tokens without a jti or exp are always rejected outright, never tolerated until expiry", () => {
+    it("client: rejects a validly signed token with no jti", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:client",
+        { kind: "client", appClientId: 1, sessionVersion: version },
+        { omitJti: true }
+      );
+      await expect(verifyClientSession(token)).resolves.toBeNull();
+    });
+
+    it("client: rejects a validly signed token with no exp", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:client",
+        { kind: "client", appClientId: 1, sessionVersion: version },
+        { omitExp: true }
+      );
+      await expect(verifyClientSession(token)).resolves.toBeNull();
+    });
+
+    it("client: rejects an expired token", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await new jose.SignJWT({
+        kind: "client",
+        appClientId: 1,
+        sessionVersion: version,
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuer("cine-kin")
+        .setAudience("cine-kin:client")
+        .setJti("22222222-2222-4222-8222-222222222222")
+        .setIssuedAt()
+        .setExpirationTime("-1s")
+        .sign(secretBytes());
+      await expect(verifyClientSession(token)).resolves.toBeNull();
+    });
+
+    it("reseller: rejects a validly signed token with no jti", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:reseller",
+        { kind: "reseller", resellerId: 1, sessionVersion: version },
+        { omitJti: true }
+      );
+      await expect(verifyResellerSession(token)).resolves.toBeNull();
+    });
+
+    it("reseller: rejects a validly signed token with no exp", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:reseller",
+        { kind: "reseller", resellerId: 1, sessionVersion: version },
+        { omitExp: true }
+      );
+      await expect(verifyResellerSession(token)).resolves.toBeNull();
+    });
+
+    it("admin: rejects a validly signed token with no jti", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:admin",
+        { kind: "admin", sessionVersion: version },
+        { omitJti: true }
+      );
+      await expect(verifyAdminSession(token)).resolves.toBeNull();
+    });
+
+    it("admin: rejects a validly signed token with no exp", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:admin",
+        { kind: "admin", sessionVersion: version },
+        { omitExp: true }
+      );
+      await expect(verifyAdminSession(token)).resolves.toBeNull();
+    });
   });
 });

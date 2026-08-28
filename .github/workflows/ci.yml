@@ -86,6 +86,21 @@ jobs:
           DATABASE_URL: mysql://root:root@127.0.0.1:3306/cinekin_migration_test
           MIGRATION_TEST_ALLOW_DROP: "1"
 
+      - name: Create the disposable bounded-purge test database
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot -e \
+            "CREATE DATABASE IF NOT EXISTS cinekin_purge_bound_test;"
+
+      - name: Migrate the bounded-purge test database (versioned migrations only, never push)
+        run: npm run db:migrate
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/cinekin_purge_bound_test
+
+      - name: Prove the revocation purge is really bounded to 100 rows (real MySQL, not a mock)
+        run: npx vitest run server/lib/session-revocation.purge-bound.test.ts --project server
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/cinekin_purge_bound_test
+
   e2e-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -117,7 +117,17 @@ partielle : ne pas la réutiliser, créer une nouvelle base vide et recommencer.
 Déployer le code de la release sur Render, en pointant `DATABASE_URL` vers la
 base restaurée sur Aiven — jamais l'inverse : la migration et son audit
 (étape 3) doivent avoir réussi avant que le nouveau code ne démarre contre
-cette base. Puis exécuter :
+cette base.
+
+> **Déconnexion ponctuelle attendue au déploiement de la révocation de
+> session** : la vérification de chaque session (admin, client, revendeur,
+> Kimi) exige désormais un `jti` et un `exp` valides ; tout cookie émis avant
+> ce déploiement en est dépourvu et devient donc inutilisable immédiatement,
+> sans période de tolérance. C'est une conséquence assumée, pas une
+> régression : prévenir les utilisateurs qu'une reconnexion unique sera
+> nécessaire après ce déploiement précis.
+
+Puis exécuter :
 
 ```bash
 npm run staging:smoke
