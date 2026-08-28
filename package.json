@@ -15,6 +15,7 @@
     "test": "vitest run",
     "e2e:public": "node scripts/test-built-app.mjs",
     "e2e:browser": "playwright test",
+    "e2e:browser:full": "node scripts/run-browser-e2e.mjs",
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check",
     "db:migrate": "drizzle-kit migrate",
