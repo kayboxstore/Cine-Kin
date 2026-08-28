@@ -16,6 +16,11 @@ import {
   verifyResellerSession,
 } from "./app-sessions";
 
+const ANY_JTI = expect.stringMatching(
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+);
+const ANY_EXPIRY = expect.any(Date);
+
 describe("application sessions", () => {
   it("binds a client token to the current credential version", async () => {
     const version = sessionVersionForCredential("stored-pin-hash-v1");
@@ -25,6 +30,8 @@ describe("application sessions", () => {
       kind: "client",
       appClientId: 42,
       sessionVersion: version,
+      jti: ANY_JTI,
+      expiresAt: ANY_EXPIRY,
     });
     expect(
       sessionVersionMatches(
@@ -52,6 +59,8 @@ describe("application sessions", () => {
     await expect(verifyAdminSession(adminToken)).resolves.toEqual({
       kind: "admin",
       sessionVersion: version,
+      jti: ANY_JTI,
+      expiresAt: ANY_EXPIRY,
     });
   });
 

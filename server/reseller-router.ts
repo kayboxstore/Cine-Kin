@@ -18,6 +18,10 @@ import {
 } from "./lib/app-sessions";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
+  revokeSession,
+  maybePurgeExpiredRevocations,
+} from "./lib/session-revocation";
+import {
   licenseTypeSchema,
   creditCost,
   computeRenewalExpiry,
@@ -80,12 +84,19 @@ export const resellerRouter = createRouter({
       return { success: true };
     }),
 
-  logout: resellerQuery.mutation(({ ctx }) => {
-    clearSessionCookie(
-      ctx.resHeaders,
-      ctx.req.headers,
-      ResellerSession.cookieName
-    );
+  logout: resellerQuery.mutation(async ({ ctx }) => {
+    // resellerQuery guarantees ctx.reseller, which in turn guarantees
+    // ctx.resellerSession was populated by createContext().
+    const session = ctx.resellerSession;
+    if (session) {
+      await revokeSession(session.jti, "reseller", session.expiresAt);
+      clearSessionCookie(
+        ctx.resHeaders,
+        ctx.req.headers,
+        ResellerSession.cookieName
+      );
+    }
+    maybePurgeExpiredRevocations();
     return { success: true };
   }),
 

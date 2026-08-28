@@ -18,6 +18,10 @@ describe("Kimi administrator sessions", () => {
     await expect(verifySessionToken(token)).resolves.toEqual({
       unionId: "user-42",
       clientId: "cinekin-test-app",
+      jti: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      ),
+      expiresAt: expect.any(Date),
     });
   });
 

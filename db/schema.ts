@@ -239,3 +239,30 @@ export const playlists = mysqlTable("playlists", {
 
 export type Playlist = typeof playlists.$inferSelect;
 export type InsertPlaylist = typeof playlists.$inferInsert;
+
+// Revocation list for the four stateless JWT session kinds (admin, client,
+// reseller, kimi). Sessions are NOT recorded at login — only a token whose
+// owner explicitly logged out gets a row here, keyed by its own `jti`. This
+// is deliberately additive-only and denylist-based (not a full session
+// table): every token already in circulation before this table existed
+// keeps working unchanged, since it simply has no row here. A row past its
+// own `expires_at` is provably redundant (the JWT's own `exp` claim already
+// rejects it) and safe to purge in bounded batches.
+export const revokedAuthSessions = mysqlTable(
+  "revoked_auth_sessions",
+  {
+    jti: varchar("jti", { length: 36 }).primaryKey(),
+    sessionKind: mysqlEnum("session_kind", [
+      "admin",
+      "client",
+      "reseller",
+      "kimi",
+    ]).notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    revokedAt: timestamp("revoked_at").defaultNow().notNull(),
+  },
+  table => [index("revoked_auth_sessions_expires_idx").on(table.expiresAt)]
+);
+
+export type RevokedAuthSession = typeof revokedAuthSessions.$inferSelect;
+export type InsertRevokedAuthSession = typeof revokedAuthSessions.$inferInsert;
