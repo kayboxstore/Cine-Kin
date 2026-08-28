@@ -8,10 +8,12 @@ const ISSUER = "cine-kin";
 const AUDIENCE = "cine-kin:kimi-admin";
 
 // Same UUID v4 shape as server/lib/app-sessions.ts — every `jti` this module
-// mints comes from randomUUID(). Strict validation at verify time rejects a
-// malformed/truncated `jti` before it ever reaches a SQL query.
+// mints comes from randomUUID(). Strictly v4 (version nibble `4`, variant
+// nibble one of `8`/`9`/`a`/`b`), not just any hex digit in those positions.
+// Rejects a malformed/truncated/wrong-version `jti` before it ever reaches a
+// SQL query.
 const JTI_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type TokenIdentity = { jti: string; expiresAt: Date };
 

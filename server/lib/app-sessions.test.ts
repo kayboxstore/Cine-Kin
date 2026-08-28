@@ -26,14 +26,14 @@ const secretBytes = () =>
 function craftLegacyToken(
   audience: string,
   claims: Record<string, unknown>,
-  { omitJti = false, omitExp = false } = {}
+  { omitJti = false, omitExp = false, jti = "11111111-1111-4111-8111-111111111111" } = {}
 ) {
   let builder = new jose.SignJWT(claims)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuer("cine-kin")
     .setAudience(audience)
     .setIssuedAt();
-  if (!omitJti) builder = builder.setJti("11111111-1111-4111-8111-111111111111");
+  if (!omitJti) builder = builder.setJti(jti);
   if (!omitExp) builder = builder.setExpirationTime("1h");
   return builder.sign(secretBytes());
 }
@@ -138,6 +138,19 @@ describe("application sessions", () => {
         .setIssuedAt()
         .setExpirationTime("-1s")
         .sign(secretBytes());
+      await expect(verifyClientSession(token)).resolves.toBeNull();
+    });
+
+    it("client: rejects a well-formed but non-v4 UUID as jti (e.g. v1: version nibble 1, not 4)", async () => {
+      const version = sessionVersionForCredential("credential-hash");
+      const token = await craftLegacyToken(
+        "cine-kin:client",
+        { kind: "client", appClientId: 1, sessionVersion: version },
+        // Structurally a valid UUID (8-4-4-4-12 hex, valid RFC 4122 variant
+        // nibble `8`) but version nibble is `1`, not `4` — must not pass a
+        // regex that only checks hex-digit positions.
+        { jti: "11111111-1111-1111-8111-111111111111" }
+      );
       await expect(verifyClientSession(token)).resolves.toBeNull();
     });
 

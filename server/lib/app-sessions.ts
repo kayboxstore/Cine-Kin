@@ -37,10 +37,13 @@ export function sessionVersionMatches(
 }
 
 // A UUID v4 as produced by node:crypto's randomUUID(), used for every `jti`
-// this module mints. Strict shape validation at verify time rejects any
-// malformed/truncated `jti` before it ever reaches a SQL query.
+// this module mints. Strictly v4: the version nibble must be `4` and the
+// variant nibble must be one of `8`/`9`/`a`/`b` (RFC 4122), not just any hex
+// digit in those positions — a well-formed UUID of a different version must
+// not slip through. Rejects any malformed/truncated/wrong-version `jti`
+// before it ever reaches a SQL query.
 const JTI_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 // Every verified session additionally exposes its own `jti` and expiry, so
 // callers can check/record revocation without re-decoding the token.
