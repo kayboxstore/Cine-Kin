@@ -5,6 +5,7 @@ import {
   activations,
   playlists,
   resellerCreditLedger,
+  resellerAdminAuditLog,
 } from "./schema";
 
 // PlanetScale has no DB-level foreign keys; these relations power Drizzle's
@@ -23,7 +24,18 @@ export const resellersRelations = relations(resellers, ({ many }) => ({
   activations: many(activations),
   appClients: many(appClients),
   creditLedger: many(resellerCreditLedger),
+  adminAuditLog: many(resellerAdminAuditLog),
 }));
+
+export const resellerAdminAuditLogRelations = relations(
+  resellerAdminAuditLog,
+  ({ one }) => ({
+    reseller: one(resellers, {
+      fields: [resellerAdminAuditLog.resellerId],
+      references: [resellers.id],
+    }),
+  })
+);
 
 export const activationsRelations = relations(activations, ({ one }) => ({
   appClient: one(appClients, {

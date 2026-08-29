@@ -14,6 +14,7 @@ import { ResellerSession } from "@contracts/constants";
 import { hashSecret, verifySecret } from "./lib/crypto";
 import {
   sessionVersionForCredential,
+  resellerSessionCredential,
   signResellerSession,
 } from "./lib/app-sessions";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
@@ -63,7 +64,11 @@ export const resellerRouter = createRouter({
           .limit(1)
       ).at(0);
 
-      if (!reseller || !verifySecret(input.password, reseller.passwordHash)) {
+      if (
+        !reseller ||
+        !verifySecret(input.password, reseller.passwordHash) ||
+        !reseller.isActive
+      ) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Identifiant ou mot de passe incorrect.",
@@ -72,7 +77,12 @@ export const resellerRouter = createRouter({
 
       const token = await signResellerSession(
         reseller.id,
-        sessionVersionForCredential(reseller.passwordHash)
+        sessionVersionForCredential(
+          resellerSessionCredential(
+            reseller.passwordHash,
+            reseller.sessionEpoch
+          )
+        )
       );
       appendSessionCookie(
         ctx.resHeaders,

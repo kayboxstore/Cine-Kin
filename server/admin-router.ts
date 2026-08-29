@@ -9,6 +9,7 @@ import {
   resellers,
   activations,
   resellerCreditLedger,
+  resellerAdminAuditLog,
 } from "@db/schema";
 import type { Reseller } from "@db/schema";
 import { eq, desc, count, inArray, sql } from "drizzle-orm";
@@ -32,6 +33,7 @@ function resellerAdminView(r: Reseller) {
     name: r.name,
     contact: r.contact,
     username: r.username,
+    isActive: r.isActive,
     credits: r.credits,
     createdAt: r.createdAt,
   };
@@ -509,6 +511,178 @@ export const adminRouter = createRouter({
           throw error;
         });
       return { id: resellerId, username: input.username };
+    }),
+
+  resellerUpdate: adminQuery
+    .input(
+      z.object({
+        resellerId: z.number().int().positive(),
+        name: z.string().trim().min(1).max(255),
+        contact: z.string().trim().max(255).optional(),
+        username: z.string().trim().min(3).max(100),
+        reason: z.string().trim().min(3).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const changedFields = await getDb()
+        .transaction(async tx => {
+          const current = (
+            await tx
+              .select({
+                name: resellers.name,
+                contact: resellers.contact,
+                username: resellers.username,
+              })
+              .from(resellers)
+              .where(eq(resellers.id, input.resellerId))
+              .limit(1)
+          ).at(0);
+          if (!current) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Revendeur introuvable.",
+            });
+          }
+
+          const nextContact = input.contact || null;
+          const fields = [
+            current.name !== input.name ? "name" : null,
+            current.contact !== nextContact ? "contact" : null,
+            current.username !== input.username ? "username" : null,
+          ].filter((field): field is string => field !== null);
+
+          if (fields.length === 0) return fields;
+
+          await tx
+            .update(resellers)
+            .set({
+              name: input.name,
+              contact: nextContact,
+              username: input.username,
+            })
+            .where(eq(resellers.id, input.resellerId));
+          await tx.insert(resellerAdminAuditLog).values({
+            resellerId: input.resellerId,
+            actorUserId: ctx.user.id,
+            action: "profile_update",
+            reason: input.reason,
+            metadata: JSON.stringify({ changedFields: fields }),
+          });
+          return fields;
+        })
+        .catch((error: unknown) => {
+          if (isDuplicateKeyError(error)) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Cet identifiant revendeur est déjà utilisé.",
+            });
+          }
+          throw error;
+        });
+      return { success: true, changedFields };
+    }),
+
+  resellerResetPassword: adminQuery
+    .input(
+      z.object({
+        resellerId: z.number().int().positive(),
+        newPassword: z.string().min(8).max(255),
+        reason: z.string().trim().min(3).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const username = await getDb().transaction(async tx => {
+        const reseller = (
+          await tx
+            .select({ username: resellers.username })
+            .from(resellers)
+            .where(eq(resellers.id, input.resellerId))
+            .limit(1)
+        ).at(0);
+        if (!reseller) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Revendeur introuvable.",
+          });
+        }
+        await tx
+          .update(resellers)
+          .set({ passwordHash: hashSecret(input.newPassword) })
+          .where(eq(resellers.id, input.resellerId));
+        await tx.insert(resellerAdminAuditLog).values({
+          resellerId: input.resellerId,
+          actorUserId: ctx.user.id,
+          action: "password_reset",
+          reason: input.reason,
+          metadata: null,
+        });
+        return reseller.username;
+      });
+      // The plaintext is intentionally absent. The admin UI can show the
+      // value it submitted once, but the server never returns or stores it.
+      return { success: true, username };
+    }),
+
+  resellerSetActive: adminQuery
+    .input(
+      z.object({
+        resellerId: z.number().int().positive(),
+        isActive: z.boolean(),
+        reason: z.string().trim().min(3).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await getDb().transaction(async tx => {
+        const current = (
+          await tx
+            .select({ isActive: resellers.isActive })
+            .from(resellers)
+            .where(eq(resellers.id, input.resellerId))
+            .limit(1)
+        ).at(0);
+        if (!current) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Revendeur introuvable.",
+          });
+        }
+        if (current.isActive === input.isActive) return;
+        await tx
+          .update(resellers)
+          .set(
+            input.isActive
+              ? { isActive: true }
+              : {
+                  isActive: false,
+                  sessionEpoch: sql`${resellers.sessionEpoch} + ${1}`,
+                }
+          )
+          .where(eq(resellers.id, input.resellerId));
+        await tx.insert(resellerAdminAuditLog).values({
+          resellerId: input.resellerId,
+          actorUserId: ctx.user.id,
+          action: "status_change",
+          reason: input.reason,
+          metadata: JSON.stringify({ isActive: input.isActive }),
+        });
+      });
+      return { success: true, isActive: input.isActive };
+    }),
+
+  resellerAdminHistory: adminQuery
+    .input(
+      z.object({
+        resellerId: z.number().int().positive(),
+        limit: z.number().int().min(1).max(200).default(100),
+      })
+    )
+    .query(async ({ input }) => {
+      return getDb()
+        .select()
+        .from(resellerAdminAuditLog)
+        .where(eq(resellerAdminAuditLog.resellerId, input.resellerId))
+        .orderBy(desc(resellerAdminAuditLog.createdAt))
+        .limit(input.limit);
     }),
 
   resellerAddCredits: adminQuery

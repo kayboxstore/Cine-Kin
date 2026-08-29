@@ -15,6 +15,17 @@ const shared = vi.hoisted(() => ({
   revoked: new Set<string>(),
   dbError: null as Error | null,
   insertError: null as Error | null,
+  reseller: null as null | {
+    id: number;
+    name: string;
+    contact: string | null;
+    username: string;
+    passwordHash: string;
+    isActive: boolean;
+    sessionEpoch: number;
+    credits: number;
+    createdAt: Date;
+  },
   kimiUser: {
     id: 1,
     unionId: "kimi-union-1",
@@ -32,7 +43,11 @@ vi.mock("drizzle-orm", async importOriginal => {
   const actual = await importOriginal<typeof import("drizzle-orm")>();
   return {
     ...actual,
-    eq: (col: { name: string }, val: unknown) => ({ __c: "eq", col: col.name, val }),
+    eq: (col: { name: string }, val: unknown) => ({
+      __c: "eq",
+      col: col.name,
+      val,
+    }),
     lt: () => ({ __c: "lt" }),
     sql: () => ({ __c: "sql-self-ref" }),
   };
@@ -59,8 +74,14 @@ vi.mock("./queries/connection", () => ({
                   ? [{ jti: cond.val }]
                   : [];
               }
-              if (cond.col === "unionId" && cond.val === shared.kimiUser.unionId) {
+              if (
+                cond.col === "unionId" &&
+                cond.val === shared.kimiUser.unionId
+              ) {
                 return [shared.kimiUser];
+              }
+              if (cond.col === "id" && shared.reseller?.id === cond.val) {
+                return [shared.reseller];
               }
               return [];
             },
@@ -76,6 +97,12 @@ import { appRouter } from "./router";
 import { createCallerFactory } from "./middleware";
 import { createContext } from "./context";
 import { signSessionToken } from "./kimi/session";
+import {
+  sessionVersionForCredential,
+  resellerSessionCredential,
+  signResellerSession,
+} from "./lib/app-sessions";
+import { hashSecret } from "./lib/crypto";
 
 const createCaller = createCallerFactory(appRouter);
 
@@ -115,11 +142,26 @@ async function loginKimi() {
   return `kimi_sid=${token}`;
 }
 
+async function loginResellerCookie() {
+  if (!shared.reseller) throw new Error("reseller fixture missing");
+  const token = await signResellerSession(
+    shared.reseller.id,
+    sessionVersionForCredential(
+      resellerSessionCredential(
+        shared.reseller.passwordHash,
+        shared.reseller.sessionEpoch
+      )
+    )
+  );
+  return `ck_reseller_sid=${token}`;
+}
+
 describe("session revocation — end to end", () => {
   beforeEach(() => {
     shared.revoked.clear();
     shared.dbError = null;
     shared.insertError = null;
+    shared.reseller = null;
   });
 
   it("rejects a captured cookie replayed after logout (the reported vulnerability, now fixed)", async () => {
@@ -199,7 +241,9 @@ describe("session revocation — end to end", () => {
     } as never);
     expect(ctx.user).toBeDefined();
 
-    shared.insertError = new Error("simulated MySQL outage on revocation insert");
+    shared.insertError = new Error(
+      "simulated MySQL outage on revocation insert"
+    );
 
     // The resolver must propagate the failure rather than swallowing it into
     // a false { success: true } response.
@@ -263,5 +307,49 @@ describe("session revocation — end to end", () => {
     expect(replayedKimi.user).toBeUndefined();
     const replayedAdmin = await contextFrom(adminCookie);
     expect(replayedAdmin.user).toBeUndefined();
+  });
+
+  it("invalidates an existing reseller session immediately after an admin password reset", async () => {
+    shared.reseller = {
+      id: 42,
+      name: "Revendeur",
+      contact: null,
+      username: "revendeur",
+      passwordHash: hashSecret("old-password-123"),
+      isActive: true,
+      sessionEpoch: 0,
+      credits: 0,
+      createdAt: new Date(),
+    };
+    const cookieHeader = await loginResellerCookie();
+    expect((await contextFrom(cookieHeader)).reseller).toBeDefined();
+
+    // This is the exact state change made by admin.resellerResetPassword.
+    shared.reseller.passwordHash = hashSecret("new-password-456");
+
+    expect((await contextFrom(cookieHeader)).reseller).toBeUndefined();
+  });
+
+  it("blocks an existing reseller session immediately when the account is suspended", async () => {
+    shared.reseller = {
+      id: 43,
+      name: "Revendeur",
+      contact: null,
+      username: "revendeur-suspendu",
+      passwordHash: hashSecret("password-123"),
+      isActive: true,
+      sessionEpoch: 0,
+      credits: 0,
+      createdAt: new Date(),
+    };
+    const cookieHeader = await loginResellerCookie();
+    expect((await contextFrom(cookieHeader)).reseller).toBeDefined();
+
+    shared.reseller.isActive = false;
+    shared.reseller.sessionEpoch += 1;
+
+    expect((await contextFrom(cookieHeader)).reseller).toBeUndefined();
+    shared.reseller.isActive = true;
+    expect((await contextFrom(cookieHeader)).reseller).toBeUndefined();
   });
 });

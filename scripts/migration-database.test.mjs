@@ -60,22 +60,29 @@ function inspectionFromSnapshot(snapshot) {
 }
 
 describe("migration history", () => {
-  it("contains the baseline, data-hardening, rate-limit and revocation migrations", async () => {
+  it("contains the baseline and every versioned security migration", async () => {
     const definitions = await loadMigrationDefinitions();
     const securityDataMigration = definitions.all[1];
     const rateLimitMigration = definitions.all[2];
+    const revocationMigration = definitions.all[3];
+    const resellerManagementMigration = definitions.all[4];
 
-    expect(definitions.all).toHaveLength(4);
+    expect(definitions.all).toHaveLength(5);
     expect(Object.keys(definitions.baseline.snapshot.tables)).toHaveLength(7);
     expect(Object.keys(securityDataMigration.snapshot.tables)).toHaveLength(8);
-    expect(Object.keys(definitions.current.snapshot.tables)).toHaveLength(10);
+    expect(Object.keys(definitions.current.snapshot.tables)).toHaveLength(11);
     expect(definitions.baseline.hash).toMatch(/^[a-f0-9]{64}$/);
     expect(securityDataMigration.sql).toContain(
       "Solde historique repris lors de la migration"
     );
     expect(securityDataMigration.sql).toContain("claimed_at");
     expect(rateLimitMigration.sql).toContain("rate_limit_counters");
-    expect(definitions.current.sql).toContain("revoked_auth_sessions");
+    expect(revocationMigration.sql).toContain("revoked_auth_sessions");
+    expect(resellerManagementMigration.sql).toContain(
+      "reseller_admin_audit_log"
+    );
+    expect(resellerManagementMigration.sql).toContain("is_active");
+    expect(resellerManagementMigration.sql).toContain("session_epoch");
   });
 
   it("matches the generated current snapshot exactly", async () => {

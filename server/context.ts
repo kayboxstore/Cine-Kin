@@ -14,6 +14,7 @@ import {
   verifyResellerSession,
   verifyAdminSession,
   sessionVersionForCredential,
+  resellerSessionCredential,
   sessionVersionMatches,
 } from "./lib/app-sessions";
 import { env } from "./lib/env";
@@ -94,9 +95,12 @@ async function loadReseller(
   const reseller = rows.at(0);
   if (
     !reseller ||
+    !reseller.isActive ||
     !sessionVersionMatches(
       sessionVersion,
-      sessionVersionForCredential(reseller.passwordHash)
+      sessionVersionForCredential(
+        resellerSessionCredential(reseller.passwordHash, reseller.sessionEpoch)
+      )
     )
   ) {
     return undefined;

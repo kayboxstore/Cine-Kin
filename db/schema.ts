@@ -7,6 +7,7 @@ import {
   timestamp,
   int,
   bigint,
+  boolean,
   index,
   uniqueIndex,
 } from "drizzle-orm/mysql-core";
@@ -128,12 +129,52 @@ export const resellers = mysqlTable("resellers", {
   contact: varchar("contact", { length: 255 }),
   username: varchar("username", { length: 100 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  // Incremented on suspension so a cookie issued before the suspension can
+  // never become valid again after a later reactivation.
+  sessionEpoch: int("session_epoch", { unsigned: true }).default(0).notNull(),
   credits: int("credits").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export type Reseller = typeof resellers.$inferSelect;
 export type InsertReseller = typeof resellers.$inferInsert;
+
+// Persistent audit trail for sensitive reseller administration. Passwords and
+// password hashes must never be written here; metadata contains only the names
+// of changed fields or the resulting account status.
+export const resellerAdminAuditLog = mysqlTable(
+  "reseller_admin_audit_log",
+  {
+    id: serial("id").primaryKey(),
+    resellerId: bigint("reseller_id", {
+      mode: "number",
+      unsigned: true,
+    }).notNull(),
+    actorUserId: bigint("actor_user_id", {
+      mode: "number",
+      unsigned: true,
+    }).notNull(),
+    action: mysqlEnum("action", [
+      "profile_update",
+      "password_reset",
+      "status_change",
+    ]).notNull(),
+    reason: varchar("reason", { length: 255 }).notNull(),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  table => [
+    index("reseller_admin_audit_reseller_created_idx").on(
+      table.resellerId,
+      table.createdAt
+    ),
+  ]
+);
+
+export type ResellerAdminAuditEntry = typeof resellerAdminAuditLog.$inferSelect;
+export type InsertResellerAdminAuditEntry =
+  typeof resellerAdminAuditLog.$inferInsert;
 
 // Shared counters for authentication/API rate limiting. Keys are SHA-256
 // digests, so raw IP addresses and procedure names are not persisted.

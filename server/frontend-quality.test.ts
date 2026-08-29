@@ -96,6 +96,15 @@ describe("frontend quality safeguards", () => {
     expect(buildScript).toContain('dest: "/index.html", status: 404');
   });
 
+  it("exposes non-destructive reseller administration controls", () => {
+    const section = read("src/pages/admin/sections/ResellersSection.tsx");
+    expect(section).toContain("resellerUpdate");
+    expect(section).toContain("resellerResetPassword");
+    expect(section).toContain("resellerSetActive");
+    expect(section).toContain("Journal d'administration");
+    expect(section).not.toContain("resellerDelete");
+  });
+
   it("does not publish unverified legal, payment, analytics or retention claims", () => {
     const legal = read("src/pages/MentionsLegales.tsx");
     const privacy = read("src/pages/PolitiqueConfidentialite.tsx");
