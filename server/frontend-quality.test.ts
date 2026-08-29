@@ -95,4 +95,18 @@ describe("frontend quality safeguards", () => {
     const buildScript = read("scripts/build-vercel.mjs");
     expect(buildScript).toContain('dest: "/index.html", status: 404');
   });
+
+  it("does not publish unverified legal, payment, analytics or retention claims", () => {
+    const legal = read("src/pages/MentionsLegales.tsx");
+    const privacy = read("src/pages/PolitiqueConfidentialite.tsx");
+    const terms = read("src/pages/Conditions.tsx");
+
+    expect(legal).toContain("Version de préproduction");
+    expect(legal).not.toContain("société enregistrée");
+    expect(legal).not.toContain("répartie géographiquement");
+    expect(privacy).toContain("ne traite aucun paiement en ligne");
+    expect(privacy).toContain("aucun cookie publicitaire");
+    expect(privacy).not.toContain("supprimées 12 mois après");
+    expect(terms).toContain("droits d'utilisation et de distribution");
+  });
 });
