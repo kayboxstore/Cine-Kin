@@ -88,6 +88,11 @@ describe("migration history", () => {
   it("matches the generated current snapshot exactly", async () => {
     const { current } = await loadMigrationDefinitions();
     const inspection = inspectionFromSnapshot(current.snapshot);
+    const activeColumn = inspection.columnRows.find(
+      row => row.tableName === "resellers" && row.columnName === "is_active"
+    );
+    if (!activeColumn) throw new Error("Colonne is_active absente du snapshot");
+    activeColumn.columnType = "tinyint(1)";
     expect(compareSchema(current.snapshot, inspection)).toEqual({
       errors: [],
       valid: true,
