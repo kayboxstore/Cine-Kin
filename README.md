@@ -131,6 +131,9 @@ La migration précède toujours le déploiement du nouveau code, jamais l'invers
    révocation de session, changement de mot de passe, etc.).
 
 Détail complet : [`docs/staging-rehearsal-runbook.md`](docs/staging-rehearsal-runbook.md).
+La décision de fusion et de mise en production suit en complément la
+[`checklist de préparation à la mise en production`](docs/release-readiness-checklist.md),
+qui recense aussi les validations juridiques et métier encore nécessaires.
 
 Pour reprendre une base créée auparavant avec `db:push`, suivre obligatoirement
 [`docs/database-migration-runbook.md`](docs/database-migration-runbook.md) sur
