@@ -1,0 +1,375 @@
+name: Staging Gate
+
+run-name: Staging ${{ inputs.operation }} @ ${{ inputs.release_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Étape contrôlée à exécuter"
+        required: true
+        type: choice
+        options:
+          - preflight
+          - rehearse
+          - smoke
+      release_sha:
+        description: "SHA complet (40 caractères) approuvé sur la branche candidate"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cine-kin-staging-gate
+  cancel-in-progress: false
+
+env:
+  CANDIDATE_BRANCH: claude/pr18-auth-revocation-candidate
+  APPROVED_RELEASE_SHA: ${{ inputs.release_sha }}
+  SOURCE_DATABASE: cine_kin_staging_source
+  RESTORE_DATABASE: cine_kin_staging_restore
+  STAGING_ORIGIN: https://cine-kin-audit-preview.onrender.com
+
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/main' && inputs.operation == 'preflight'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    steps:
+      - name: Validate the approved release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$APPROVED_RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "release_sha doit être un SHA Git complet en minuscules." >&2
+            exit 1
+          fi
+
+      - name: Check out the reviewed candidate branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_BRANCH }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Refuse an unapproved candidate revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$APPROVED_RELEASE_SHA" ]]; then
+            echo "La branche candidate ne correspond plus au SHA approuvé." >&2
+            echo "Attendu: $APPROVED_RELEASE_SHA" >&2
+            echo "Actuel:  $actual_sha" >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Verify the official MySQL 8 client is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql --version | grep -E "Ver 8\."
+          mysqldump --version | grep -E "Ver 8\."
+
+      - name: Record non-secret validation metadata
+        shell: bash
+        env:
+          GATE_OPERATION: preflight
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/staging-evidence
+          node --input-type=module <<'NODE'
+          import { writeFile } from "node:fs/promises";
+          const evidence = {
+            format: "cine-kin-staging-gate-v1",
+            operation: process.env.GATE_OPERATION,
+            releaseSha: process.env.APPROVED_RELEASE_SHA,
+            actor: process.env.GITHUB_ACTOR,
+            runId: process.env.GITHUB_RUN_ID,
+            runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+            recordedAt: new Date().toISOString(),
+          };
+          await writeFile(
+            "artifacts/staging-evidence/validation.json",
+            `${JSON.stringify(evidence, null, 2)}\n`,
+            { mode: 0o600 }
+          );
+          NODE
+
+      - name: Run the read-only staging preflight
+        shell: bash
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_RESTORE_DATABASE_URL: ${{ secrets.STAGING_RESTORE_DATABASE_URL }}
+          STAGING_BACKUP_PASSPHRASE: ${{ secrets.STAGING_BACKUP_PASSPHRASE }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          STAGING_ENVIRONMENT: staging
+          STAGING_BASE_URL: ${{ env.STAGING_ORIGIN }}
+          APP_BASE_URL: ${{ env.STAGING_ORIGIN }}
+          VITE_SITE_URL: ${{ env.STAGING_ORIGIN }}
+          RATE_LIMIT_STORE: database
+          TRUST_PROXY: "true"
+          TRUST_PROXY_HOPS: "1"
+          KIMI_OAUTH_PKCE: "true"
+          DATABASE_POOL_LIMIT: "3"
+          DATABASE_CONNECT_TIMEOUT_MS: "10000"
+          STAGING_BACKUP_DIR: artifacts/staging-backups
+          STAGING_REHEARSAL_ALLOW_APPLY: "0"
+        run: |
+          set -euo pipefail
+          node scripts/staging-preflight.mjs \
+            --json \
+            --confirm-source "$SOURCE_DATABASE" \
+            --confirm-restore "$RESTORE_DATABASE" \
+            > artifacts/staging-evidence/preflight.json
+
+      - name: Archive the safe preflight evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: staging-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/staging-evidence/
+          if-no-files-found: error
+          retention-days: 90
+
+  rehearse:
+    if: github.ref == 'refs/heads/main' && inputs.operation == 'rehearse'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    steps:
+      - name: Validate the approved release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$APPROVED_RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "release_sha doit être un SHA Git complet en minuscules." >&2
+            exit 1
+          fi
+
+      - name: Check out the reviewed candidate branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_BRANCH }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Refuse an unapproved candidate revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$APPROVED_RELEASE_SHA" ]]; then
+            echo "La branche candidate ne correspond plus au SHA approuvé." >&2
+            echo "Attendu: $APPROVED_RELEASE_SHA" >&2
+            echo "Actuel:  $actual_sha" >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Verify the official MySQL 8 client is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql --version | grep -E "Ver 8\."
+          mysqldump --version | grep -E "Ver 8\."
+
+      - name: Record non-secret validation metadata
+        shell: bash
+        env:
+          GATE_OPERATION: rehearse
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/staging-evidence artifacts/staging-backups
+          node --input-type=module <<'NODE'
+          import { writeFile } from "node:fs/promises";
+          const evidence = {
+            format: "cine-kin-staging-gate-v1",
+            operation: process.env.GATE_OPERATION,
+            releaseSha: process.env.APPROVED_RELEASE_SHA,
+            actor: process.env.GITHUB_ACTOR,
+            runId: process.env.GITHUB_RUN_ID,
+            runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+            recordedAt: new Date().toISOString(),
+          };
+          await writeFile(
+            "artifacts/staging-evidence/validation.json",
+            `${JSON.stringify(evidence, null, 2)}\n`,
+            { mode: 0o600 }
+          );
+          NODE
+
+      - name: Re-run the read-only preflight immediately before rehearsal
+        shell: bash
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_RESTORE_DATABASE_URL: ${{ secrets.STAGING_RESTORE_DATABASE_URL }}
+          STAGING_BACKUP_PASSPHRASE: ${{ secrets.STAGING_BACKUP_PASSPHRASE }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          STAGING_ENVIRONMENT: staging
+          STAGING_BASE_URL: ${{ env.STAGING_ORIGIN }}
+          APP_BASE_URL: ${{ env.STAGING_ORIGIN }}
+          VITE_SITE_URL: ${{ env.STAGING_ORIGIN }}
+          RATE_LIMIT_STORE: database
+          TRUST_PROXY: "true"
+          TRUST_PROXY_HOPS: "1"
+          KIMI_OAUTH_PKCE: "true"
+          DATABASE_POOL_LIMIT: "3"
+          DATABASE_CONNECT_TIMEOUT_MS: "10000"
+          STAGING_BACKUP_DIR: artifacts/staging-backups
+          STAGING_REHEARSAL_ALLOW_APPLY: "0"
+        run: |
+          set -euo pipefail
+          node scripts/staging-preflight.mjs \
+            --json \
+            --confirm-source "$SOURCE_DATABASE" \
+            --confirm-restore "$RESTORE_DATABASE" \
+            > artifacts/staging-evidence/preflight.json
+
+      - name: Create the encrypted backup, restore, migrate and audit
+        shell: bash
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_RESTORE_DATABASE_URL: ${{ secrets.STAGING_RESTORE_DATABASE_URL }}
+          STAGING_BACKUP_PASSPHRASE: ${{ secrets.STAGING_BACKUP_PASSPHRASE }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          STAGING_ENVIRONMENT: staging
+          STAGING_BASE_URL: ${{ env.STAGING_ORIGIN }}
+          APP_BASE_URL: ${{ env.STAGING_ORIGIN }}
+          VITE_SITE_URL: ${{ env.STAGING_ORIGIN }}
+          RATE_LIMIT_STORE: database
+          TRUST_PROXY: "true"
+          TRUST_PROXY_HOPS: "1"
+          KIMI_OAUTH_PKCE: "true"
+          DATABASE_POOL_LIMIT: "3"
+          DATABASE_CONNECT_TIMEOUT_MS: "10000"
+          STAGING_BACKUP_DIR: artifacts/staging-backups
+          STAGING_REHEARSAL_ALLOW_APPLY: "1"
+        run: |
+          set -euo pipefail
+          node scripts/staging-rehearsal.mjs \
+            --apply \
+            --confirm-source "$SOURCE_DATABASE" \
+            --confirm-restore "$RESTORE_DATABASE"
+
+      - name: Archive encrypted backup and safe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: staging-rehearsal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/staging-backups/*.sql.ckbackup
+            artifacts/staging-backups/*.sql.ckbackup.sha256
+            artifacts/staging-backups/*.sql.ckbackup.json
+            artifacts/staging-evidence/
+          if-no-files-found: error
+          retention-days: 90
+
+  smoke:
+    if: github.ref == 'refs/heads/main' && inputs.operation == 'smoke'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    steps:
+      - name: Validate the approved release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$APPROVED_RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "release_sha doit être un SHA Git complet en minuscules." >&2
+            exit 1
+          fi
+
+      - name: Check out the reviewed candidate branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_BRANCH }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Refuse an unapproved candidate revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$APPROVED_RELEASE_SHA" ]]; then
+            echo "La branche candidate ne correspond plus au SHA approuvé." >&2
+            echo "Attendu: $APPROVED_RELEASE_SHA" >&2
+            echo "Actuel:  $actual_sha" >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Record non-secret validation metadata
+        shell: bash
+        env:
+          GATE_OPERATION: smoke
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/staging-evidence
+          node --input-type=module <<'NODE'
+          import { writeFile } from "node:fs/promises";
+          const evidence = {
+            format: "cine-kin-staging-gate-v1",
+            operation: process.env.GATE_OPERATION,
+            releaseSha: process.env.APPROVED_RELEASE_SHA,
+            actor: process.env.GITHUB_ACTOR,
+            runId: process.env.GITHUB_RUN_ID,
+            runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+            recordedAt: new Date().toISOString(),
+          };
+          await writeFile(
+            "artifacts/staging-evidence/validation.json",
+            `${JSON.stringify(evidence, null, 2)}\n`,
+            { mode: 0o600 }
+          );
+          NODE
+
+      - name: Run public staging smoke tests
+        shell: bash
+        env:
+          STAGING_BASE_URL: ${{ env.STAGING_ORIGIN }}
+        run: |
+          set -euo pipefail
+          node scripts/staging-smoke.mjs --json \
+            > artifacts/staging-evidence/smoke.json
+
+      - name: Archive the smoke-test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: staging-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/staging-evidence/
+          if-no-files-found: error
+          retention-days: 90
