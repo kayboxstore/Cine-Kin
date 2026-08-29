@@ -5,9 +5,12 @@ import {
   Copy,
   History,
   KeyRound,
+  Pencil,
   Plus,
   ShieldCheck,
   Store,
+  UserCheck,
+  UserRoundX,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { useToast } from "@/components/Toast";
@@ -45,6 +48,12 @@ const CREDIT_ENTRY_LABELS = {
   activation: "Activation / renouvellement",
   refund: "Remboursement",
   adjustment: "Ajustement",
+} as const;
+
+const ADMIN_ACTION_LABELS = {
+  profile_update: "Profil modifié",
+  password_reset: "Mot de passe réinitialisé",
+  status_change: "Statut modifié",
 } as const;
 
 function generatePassword(length = 12): string {
@@ -286,6 +295,7 @@ type ResellerData = {
   name: string;
   contact: string | null;
   username: string;
+  isActive: boolean;
   credits: number;
   createdAt: Date | string;
 };
@@ -302,6 +312,20 @@ function ResellerCard({
   const [amount, setAmount] = useState("");
   const [creditReason, setCreditReason] = useState("");
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState(reseller.name);
+  const [editContact, setEditContact] = useState(reseller.contact ?? "");
+  const [editUsername, setEditUsername] = useState(reseller.username);
+  const [editReason, setEditReason] = useState("");
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetReason, setResetReason] = useState("");
+  const [resetCredential, setResetCredential] = useState<{
+    username: string;
+    password: string;
+  } | null>(null);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [statusReason, setStatusReason] = useState("");
 
   const addCredits = trpc.admin.resellerAddCredits.useMutation({
     onSuccess: () => {
@@ -317,6 +341,54 @@ function ResellerCard({
     onError: e => toast(e.message || "Échec de l'ajout de crédits", "error"),
   });
 
+  const updateProfile = trpc.admin.resellerUpdate.useMutation({
+    onSuccess: () => {
+      toast("Profil du revendeur mis à jour.", "success");
+      setEditOpen(false);
+      setEditReason("");
+      utils.admin.resellerList.invalidate();
+      utils.admin.resellerAdminHistory.invalidate({
+        resellerId: reseller.id,
+        limit: 100,
+      });
+    },
+    onError: e => toast(e.message || "Échec de la modification", "error"),
+  });
+
+  const resetPasswordMutation = trpc.admin.resellerResetPassword.useMutation({
+    onSuccess: data => {
+      setResetCredential({
+        username: data.username,
+        password: resetPassword,
+      });
+      setResetOpen(false);
+      setResetPassword("");
+      setResetReason("");
+      utils.admin.resellerAdminHistory.invalidate({
+        resellerId: reseller.id,
+        limit: 100,
+      });
+    },
+    onError: e => toast(e.message || "Échec de la réinitialisation", "error"),
+  });
+
+  const setActive = trpc.admin.resellerSetActive.useMutation({
+    onSuccess: data => {
+      toast(
+        data.isActive ? "Revendeur réactivé." : "Revendeur suspendu.",
+        "success"
+      );
+      setStatusOpen(false);
+      setStatusReason("");
+      utils.admin.resellerList.invalidate();
+      utils.admin.resellerAdminHistory.invalidate({
+        resellerId: reseller.id,
+        limit: 100,
+      });
+    },
+    onError: e => toast(e.message || "Échec du changement de statut", "error"),
+  });
+
   const history = trpc.admin.resellerActivationHistory.useQuery(
     { resellerId: reseller.id },
     { enabled: open }
@@ -325,194 +397,511 @@ function ResellerCard({
     { resellerId: reseller.id, limit: 200 },
     { enabled: open }
   );
+  const adminHistory = trpc.admin.resellerAdminHistory.useQuery(
+    { resellerId: reseller.id, limit: 100 },
+    { enabled: open }
+  );
 
   const amountNum = Math.max(0, parseInt(amount, 10) || 0);
 
+  const openEditDialog = () => {
+    setEditName(reseller.name);
+    setEditContact(reseller.contact ?? "");
+    setEditUsername(reseller.username);
+    setEditReason("");
+    setEditOpen(true);
+  };
+
+  const copy = (text: string) => {
+    navigator.clipboard?.writeText(text).then(
+      () => toast("Copié dans le presse-papiers.", "success"),
+      () => toast("Copie impossible.", "error")
+    );
+  };
+
   return (
-    <div className="rounded-xl border border-border bg-card">
-      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#5a6b4e]/15 text-[#8ba26f]">
-            <Store className="h-5 w-5" />
+    <>
+      <div className="rounded-xl border border-border bg-card">
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#5a6b4e]/15 text-[#8ba26f]">
+              <Store className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="font-medium text-foreground">{reseller.name}</div>
+              <div className="text-xs text-muted-foreground">
+                @{reseller.username}
+                {reseller.contact ? ` · ${reseller.contact}` : ""}
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="font-medium text-foreground">{reseller.name}</div>
-            <div className="text-xs text-muted-foreground">
-              @{reseller.username}
-              {reseller.contact ? ` · ${reseller.contact}` : ""}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge
+              variant="outline"
+              className={
+                reseller.isActive
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                  : "border-red-500/30 bg-red-500/10 text-red-400"
+              }
+            >
+              {reseller.isActive ? "Actif" : "Suspendu"}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="border-amber-500/30 bg-amber-500/10 text-amber-400"
+            >
+              <Coins className="mr-1 h-3.5 w-3.5" />
+              {reseller.credits} crédits
+            </Badge>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="Montant"
+                className="h-9 w-28"
+              />
+              <Input
+                value={creditReason}
+                onChange={e => setCreditReason(e.target.value)}
+                placeholder="Motif obligatoire"
+                className="h-9 w-44"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={
+                  amountNum < 1 ||
+                  creditReason.trim().length < 3 ||
+                  addCredits.isPending
+                }
+                onClick={() =>
+                  addCredits.mutate({
+                    resellerId: reseller.id,
+                    amount: amountNum,
+                    reason: creditReason.trim(),
+                  })
+                }
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" />
+                Crédits
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={openEditDialog}>
+                <Pencil className="mr-1 h-3.5 w-3.5" />
+                Modifier
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setResetPassword(generatePassword());
+                  setResetReason("");
+                  setResetOpen(true);
+                }}
+              >
+                <KeyRound className="mr-1 h-3.5 w-3.5" />
+                Mot de passe
+              </Button>
+              <Button
+                size="sm"
+                variant={reseller.isActive ? "destructive" : "outline"}
+                onClick={() => {
+                  setStatusReason("");
+                  setStatusOpen(true);
+                }}
+              >
+                {reseller.isActive ? (
+                  <UserRoundX className="mr-1 h-3.5 w-3.5" />
+                ) : (
+                  <UserCheck className="mr-1 h-3.5 w-3.5" />
+                )}
+                {reseller.isActive ? "Suspendre" : "Réactiver"}
+              </Button>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge
-            variant="outline"
-            className="border-amber-500/30 bg-amber-500/10 text-amber-400"
-          >
-            <Coins className="mr-1 h-3.5 w-3.5" />
-            {reseller.credits} crédits
-          </Badge>
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              min={1}
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              placeholder="Montant"
-              className="h-9 w-28"
-            />
-            <Input
-              value={creditReason}
-              onChange={e => setCreditReason(e.target.value)}
-              placeholder="Motif obligatoire"
-              className="h-9 w-44"
-            />
+        <Collapsible open={open} onOpenChange={setOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span className="flex items-center gap-2">
+                <KeyRound className="h-4 w-4" />
+                Historique d'activations et de crédits
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="overflow-x-auto border-t border-border">
+              <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
+                <KeyRound className="h-4 w-4 text-[#8ba26f]" />
+                Activations
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>MAC</TableHead>
+                    <TableHead>Licence</TableHead>
+                    <TableHead>Coût</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {history.data && history.data.length > 0 ? (
+                    history.data.map(a => (
+                      <TableRow key={a.id}>
+                        <TableCell className="font-medium text-foreground">
+                          {clientNames.get(a.appClientId) ?? "—"}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {a.mac}
+                        </TableCell>
+                        <TableCell>{licenseLabel(a.licenseType)}</TableCell>
+                        <TableCell>
+                          {a.creditsCharged} crédit
+                          {a.creditsCharged > 1 ? "s" : ""}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatDateTime(a.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="py-8 text-center text-muted-foreground"
+                      >
+                        {history.isLoading
+                          ? "Chargement…"
+                          : "Aucune activation"}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="overflow-x-auto border-t border-border">
+              <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
+                <History className="h-4 w-4 text-amber-400" />
+                Grand livre des crédits
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Motif</TableHead>
+                    <TableHead>Variation</TableHead>
+                    <TableHead>Solde après</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {creditHistory.data && creditHistory.data.length > 0 ? (
+                    creditHistory.data.map(entry => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="text-muted-foreground">
+                          {formatDateTime(entry.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          {CREDIT_ENTRY_LABELS[entry.entryType]}
+                        </TableCell>
+                        <TableCell
+                          className={
+                            entry.delta >= 0
+                              ? "text-emerald-500"
+                              : "text-amber-500"
+                          }
+                        >
+                          {entry.delta >= 0 ? "+" : ""}
+                          {entry.delta}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {entry.balanceAfter}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="py-8 text-center text-muted-foreground"
+                      >
+                        {creditHistory.isLoading
+                          ? "Chargement…"
+                          : "Aucun mouvement de crédits"}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="overflow-x-auto border-t border-border">
+              <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                Journal d'administration
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Motif</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {adminHistory.data && adminHistory.data.length > 0 ? (
+                    adminHistory.data.map(entry => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="text-muted-foreground">
+                          {formatDateTime(entry.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          {ADMIN_ACTION_LABELS[entry.action]}
+                        </TableCell>
+                        <TableCell>{entry.reason}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={3}
+                        className="py-8 text-center text-muted-foreground"
+                      >
+                        {adminHistory.isLoading
+                          ? "Chargement…"
+                          : "Aucune opération administrative"}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le revendeur</DialogTitle>
+            <DialogDescription>
+              Modifiez son identité publique. Cette opération est journalisée.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor={`edit-name-${reseller.id}`}>Nom</Label>
+              <Input
+                id={`edit-name-${reseller.id}`}
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`edit-contact-${reseller.id}`}>Contact</Label>
+              <Input
+                id={`edit-contact-${reseller.id}`}
+                value={editContact}
+                onChange={e => setEditContact(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`edit-username-${reseller.id}`}>
+                Identifiant
+              </Label>
+              <Input
+                id={`edit-username-${reseller.id}`}
+                value={editUsername}
+                onChange={e => setEditUsername(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`edit-reason-${reseller.id}`}>Motif</Label>
+              <Input
+                id={`edit-reason-${reseller.id}`}
+                value={editReason}
+                onChange={e => setEditReason(e.target.value)}
+                placeholder="Motif obligatoire"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              Annuler
+            </Button>
             <Button
-              size="sm"
-              variant="outline"
               disabled={
-                amountNum < 1 ||
-                creditReason.trim().length < 3 ||
-                addCredits.isPending
+                !editName.trim() ||
+                editUsername.trim().length < 3 ||
+                editReason.trim().length < 3 ||
+                updateProfile.isPending
               }
               onClick={() =>
-                addCredits.mutate({
+                updateProfile.mutate({
                   resellerId: reseller.id,
-                  amount: amountNum,
-                  reason: creditReason.trim(),
+                  name: editName.trim(),
+                  contact: editContact.trim() || undefined,
+                  username: editUsername.trim(),
+                  reason: editReason.trim(),
                 })
               }
             >
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Crédits
+              Enregistrer
             </Button>
-          </div>
-        </div>
-      </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="flex w-full items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <span className="flex items-center gap-2">
-              <KeyRound className="h-4 w-4" />
-              Historique d'activations et de crédits
-            </span>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
+            <DialogDescription>
+              Les sessions actuelles du revendeur seront immédiatement
+              invalidées. Le nouveau mot de passe ne sera affiché qu'une fois.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor={`reset-password-${reseller.id}`}>
+                Nouveau mot de passe
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id={`reset-password-${reseller.id}`}
+                  value={resetPassword}
+                  onChange={e => setResetPassword(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setResetPassword(generatePassword())}
+                >
+                  Générer
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`reset-reason-${reseller.id}`}>Motif</Label>
+              <Input
+                id={`reset-reason-${reseller.id}`}
+                value={resetReason}
+                onChange={e => setResetReason(e.target.value)}
+                placeholder="Motif obligatoire"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              disabled={
+                resetPassword.length < 8 ||
+                resetReason.trim().length < 3 ||
+                resetPasswordMutation.isPending
+              }
+              onClick={() =>
+                resetPasswordMutation.mutate({
+                  resellerId: reseller.id,
+                  newPassword: resetPassword,
+                  reason: resetReason.trim(),
+                })
+              }
+            >
+              Réinitialiser
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={statusOpen} onOpenChange={setStatusOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {reseller.isActive ? "Suspendre" : "Réactiver"} le revendeur
+            </DialogTitle>
+            <DialogDescription>
+              {reseller.isActive
+                ? "La connexion et les sessions existantes seront bloquées, sans supprimer son historique."
+                : "Le revendeur pourra de nouveau se connecter avec son mot de passe actuel."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor={`status-reason-${reseller.id}`}>Motif</Label>
+            <Input
+              id={`status-reason-${reseller.id}`}
+              value={statusReason}
+              onChange={e => setStatusReason(e.target.value)}
+              placeholder="Motif obligatoire"
             />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="overflow-x-auto border-t border-border">
-            <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
-              <KeyRound className="h-4 w-4 text-[#8ba26f]" />
-              Activations
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Client</TableHead>
-                  <TableHead>MAC</TableHead>
-                  <TableHead>Licence</TableHead>
-                  <TableHead>Coût</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.data && history.data.length > 0 ? (
-                  history.data.map(a => (
-                    <TableRow key={a.id}>
-                      <TableCell className="font-medium text-foreground">
-                        {clientNames.get(a.appClientId) ?? "—"}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {a.mac}
-                      </TableCell>
-                      <TableCell>{licenseLabel(a.licenseType)}</TableCell>
-                      <TableCell>
-                        {a.creditsCharged} crédit
-                        {a.creditsCharged > 1 ? "s" : ""}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDateTime(a.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      {history.isLoading ? "Chargement…" : "Aucune activation"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
           </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStatusOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              variant={reseller.isActive ? "destructive" : "default"}
+              disabled={statusReason.trim().length < 3 || setActive.isPending}
+              onClick={() =>
+                setActive.mutate({
+                  resellerId: reseller.id,
+                  isActive: !reseller.isActive,
+                  reason: statusReason.trim(),
+                })
+              }
+            >
+              Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-          <div className="overflow-x-auto border-t border-border">
-            <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
-              <History className="h-4 w-4 text-amber-400" />
-              Grand livre des crédits
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Motif</TableHead>
-                  <TableHead>Variation</TableHead>
-                  <TableHead>Solde après</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {creditHistory.data && creditHistory.data.length > 0 ? (
-                  creditHistory.data.map(entry => (
-                    <TableRow key={entry.id}>
-                      <TableCell className="text-muted-foreground">
-                        {formatDateTime(entry.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        {CREDIT_ENTRY_LABELS[entry.entryType]}
-                      </TableCell>
-                      <TableCell>{entry.reason}</TableCell>
-                      <TableCell
-                        className={
-                          entry.delta >= 0
-                            ? "text-emerald-500"
-                            : "text-amber-500"
-                        }
-                      >
-                        {entry.delta >= 0 ? "+" : ""}
-                        {entry.delta}
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        {entry.balanceAfter}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      {creditHistory.isLoading
-                        ? "Chargement…"
-                        : "Aucun mouvement de crédits"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+      <Dialog
+        open={!!resetCredential}
+        onOpenChange={value => !value && setResetCredential(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mot de passe réinitialisé</DialogTitle>
+            <DialogDescription>
+              Copiez ces identifiants maintenant. Le mot de passe ne sera plus
+              récupérable après la fermeture de cette fenêtre.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <CredentialRow
+              label="Identifiant"
+              value={resetCredential?.username ?? ""}
+              onCopy={copy}
+            />
+            <CredentialRow
+              label="Mot de passe"
+              value={resetCredential?.password ?? ""}
+              onCopy={copy}
+              mono
+            />
           </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+          <DialogFooter>
+            <Button onClick={() => setResetCredential(null)}>
+              J'ai copié, fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

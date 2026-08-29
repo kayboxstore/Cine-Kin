@@ -24,6 +24,17 @@ export function sessionVersionForCredential(credential: string): string {
   return createHmac("sha256", secret()).update(credential).digest("base64url");
 }
 
+export function resellerSessionCredential(
+  passwordHash: string,
+  sessionEpoch: number
+): string {
+  // Epoch zero preserves compatibility for accounts that have never been
+  // suspended. Once incremented it is never reset, so old cookies stay dead.
+  return sessionEpoch === 0
+    ? passwordHash
+    : `${passwordHash}:session-epoch:${sessionEpoch}`;
+}
+
 export function sessionVersionMatches(
   actual: string,
   expected: string
@@ -153,7 +164,10 @@ export async function verifyResellerSession(
   }
 }
 
-export type AdminSessionPayload = { kind: "admin"; sessionVersion: string } & TokenIdentity;
+export type AdminSessionPayload = {
+  kind: "admin";
+  sessionVersion: string;
+} & TokenIdentity;
 
 export async function signAdminSession(
   sessionVersion: string
@@ -182,7 +196,11 @@ export async function verifyAdminSession(
       return null;
     const identity = extractTokenIdentity(payload);
     if (!identity) return null;
-    return { kind: "admin", sessionVersion: payload.sessionVersion, ...identity };
+    return {
+      kind: "admin",
+      sessionVersion: payload.sessionVersion,
+      ...identity,
+    };
   } catch {
     return null;
   }
