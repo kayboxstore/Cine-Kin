@@ -9,13 +9,11 @@ intervention autorisée sur l'infrastructure.
 - branche candidate : `claude/pr18-auth-revocation-candidate` ;
 - commit de référence audité :
   `d246538569a952ee952f8fc28509f2224a58420d` ;
-- correctif local supplémentaire validé :
-  `943ede6ef600f5a262b6750446089c95f8360be6` préserve `X-Request-ID` sur les
-  réponses tRPC ; il doit être poussé et validé par la CI avant de devenir une
-  partie du candidat distant ;
-- la branche locale contient aussi cette checklist et la suppression des
-  affirmations juridiques ou techniques non vérifiées ; l'ensemble des commits
-  postérieurs à `d246538` doit être revu, poussé sans force et validé par la CI ;
+- le candidat préserve `X-Request-ID` sur les réponses tRPC et comporte un test
+  de non-régression dédié ;
+- le candidat contient aussi cette checklist et la suppression des affirmations
+  juridiques ou techniques non vérifiées ; chaque nouveau HEAD doit être validé
+  par la CI avant une décision de déploiement ;
 - PR GitHub : nº20, empilée sur `codex/round-1-security` ;
 - la PR doit rester en brouillon tant que la répétition Aiven et les tests
   authentifiés sur Render ne sont pas terminés ;
@@ -135,8 +133,8 @@ juridiction retenue.
 
 La PR nº20 ne peut être déclarée prête à fusionner que si :
 
-- tous les commits locaux postérieurs à `d246538`, dont le correctif
-  `943ede6`, sont intégrés au candidat distant et leur CI est verte ;
+- le correctif `X-Request-ID`, la checklist et les corrections des pages
+  juridiques sont intégrés au candidat, et la CI de son HEAD est verte ;
 - la répétition chiffrée est réussie sur une cible vide ;
 - la source de répétition contient un jeu de données représentatif, ou la
   limitation d'une répétition purement technique est formellement acceptée et
