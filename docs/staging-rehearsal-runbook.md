@@ -79,6 +79,12 @@ affichés et confirmer que la restauration est `empty`. La commande s'arrête si
 la cible contient déjà une table ou si la configuration ressemble à une cible
 non isolée.
 
+Une source sans données métier valide uniquement la chaîne technique. Elle ne
+constitue pas une preuve représentative de reprise : avant toute décision de
+production, répéter la procédure avec une sauvegarde récente et représentative,
+conformément à la
+[`checklist de préparation à la mise en production`](release-readiness-checklist.md).
+
 ## 3. Sauvegarder, restaurer, migrer et auditer
 
 Après validation humaine du préflight, ouvrir temporairement la porte
