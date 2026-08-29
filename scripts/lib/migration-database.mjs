@@ -11,7 +11,10 @@ export const migrationsDirectory = path.join(projectRoot, "db", "migrations");
 export const BASELINE_TAG = "0000_baseline";
 
 function normalizedType(value) {
-  return value.toLowerCase().replace(/\s+/g, "");
+  const normalized = value.toLowerCase().replace(/\s+/g, "");
+  // MySQL reports the BOOLEAN alias as TINYINT(1) in information_schema,
+  // while Drizzle records it as `boolean` in snapshots.
+  return normalized === "boolean" ? "tinyint(1)" : normalized;
 }
 
 function expectedColumnType(value) {

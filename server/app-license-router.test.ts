@@ -49,6 +49,8 @@ const sampleReseller: Reseller = {
   contact: "wa:+243...",
   username: "reseller1",
   passwordHash: "scrypt$deadbeef$cafe",
+  isActive: true,
+  sessionEpoch: 0,
   credits: 42,
   createdAt: new Date(),
 };
