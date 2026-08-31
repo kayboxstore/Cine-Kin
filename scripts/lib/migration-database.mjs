@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -32,7 +33,10 @@ function numberValue(value) {
   return typeof value === "bigint" ? Number(value) : Number(value ?? 0);
 }
 
-export function databaseTarget(rawUrl = process.env.DATABASE_URL) {
+export function databaseTarget(
+  rawUrl = process.env.DATABASE_URL,
+  { sslCaPath = process.env.MYSQL_SSL_CA } = {}
+) {
   if (!rawUrl) {
     throw new Error("DATABASE_URL est obligatoire pour cette opération.");
   }
@@ -53,6 +57,14 @@ export function databaseTarget(rawUrl = process.env.DATABASE_URL) {
   }
 
   const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  const caPath = String(sslCaPath ?? "").trim();
+  const ssl = isLocal
+    ? undefined
+    : {
+        minVersion: "TLSv1.2",
+        rejectUnauthorized: true,
+        ...(caPath ? { ca: readFileSync(caPath, "utf8") } : {}),
+      };
   return {
     rawUrl,
     host: url.hostname,
@@ -64,9 +76,7 @@ export function databaseTarget(rawUrl = process.env.DATABASE_URL) {
       user: decodeURIComponent(url.username),
       password: decodeURIComponent(url.password),
       database,
-      ...(isLocal
-        ? {}
-        : { ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true } }),
+      ...(ssl ? { ssl } : {}),
     },
   };
 }
