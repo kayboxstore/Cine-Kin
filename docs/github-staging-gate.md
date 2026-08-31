@@ -29,17 +29,24 @@ Après fusion de la PR qui ajoute uniquement ce workflow et ce document :
 2. Nommer l'environnement exactement `staging`.
 3. Si le forfait GitHub le permet, ajouter un approbateur obligatoire, activer
    **Prevent self-review** et limiter les branches de déploiement à `main`.
-4. Ajouter les six secrets d'environnement suivants, sans les envoyer dans une
+4. Ajouter les sept secrets d'environnement suivants, sans les envoyer dans une
    conversation :
 
    - `STAGING_DATABASE_URL` — compte Aiven strictement en lecture seule sur
      `cine_kin_staging_source` ;
    - `STAGING_RESTORE_DATABASE_URL` — compte limité en lecture/écriture à la
      base vide `cine_kin_staging_restore` ;
+   - `AIVEN_CA_PEM` — contenu complet du certificat CA téléchargé depuis la
+     console Aiven, de `BEGIN CERTIFICATE` à `END CERTIFICATE` ;
    - `STAGING_BACKUP_PASSPHRASE` ;
    - `SESSION_SECRET` ;
    - `ENCRYPTION_KEY` ;
    - `ADMIN_PASSWORD`.
+
+Le workflow écrit temporairement `AIVEN_CA_PEM` avec des permissions restrictives,
+valide son format et son expiration avec OpenSSL, puis impose la vérification de
+l'identité TLS à Node.js, `mysql` et `mysqldump`. Le certificat n'est ni affiché ni
+archivé.
 
 Les trois secrets cryptographiques doivent contenir au moins 32 caractères et
 être distincts. `ADMIN_PASSWORD` doit contenir au moins 12 caractères. Les URL

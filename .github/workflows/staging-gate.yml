@@ -81,6 +81,25 @@ jobs:
           set -euo pipefail
           mysql --version | grep -E "Ver 8\."
           mysqldump --version | grep -E "Ver 8\."
+      - name: Install the protected Aiven CA for verified TLS
+        shell: bash
+        env:
+          AIVEN_CA_PEM: ${{ secrets.AIVEN_CA_PEM }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${AIVEN_CA_PEM:-}" ]]; then
+            echo "AIVEN_CA_PEM est obligatoire pour vérifier le certificat MySQL Aiven." >&2
+            exit 1
+          fi
+          ca_file="$RUNNER_TEMP/aiven-ca.pem"
+          umask 077
+          printf '%s\n' "$AIVEN_CA_PEM" > "$ca_file"
+          openssl x509 -in "$ca_file" -noout -checkend 0
+          {
+            echo "NODE_EXTRA_CA_CERTS=$ca_file"
+            echo "MYSQL_SSL_CA=$ca_file"
+          } >> "$GITHUB_ENV"
+          unset AIVEN_CA_PEM
 
       - name: Record non-secret validation metadata
         shell: bash
@@ -193,6 +212,25 @@ jobs:
           set -euo pipefail
           mysql --version | grep -E "Ver 8\."
           mysqldump --version | grep -E "Ver 8\."
+      - name: Install the protected Aiven CA for verified TLS
+        shell: bash
+        env:
+          AIVEN_CA_PEM: ${{ secrets.AIVEN_CA_PEM }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${AIVEN_CA_PEM:-}" ]]; then
+            echo "AIVEN_CA_PEM est obligatoire pour vérifier le certificat MySQL Aiven." >&2
+            exit 1
+          fi
+          ca_file="$RUNNER_TEMP/aiven-ca.pem"
+          umask 077
+          printf '%s\n' "$AIVEN_CA_PEM" > "$ca_file"
+          openssl x509 -in "$ca_file" -noout -checkend 0
+          {
+            echo "NODE_EXTRA_CA_CERTS=$ca_file"
+            echo "MYSQL_SSL_CA=$ca_file"
+          } >> "$GITHUB_ENV"
+          unset AIVEN_CA_PEM
 
       - name: Record non-secret validation metadata
         shell: bash
