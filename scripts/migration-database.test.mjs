@@ -1,3 +1,6 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseAdoptionArguments } from "./adopt-migration-baseline.mjs";
 import {
@@ -5,8 +8,13 @@ import {
   assessTrackedState,
   auditLedger,
   compareSchema,
+  databaseTarget,
   loadMigrationDefinitions,
 } from "./lib/migration-database.mjs";
+import {
+  mysqlDefaultsFile,
+  sanitizedCommandEnvironment,
+} from "./lib/mysql-cli.mjs";
 
 function inspectionFromSnapshot(snapshot) {
   const columnRows = [];
@@ -58,6 +66,62 @@ function inspectionFromSnapshot(snapshot) {
   }
   return { columnRows, indexRows, tableNames };
 }
+
+describe("verified MySQL TLS", () => {
+  it("loads the protected CA while keeping certificate verification enabled", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "cinekin-aiven-ca-"));
+    const caPath = path.join(directory, "ca.pem");
+    const certificate =
+      "-----BEGIN CERTIFICATE-----\\ntest-ca\\n-----END CERTIFICATE-----\\n";
+    await writeFile(caPath, certificate, { mode: 0o600 });
+
+    try {
+      const target = databaseTarget(
+        "mysql://reader:secret@mysql.example.test:3306/cinekin",
+        { sslCaPath: caPath }
+      );
+      expect(target.options.ssl).toEqual({
+        ca: certificate,
+        minVersion: "TLSv1.2",
+        rejectUnauthorized: true,
+      });
+    } finally {
+      await rm(directory, { force: true, recursive: true });
+    }
+  });
+
+  it("passes the same CA to mysql and mysqldump with identity verification", () => {
+    const defaults = mysqlDefaultsFile(
+      {
+        host: "mysql.example.test",
+        port: 3306,
+        options: { password: "secret", user: "reader" },
+      },
+      "/runner/temp/aiven ca.pem"
+    );
+    expect(defaults).toContain("ssl-mode=VERIFY_IDENTITY");
+    expect(defaults).toContain('ssl-ca="/runner/temp/aiven ca.pem"');
+  });
+
+  it("preserves the CA variables for nested migration processes", () => {
+    const previousMysqlCa = process.env.MYSQL_SSL_CA;
+    const previousNodeCa = process.env.NODE_EXTRA_CA_CERTS;
+    process.env.MYSQL_SSL_CA = "/runner/temp/aiven-ca.pem";
+    process.env.NODE_EXTRA_CA_CERTS = "/runner/temp/aiven-ca.pem";
+
+    try {
+      expect(sanitizedCommandEnvironment()).toMatchObject({
+        MYSQL_SSL_CA: "/runner/temp/aiven-ca.pem",
+        NODE_EXTRA_CA_CERTS: "/runner/temp/aiven-ca.pem",
+      });
+    } finally {
+      if (previousMysqlCa === undefined) delete process.env.MYSQL_SSL_CA;
+      else process.env.MYSQL_SSL_CA = previousMysqlCa;
+      if (previousNodeCa === undefined) delete process.env.NODE_EXTRA_CA_CERTS;
+      else process.env.NODE_EXTRA_CA_CERTS = previousNodeCa;
+    }
+  });
+});
 
 describe("migration history", () => {
   it("contains the baseline and every versioned security migration", async () => {
