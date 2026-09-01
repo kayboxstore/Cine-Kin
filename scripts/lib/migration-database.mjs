@@ -11,6 +11,14 @@ export const migrationsDirectory = path.join(projectRoot, "db", "migrations");
 
 export const BASELINE_TAG = "0000_baseline";
 
+function migrationHashAliases(sql) {
+  const lfSql = sql.replace(/\r\n/g, "\n");
+  const crlfSql = lfSql.replace(/\n/g, "\r\n");
+  return [...new Set([lfSql, crlfSql])].map(content =>
+    createHash("sha256").update(content).digest("hex")
+  );
+}
+
 function normalizedType(value) {
   const normalized = value.toLowerCase().replace(/\s+/g, "");
   // MySQL reports the BOOLEAN alias as TINYINT(1) in information_schema,
@@ -118,9 +126,11 @@ export async function loadMigrationDefinition(tag) {
   const snapshot = await readJson(
     path.join(migrationsDirectory, "meta", `${prefix}_snapshot.json`)
   );
+  const hashes = migrationHashAliases(sql);
   return {
     entry,
-    hash: createHash("sha256").update(sql).digest("hex"),
+    hash: hashes[0],
+    hashes,
     snapshot,
     sql,
     sqlPath,
@@ -454,7 +464,7 @@ export function assessTrackedState(definitions, inspection) {
     );
     if (!definition) {
       errors.push(`Migration inconnue enregistrée à ${row.createdAt}.`);
-    } else if (definition.hash !== row.hash) {
+    } else if (!definition.hashes.includes(String(row.hash))) {
       errors.push(`Empreinte divergente pour ${definition.entry.tag}.`);
     }
   }

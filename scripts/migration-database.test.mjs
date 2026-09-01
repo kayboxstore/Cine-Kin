@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -147,6 +148,31 @@ describe("migration history", () => {
     );
     expect(resellerManagementMigration.sql).toContain("is_active");
     expect(resellerManagementMigration.sql).toContain("session_epoch");
+  });
+
+  it("accepts the exact LF and CRLF hashes of the same migration SQL", async () => {
+    const definitions = await loadMigrationDefinitions();
+    const prefix = definitions.all.slice(0, 3);
+    const latestDefinition = prefix.at(-1);
+    const inspection = inspectionFromSnapshot(latestDefinition.snapshot);
+    inspection.migrationHistory = prefix.map((definition, index) => ({
+      id: index + 1,
+      hash: createHash("sha256")
+        .update(
+          definition.sql.replace(/\\r\\n/g, "\\n").replace(/\\n/g, "\\r\\n")
+        )
+        .digest("hex"),
+      createdAt: definition.entry.when,
+    }));
+
+    expect(assessTrackedState(definitions, inspection)).toMatchObject({
+      errors: [],
+      state: "tracked",
+    });
+    for (const definition of prefix) {
+      expect(definition.hashes).toContain(definition.hash);
+      expect(definition.hashes).toHaveLength(2);
+    }
   });
 
   it("matches the generated current snapshot exactly", async () => {
