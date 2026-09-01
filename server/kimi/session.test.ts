@@ -18,6 +18,10 @@ describe("Kimi administrator sessions", () => {
     await expect(verifySessionToken(token)).resolves.toEqual({
       unionId: "user-42",
       clientId: "cinekin-test-app",
+      jti: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      ),
+      expiresAt: expect.any(Date),
     });
   });
 
@@ -32,6 +36,79 @@ describe("Kimi administrator sessions", () => {
       .setAudience("cine-kin:kimi-admin")
       .setIssuedAt()
       .setExpirationTime("8h")
+      .sign(secret);
+
+    await expect(verifySessionToken(token)).resolves.toBeNull();
+  });
+
+  // Same security model as server/lib/app-sessions.ts: revocation is keyed
+  // purely by `jti`, so a token without one can never be individually
+  // revoked and must therefore never be accepted — no fallback to "valid
+  // until its own exp" for a token this codebase can't key into the
+  // revocation table.
+  it("rejects a validly signed token with no jti", async () => {
+    const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
+    const token = await new jose.SignJWT({
+      unionId: "user-42",
+      clientId: "cinekin-test-app",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("cine-kin")
+      .setAudience("cine-kin:kimi-admin")
+      .setIssuedAt()
+      .setExpirationTime("8h")
+      .sign(secret);
+
+    await expect(verifySessionToken(token)).resolves.toBeNull();
+  });
+
+  it("rejects a validly signed token with no exp", async () => {
+    const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
+    const token = await new jose.SignJWT({
+      unionId: "user-42",
+      clientId: "cinekin-test-app",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("cine-kin")
+      .setAudience("cine-kin:kimi-admin")
+      .setJti("33333333-3333-4333-8333-333333333333")
+      .setIssuedAt()
+      .sign(secret);
+
+    await expect(verifySessionToken(token)).resolves.toBeNull();
+  });
+
+  it("rejects an expired token", async () => {
+    const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
+    const token = await new jose.SignJWT({
+      unionId: "user-42",
+      clientId: "cinekin-test-app",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("cine-kin")
+      .setAudience("cine-kin:kimi-admin")
+      .setJti("44444444-4444-4444-8444-444444444444")
+      .setIssuedAt()
+      .setExpirationTime("-1s")
+      .sign(secret);
+
+    await expect(verifySessionToken(token)).resolves.toBeNull();
+  });
+
+  it("rejects a well-formed but non-v4 UUID as jti (e.g. v1: version nibble 1, not 4)", async () => {
+    const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
+    const token = await new jose.SignJWT({
+      unionId: "user-42",
+      clientId: "cinekin-test-app",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("cine-kin")
+      .setAudience("cine-kin:kimi-admin")
+      // Structurally a valid UUID (8-4-4-4-12 hex, valid RFC 4122 variant
+      // nibble `8`) but version nibble is `1`, not `4`.
+      .setJti("55555555-5555-1555-8555-555555555555")
+      .setIssuedAt()
+      .setExpirationTime("1h")
       .sign(secret);
 
     await expect(verifySessionToken(token)).resolves.toBeNull();

@@ -1,6 +1,5 @@
 import { FiShield } from "react-icons/fi";
 import SEO from "@/components/SEO";
-import { SITE_CONFIG } from "@/data/siteData";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export default function PolitiqueConfidentialite() {
@@ -31,19 +30,23 @@ export default function PolitiqueConfidentialite() {
             <div className="prose prose-invert max-w-none space-y-8">
               <div className="border border-white/[0.04] rounded-xl p-6 bg-[#111d32]/30">
                 <p className="text-white/60 text-base leading-relaxed font-light">
-                  Chez {SITE_CONFIG.name}, nous prenons la protection de vos données personnelles très au sérieux. 
-                  Cette politique décrit comment nous collectons, utilisons et protégeons vos informations.
+                  Version de préproduction : cette politique décrit les
+                  traitements présents dans l'application auditée. L'identité
+                  légale du responsable du traitement, les durées de
+                  conservation définitives et la liste complète des
+                  sous-traitants doivent être validées avant toute mise en
+                  production commerciale.
                 </p>
               </div>
 
               {[
-                { title: "1. Collecte des informations", content: `Nous collectons les informations que vous nous fournissez directement : nom, adresse email, numéro de téléphone, et informations de paiement. Nous collectons également des données techniques (IP, appareil utilisé) pour assurer la qualité du service.` },
-                { title: "2. Utilisation des informations", content: `Vos données sont utilisées pour : fournir et maintenir le service, traiter vos paiements, vous contacter concernant votre compte, améliorer nos services, et respecter nos obligations légales.` },
+                { title: "1. Données traitées", content: `Selon le portail utilisé, l'application peut enregistrer des données de compte ou de contact (nom, email, téléphone ou contact revendeur), une adresse MAC, les informations de formule et d'activation, ainsi que les écritures du registre de crédits. Les requêtes techniques utilisent aussi l'adresse IP pour la limitation de débit et la sécurité. Aucun numéro de carte ni autre donnée bancaire n'est saisi ou conservé par le site, qui ne traite aucun paiement en ligne.` },
+                { title: "2. Utilisation des informations", content: `Ces données servent à administrer les comptes, licences, activations et crédits, à sécuriser les accès, à répondre aux demandes et à assurer le fonctionnement technique du service. Les modalités de paiement sont confirmées séparément avant tout règlement.` },
                 { title: "3. Protection des données", content: `Nous mettons en oeuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données contre tout accès non autorisé, modification, divulgation ou destruction.` },
-                { title: "4. Partage des informations", content: `Nous ne vendons ni ne louons vos données personnelles à des tiers. Nous pouvons partager des informations avec des prestataires de services qui nous assistent dans nos opérations, sous réserve de obligations de confidentialité strictes.` },
-                { title: "5. Cookies et technologies similaires", content: `Nous utilisons des cookies pour améliorer votre expérience, analyser l'utilisation du service et personnaliser le contenu. Vous pouvez configurer votre navigateur pour refuser les cookies.` },
+                { title: "4. Prestataires et échanges externes", content: `Le staging technique utilise Render pour l'application et Aiven pour MySQL. L'authentification Kimi peut être utilisée lorsqu'elle est configurée. Les échanges initiés par WhatsApp ou email sont traités par ces services externes, hors du site. La liste définitive des prestataires, leurs localisations et les garanties de transfert doivent être confirmées avant la production.` },
+                { title: "5. Cookies et technologies similaires", content: `La version auditée utilise des cookies nécessaires à l'authentification, à la sécurité de la transaction OAuth et à la mémorisation d'une préférence d'interface. Elle n'intègre aucun cookie publicitaire ni outil d'analyse d'audience. Refuser les cookies de session empêche l'utilisation des portails authentifiés.` },
                 { title: "6. Vos droits", content: `Vous avez le droit d'accéder à vos données, de les rectifier, de demander leur suppression, et de vous opposer à leur traitement. Contactez-nous pour exercer ces droits.` },
-                { title: "7. Conservation des données", content: `Nous conservons vos données aussi longtemps que nécessaire pour fournir le service et respecter nos obligations légales. Les données de compte sont supprimées 12 mois après la résiliation.` },
+                { title: "7. Conservation des données", content: `Aucune suppression automatique des comptes après une durée fixe n'est actuellement implémentée. Une politique de conservation par catégorie de données doit être approuvée et mise en oeuvre avant la production commerciale. Les demandes de suppression peuvent être adressées au contact publié sur le site.` },
                 { title: "8. Modifications de la politique", content: `Nous pouvons modifier cette politique à tout moment. Les modifications seront publiées sur cette page avec la date de mise à jour.` },
               ].map((section, i) => (
                 <div key={i} className="border border-white/[0.04] rounded-xl p-6 bg-[#111d32]/30">

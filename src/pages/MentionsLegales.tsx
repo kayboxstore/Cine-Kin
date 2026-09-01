@@ -29,15 +29,22 @@ export default function MentionsLegales() {
 
           <ScrollReveal>
             <div className="prose prose-invert max-w-none space-y-8">
+              <div className="border border-amber-400/20 rounded-xl p-6 bg-amber-400/[0.04]">
+                <p className="text-white/70 text-base leading-relaxed font-light">
+                  Version de préproduction : les informations d'identification
+                  obligatoires ci-dessous doivent être complétées et validées
+                  avant toute exploitation commerciale du site.
+                </p>
+              </div>
               {[
-                { title: "Éditeur du site", content: `Le site ${SITE_CONFIG.name} est édité par ${SITE_CONFIG.name}, société enregistrée et opérant conformément aux lois en vigueur.` },
-                { title: "Hébergement", content: `Le site est hébergé sur des serveurs cloud sécurisés. L'infrastructure est répartie géographiquement pour assurer une disponibilité optimale du service.` },
+                { title: "Éditeur du site — à compléter", content: `${SITE_CONFIG.name} est le nom commercial affiché par le service. La dénomination légale, la forme juridique, l'adresse, l'identité du représentant et les numéros d'enregistrement applicables doivent être ajoutés ici avant la mise en production commerciale.` },
+                { title: "Hébergement de staging", content: `La version de staging auditée est hébergée sur Render et utilise une base MySQL Aiven. La plateforme de production n'est pas encore arrêtée ; cette rubrique devra être mise à jour avec l'identité et les coordonnées de l'hébergeur finalement retenu.` },
                 { title: "Contact", content: `Pour toute question ou réclamation, vous pouvez nous contacter via WhatsApp au ${SITE_CONFIG.whatsappNumber} ou par email à ${SITE_CONFIG.email}. Notre support est disponible ${SITE_CONFIG.supportHours.toLowerCase()}.` },
-                { title: "Propriété intellectuelle", content: `Tous les éléments du site (textes, images, logos, vidéos) sont la propriété exclusive de ${SITE_CONFIG.name} ou de ses partenaires. Toute reproduction ou utilisation sans autorisation préalable est strictement interdite.` },
+                { title: "Propriété intellectuelle", content: `Toute reproduction d'un élément protégé exige l'autorisation de son titulaire. Les sources et licences des textes, images, logos, vidéos et catalogues proposés doivent être inventoriées et validées avant la commercialisation.` },
                 { title: "Responsabilité", content: `${SITE_CONFIG.name} s'efforce d'assurer l'exactitude des informations publiées sur le site. Cependant, nous ne pouvons garantir l'absence d'erreurs ou d'omissions. Le service peut être momentanément indisponible pour des raisons de maintenance.` },
                 { title: "Liens externes", content: `Le site peut contenir des liens vers des sites tiers. ${SITE_CONFIG.name} n'a aucun contrôle sur ces sites et décline toute responsabilité quant à leur contenu.` },
-                { title: "Droit applicable", content: `Les présentes mentions légales sont soumises au droit applicable. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire.` },
-                { title: "Crédits", content: `Conception et développement : ${SITE_CONFIG.name}. Visuels et images : Droits réservés ${SITE_CONFIG.name}.` },
+                { title: "Droit applicable — à compléter", content: `Le pays, la juridiction applicable et la procédure de règlement des litiges doivent être précisés et validés avant toute mise en production commerciale.` },
+                { title: "Crédits — à compléter", content: `Conception et développement : ${SITE_CONFIG.name}. Les auteurs, sources et licences des visuels et autres contenus doivent être renseignés après vérification de leurs droits d'utilisation.` },
               ].map((section, i) => (
                 <div key={i} className="border border-white/[0.04] rounded-xl p-6 bg-[#111d32]/30">
                   <h2 className="font-display font-semibold text-xl text-white mb-3">{section.title}</h2>

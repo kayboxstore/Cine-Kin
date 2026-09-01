@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import SEO from "@/components/SEO";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider, useToast } from "@/components/Toast";
 import AuthLayout, { type AdminMenuItem } from "@/components/admin/AuthLayout";
 import { AuthLayoutSkeleton } from "@/components/admin/AuthLayoutSkeleton";
 import AdminLogin from "./AdminLogin";
@@ -30,8 +30,24 @@ const MENU: AdminMenuItem[] = [
 
 function AdminPanelInner() {
   const navigate = useNavigate();
-  const { user, isLoading, logout } = useAuth({ redirectPath: "/admin" });
+  const { toast } = useToast();
+  const { user, isLoading, logout, logoutError } = useAuth({
+    redirectPath: "/admin",
+  });
   const [section, setSection] = useState("overview");
+
+  // Only a genuine failure (network/5xx) ever reaches this — an
+  // UNAUTHORIZED logout response is treated as "already logged out" inside
+  // useAuth and never becomes a logoutError. The dashboard intentionally
+  // stays visible here: a failed logout must not look like a successful one.
+  useEffect(() => {
+    if (logoutError) {
+      toast(
+        logoutError.message || "Échec de la déconnexion. Réessayez.",
+        "error"
+      );
+    }
+  }, [logoutError, toast]);
 
   if (isLoading) {
     return <AuthLayoutSkeleton />;

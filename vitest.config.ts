@@ -14,11 +14,28 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "node",
-    include: [
-      "server/**/*.test.ts",
-      "server/**/*.spec.ts",
-      "scripts/**/*.test.mjs",
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "server",
+          environment: "node",
+          include: [
+            "server/**/*.test.ts",
+            "server/**/*.spec.ts",
+            "scripts/**/*.test.mjs",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "frontend",
+          environment: "jsdom",
+          include: ["src/**/*.test.tsx", "src/**/*.test.ts"],
+          setupFiles: ["./src/test/setup.ts"],
+        },
+      },
     ],
   },
 });

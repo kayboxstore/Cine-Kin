@@ -10,6 +10,7 @@ import { signSessionToken, verifySessionToken } from "./session";
 import { users as kimiUsers } from "./platform";
 import { findUserByUnionId, upsertUser } from "../queries/users";
 import { errorSummary, logEvent } from "../lib/observability";
+import { isSessionRevoked } from "../lib/session-revocation";
 import type { TokenResponse } from "./types";
 import {
   createOAuthState,
@@ -168,11 +169,18 @@ export async function authenticateRequest(headers: Headers) {
   if (!claim) {
     throw Errors.forbidden("Invalid authentication token.");
   }
+  // Fail-closed: any error here (including a MySQL outage) must deny
+  // authentication, never fall through as "not revoked, so allow". A
+  // throw from isSessionRevoked() propagates out of this whole function
+  // exactly like every other rejection above.
+  if (await isSessionRevoked(claim.jti)) {
+    throw Errors.forbidden("Invalid authentication token.");
+  }
   const user = await findUserByUnionId(claim.unionId);
   if (!user) {
     throw Errors.forbidden("User not found. Please re-login.");
   }
-  return user;
+  return { user, jti: claim.jti, expiresAt: claim.expiresAt };
 }
 
 export function createOAuthCallbackHandler(

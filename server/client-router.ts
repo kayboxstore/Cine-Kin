@@ -17,6 +17,10 @@ import {
 } from "./lib/app-sessions";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
 import {
+  revokeSession,
+  schedulePurgeAfterRevocation,
+} from "./lib/session-revocation";
+import {
   macAddressSchema,
   macLookupVariants,
   licenseStatus,
@@ -98,12 +102,23 @@ export const clientRouter = createRouter({
       return { success: true };
     }),
 
-  logout: clientQuery.mutation(({ ctx }) => {
-    clearSessionCookie(
-      ctx.resHeaders,
-      ctx.req.headers,
-      ClientSession.cookieName
-    );
+  logout: clientQuery.mutation(async ({ ctx }) => {
+    // clientQuery guarantees ctx.appClient, which in turn guarantees
+    // ctx.clientSession was populated by createContext().
+    const session = ctx.clientSession;
+    if (session) {
+      // Revocation must succeed before the cookie is cleared — a throw here
+      // propagates out of this resolver: no cookie cleared, no success sent.
+      await revokeSession(session.jti, "client", session.expiresAt);
+      clearSessionCookie(
+        ctx.resHeaders,
+        ctx.req.headers,
+        ClientSession.cookieName
+      );
+      // Deterministic, bounded, best-effort — only after a revocation this
+      // request actually recorded.
+      schedulePurgeAfterRevocation();
+    }
     return { success: true };
   }),
 

@@ -14,9 +14,14 @@ import { ResellerSession } from "@contracts/constants";
 import { hashSecret, verifySecret } from "./lib/crypto";
 import {
   sessionVersionForCredential,
+  resellerSessionCredential,
   signResellerSession,
 } from "./lib/app-sessions";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
+import {
+  revokeSession,
+  schedulePurgeAfterRevocation,
+} from "./lib/session-revocation";
 import {
   licenseTypeSchema,
   creditCost,
@@ -59,7 +64,11 @@ export const resellerRouter = createRouter({
           .limit(1)
       ).at(0);
 
-      if (!reseller || !verifySecret(input.password, reseller.passwordHash)) {
+      if (
+        !reseller ||
+        !verifySecret(input.password, reseller.passwordHash) ||
+        !reseller.isActive
+      ) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Identifiant ou mot de passe incorrect.",
@@ -68,7 +77,12 @@ export const resellerRouter = createRouter({
 
       const token = await signResellerSession(
         reseller.id,
-        sessionVersionForCredential(reseller.passwordHash)
+        sessionVersionForCredential(
+          resellerSessionCredential(
+            reseller.passwordHash,
+            reseller.sessionEpoch
+          )
+        )
       );
       appendSessionCookie(
         ctx.resHeaders,
@@ -80,12 +94,21 @@ export const resellerRouter = createRouter({
       return { success: true };
     }),
 
-  logout: resellerQuery.mutation(({ ctx }) => {
-    clearSessionCookie(
-      ctx.resHeaders,
-      ctx.req.headers,
-      ResellerSession.cookieName
-    );
+  logout: resellerQuery.mutation(async ({ ctx }) => {
+    // resellerQuery guarantees ctx.reseller, which in turn guarantees
+    // ctx.resellerSession was populated by createContext().
+    const session = ctx.resellerSession;
+    if (session) {
+      await revokeSession(session.jti, "reseller", session.expiresAt);
+      clearSessionCookie(
+        ctx.resHeaders,
+        ctx.req.headers,
+        ResellerSession.cookieName
+      );
+      // Deterministic, bounded, best-effort — only after a revocation this
+      // request actually recorded.
+      schedulePurgeAfterRevocation();
+    }
     return { success: true };
   }),
 
