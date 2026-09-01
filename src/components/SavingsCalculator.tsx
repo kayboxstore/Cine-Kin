@@ -1,34 +1,21 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FiTrendingDown, FiDollarSign } from "react-icons/fi";
+import { FiDollarSign } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
 
-const CABLE_PRICES = [
-  { label: "Canal+ (France)", monthly: 45 },
-  { label: "BeIN Sports", monthly: 15 },
-  { label: "Netflix Premium", monthly: 18 },
-  { label: "Disney+", monthly: 9 },
-  { label: "Amazon Prime", monthly: 7 },
-  { label: "Autre abonnement", monthly: 30 },
-];
-
 export default function SavingsCalculator() {
-  const [selected, setSelected] = useState<number[]>([0, 2]);
+  const [monthlyBudget, setMonthlyBudget] = useState("");
   const cineKinYearly = 70;
-
-  const toggle = (i: number) => {
-    setSelected((prev) =>
-      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
-    );
-  };
-
-  const cableMonthly = selected.reduce(
-    (sum, i) => sum + CABLE_PRICES[i].monthly,
-    0
-  );
-  const cableYearly = cableMonthly * 12;
-  const savings = cableYearly - cineKinYearly;
-  const percentage = cableYearly > 0 ? Math.round((savings / cableYearly) * 100) : 0;
+  const parsedBudget = Number(monthlyBudget);
+  const hasValidBudget =
+    monthlyBudget.trim() !== "" &&
+    Number.isFinite(parsedBudget) &&
+    parsedBudget >= 0 &&
+    parsedBudget <= 1000;
+  const currentMonthly = hasValidBudget ? parsedBudget : 0;
+  const currentYearly = currentMonthly * 12;
+  const annualDifference = currentYearly - cineKinYearly;
+  const absoluteDifference = Math.abs(annualDifference);
 
   return (
     <section className="py-20 bg-[#111d32]/50">
@@ -42,63 +29,75 @@ export default function SavingsCalculator() {
               </span>
             </div>
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-3">
-              Comparez et <span className="text-[#6b7c5c]">économisez</span>
+              Comparez votre <span className="text-[#6b7c5c]">budget</span>
             </h2>
             <p className="text-white/60 text-base font-light max-w-lg mx-auto">
-              Sélectionnez vos abonnements actuels et voyez combien vous pourriez économiser.
+              Indiquez ce que vous payez réellement aujourd’hui pour obtenir une
+              comparaison annuelle simple.
             </p>
           </div>
         </ScrollReveal>
 
         <ScrollReveal delay={0.1}>
           <div className="border border-white/[0.06] rounded-2xl p-6 sm:p-8 bg-white/[0.02]">
-            {/* Options */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-              {CABLE_PRICES.map((option, i) => (
-                <button
-                  key={i}
-                  onClick={() => toggle(i)}
-                  className={`flex items-center justify-between p-4 rounded-xl border text-left transition-all ${
-                    selected.includes(i)
-                      ? "border-[#5a6b4e]/30 bg-[#5a6b4e]/10"
-                      : "border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08]"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
-                        selected.includes(i)
-                          ? "bg-[#5a6b4e] border-[#5a6b4e]"
-                          : "border-white/20"
-                      }`}
-                    >
-                      {selected.includes(i) && (
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-white/70 text-sm">{option.label}</span>
-                  </div>
-                  <span className="text-white/60 text-xs">${option.monthly}/mois</span>
-                </button>
-              ))}
+            <div className="mb-8 max-w-md mx-auto">
+              <label
+                htmlFor="current-monthly-budget"
+                className="mb-2 block text-sm font-medium text-white/75"
+              >
+                Votre budget mensuel actuel (USD)
+              </label>
+              <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 focus-within:border-[#6b7c5c]">
+                <span className="text-white/55" aria-hidden="true">
+                  $
+                </span>
+                <input
+                  id="current-monthly-budget"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="1"
+                  inputMode="decimal"
+                  value={monthlyBudget}
+                  onChange={event => setMonthlyBudget(event.target.value)}
+                  placeholder="Ex. 60"
+                  aria-describedby="budget-comparison-note"
+                  className="w-full bg-transparent px-3 py-4 text-lg text-white outline-none"
+                />
+                <span className="text-sm text-white/55">/mois</span>
+              </div>
+              <p
+                id="budget-comparison-note"
+                className="mt-2 text-xs leading-relaxed text-white/55"
+              >
+                Utilisez le montant total figurant sur vos propres factures ;
+                aucun tarif tiers n’est présumé.
+              </p>
             </div>
 
             {/* Result */}
             <div className="border-t border-white/[0.06] pt-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-center sm:text-left">
-                  <div className="text-white/55 text-xs mb-1">Vos abonnements actuels</div>
+                  <div className="text-white/55 text-xs mb-1">
+                    Votre budget déclaré
+                  </div>
                   <div className="font-display font-bold text-2xl text-white/60">
-                    ${cableYearly.toFixed(0)}/an
+                    {hasValidBudget ? `$${currentYearly.toFixed(0)}/an` : "—"}
                   </div>
                 </div>
 
-                <FiTrendingDown className="w-5 h-5 text-[#6b7c5c] hidden sm:block" />
+                <span
+                  className="hidden text-xl text-[#6b7c5c] sm:block"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
 
                 <div className="text-center sm:text-left">
-                  <div className="text-[#6b7c5c] text-xs mb-1">Ciné Kin Premium 12 mois</div>
+                  <div className="text-[#6b7c5c] text-xs mb-1">
+                    Ciné Kin Premium 12 mois
+                  </div>
                   <div className="font-display font-bold text-2xl text-white">
                     ${cineKinYearly}/an
                   </div>
@@ -108,18 +107,36 @@ export default function SavingsCalculator() {
 
                 <motion.div
                   className="text-center"
-                  key={savings}
+                  key={`${hasValidBudget}-${annualDifference}`}
                   initial={{ scale: 1.1 }}
                   animate={{ scale: 1 }}
                 >
-                  <div className="text-[#6b7c5c] text-xs mb-1">Vous économisez</div>
-                  <div className="font-display font-bold text-3xl text-[#6b7c5c]">
-                    ${savings.toFixed(0)}/an
+                  <div className="text-[#6b7c5c] text-xs mb-1">
+                    Différence annuelle estimée
                   </div>
-                  <div className="text-white/55 text-xs">({percentage}% de moins)</div>
+                  <div className="font-display font-bold text-3xl text-[#6b7c5c]">
+                    {hasValidBudget
+                      ? `$${absoluteDifference.toFixed(0)}/an`
+                      : "—"}
+                  </div>
+                  <div className="text-white/55 text-xs">
+                    {!hasValidBudget
+                      ? "Saisissez un montant pour comparer"
+                      : annualDifference > 0
+                        ? "Ciné Kin affiche un prix inférieur de ce montant"
+                        : annualDifference < 0
+                          ? "Votre budget déclaré est inférieur de ce montant"
+                          : "Les deux montants annuels sont identiques"}
+                  </div>
                 </motion.div>
               </div>
             </div>
+
+            <p className="mt-6 border-t border-white/[0.06] pt-5 text-xs leading-relaxed text-white/55">
+              Comparaison budgétaire uniquement : catalogues, disponibilité,
+              qualité et conditions peuvent différer. Vérifiez que la formule
+              répond à vos besoins avant de souscrire.
+            </p>
           </div>
         </ScrollReveal>
       </div>

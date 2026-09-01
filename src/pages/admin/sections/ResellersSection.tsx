@@ -3,6 +3,7 @@ import {
   ChevronDown,
   Coins,
   Copy,
+  History,
   KeyRound,
   Plus,
   ShieldCheck,
@@ -15,7 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -34,11 +39,19 @@ import {
 } from "@/components/ui/table";
 import { licenseLabel, formatDateTime } from "@/lib/licenseFormat";
 
+const CREDIT_ENTRY_LABELS = {
+  initial_grant: "Solde initial",
+  admin_grant: "Ajout administrateur",
+  activation: "Activation / renouvellement",
+  refund: "Remboursement",
+  adjustment: "Ajustement",
+} as const;
+
 function generatePassword(length = 12): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
   const arr = new Uint32Array(length);
   crypto.getRandomValues(arr);
-  return Array.from(arr, (n) => chars[n % chars.length]).join("");
+  return Array.from(arr, n => chars[n % chars.length]).join("");
 }
 
 export default function ResellersSection() {
@@ -49,7 +62,8 @@ export default function ResellersSection() {
 
   const clientNames = useMemo(() => {
     const map = new Map<number, string>();
-    for (const c of clients.data ?? []) map.set(c.id, c.name || c.email || c.mac);
+    for (const c of clients.data ?? [])
+      map.set(c.id, c.name || c.email || c.mac);
     return map;
   }, [clients.data]);
 
@@ -61,11 +75,17 @@ export default function ResellersSection() {
   const [initialCredits, setInitialCredits] = useState("0");
 
   // Plaintext credential shown ONCE right after creation (never re-displayable).
-  const [createdCredential, setCreatedCredential] = useState<{ username: string; password: string } | null>(null);
+  const [createdCredential, setCreatedCredential] = useState<{
+    username: string;
+    password: string;
+  } | null>(null);
 
   const create = trpc.admin.resellerCreate.useMutation({
     onSuccess: (_data, variables) => {
-      setCreatedCredential({ username: variables.username, password: variables.password });
+      setCreatedCredential({
+        username: variables.username,
+        password: variables.password,
+      });
       setName("");
       setContact("");
       setUsername("");
@@ -73,15 +93,17 @@ export default function ResellersSection() {
       setInitialCredits("0");
       utils.admin.resellerList.invalidate();
     },
-    onError: (e) => toast(e.message || "Échec de la création du revendeur", "error"),
+    onError: e =>
+      toast(e.message || "Échec de la création du revendeur", "error"),
   });
 
-  const canCreate = name.trim() && username.trim().length >= 3 && password.length >= 8;
+  const canCreate =
+    name.trim() && username.trim().length >= 3 && password.length >= 8;
 
   const copy = (text: string) => {
     navigator.clipboard?.writeText(text).then(
       () => toast("Copié dans le presse-papiers.", "success"),
-      () => toast("Copie impossible.", "error"),
+      () => toast("Copie impossible.", "error")
     );
   };
 
@@ -92,20 +114,28 @@ export default function ResellersSection() {
         <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="r-name">Nom</Label>
-            <Input id="r-name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              id="r-name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="r-contact">Contact</Label>
             <Input
               id="r-contact"
               value={contact}
-              onChange={(e) => setContact(e.target.value)}
+              onChange={e => setContact(e.target.value)}
               placeholder="WhatsApp, e-mail…"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="r-username">Identifiant</Label>
-            <Input id="r-username" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <Input
+              id="r-username"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="r-password">Mot de passe initial</Label>
@@ -113,10 +143,14 @@ export default function ResellersSection() {
               <Input
                 id="r-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="≥ 8 caractères"
               />
-              <Button type="button" variant="outline" onClick={() => setPassword(generatePassword())}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPassword(generatePassword())}
+              >
                 Générer
               </Button>
             </div>
@@ -128,7 +162,7 @@ export default function ResellersSection() {
               type="number"
               min={0}
               value={initialCredits}
-              onChange={(e) => setInitialCredits(e.target.value)}
+              onChange={e => setInitialCredits(e.target.value)}
             />
           </div>
           <div className="flex items-end">
@@ -140,7 +174,10 @@ export default function ResellersSection() {
                   contact: contact.trim() || undefined,
                   username: username.trim(),
                   password,
-                  initialCredits: Math.max(0, parseInt(initialCredits, 10) || 0),
+                  initialCredits: Math.max(
+                    0,
+                    parseInt(initialCredits, 10) || 0
+                  ),
                 })
               }
               className="w-full bg-[#5a6b4e] text-white hover:bg-[#4d5d42]"
@@ -155,7 +192,7 @@ export default function ResellersSection() {
       {/* Reseller list */}
       <div className="space-y-4">
         {resellers.data && resellers.data.length > 0 ? (
-          resellers.data.map((r) => (
+          resellers.data.map(r => (
             <ResellerCard key={r.id} reseller={r} clientNames={clientNames} />
           ))
         ) : (
@@ -166,7 +203,10 @@ export default function ResellersSection() {
       </div>
 
       {/* One-time password reveal */}
-      <Dialog open={!!createdCredential} onOpenChange={(open) => !open && setCreatedCredential(null)}>
+      <Dialog
+        open={!!createdCredential}
+        onOpenChange={open => !open && setCreatedCredential(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -174,13 +214,24 @@ export default function ResellersSection() {
               Revendeur créé
             </DialogTitle>
             <DialogDescription>
-              Transmettez ces identifiants au revendeur. Le mot de passe n'est affiché
-              <strong className="text-foreground"> qu'une seule fois</strong> — il ne sera jamais ré-affichable.
+              Transmettez ces identifiants au revendeur. Le mot de passe n'est
+              affiché
+              <strong className="text-foreground"> qu'une seule fois</strong> —
+              il ne sera jamais ré-affichable.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <CredentialRow label="Identifiant" value={createdCredential?.username ?? ""} onCopy={copy} />
-            <CredentialRow label="Mot de passe" value={createdCredential?.password ?? ""} onCopy={copy} mono />
+            <CredentialRow
+              label="Identifiant"
+              value={createdCredential?.username ?? ""}
+              onCopy={copy}
+            />
+            <CredentialRow
+              label="Mot de passe"
+              value={createdCredential?.password ?? ""}
+              onCopy={copy}
+              mono
+            />
           </div>
           <DialogFooter>
             <Button
@@ -211,9 +262,15 @@ function CredentialRow({
     <div className="space-y-1">
       <span className="text-xs text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
-        <code className={`flex-1 text-sm text-foreground ${mono ? "font-mono" : ""}`}>{value}</code>
+        <code
+          className={`flex-1 text-sm text-foreground ${mono ? "font-mono" : ""}`}
+        >
+          {value}
+        </code>
         <button
+          type="button"
           onClick={() => onCopy(value)}
+          aria-label={`Copier ${label}`}
           className="text-muted-foreground transition-colors hover:text-foreground"
           title="Copier"
         >
@@ -243,20 +300,30 @@ function ResellerCard({
   const { toast } = useToast();
   const utils = trpc.useUtils();
   const [amount, setAmount] = useState("");
+  const [creditReason, setCreditReason] = useState("");
   const [open, setOpen] = useState(false);
 
   const addCredits = trpc.admin.resellerAddCredits.useMutation({
     onSuccess: () => {
       toast("Crédits ajoutés.", "success");
       setAmount("");
+      setCreditReason("");
       utils.admin.resellerList.invalidate();
+      utils.admin.resellerCreditHistory.invalidate({
+        resellerId: reseller.id,
+        limit: 200,
+      });
     },
-    onError: (e) => toast(e.message || "Échec de l'ajout de crédits", "error"),
+    onError: e => toast(e.message || "Échec de l'ajout de crédits", "error"),
   });
 
   const history = trpc.admin.resellerActivationHistory.useQuery(
     { resellerId: reseller.id },
-    { enabled: open },
+    { enabled: open }
+  );
+  const creditHistory = trpc.admin.resellerCreditHistory.useQuery(
+    { resellerId: reseller.id, limit: 200 },
+    { enabled: open }
   );
 
   const amountNum = Math.max(0, parseInt(amount, 10) || 0);
@@ -278,7 +345,10 @@ function ResellerCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400">
+          <Badge
+            variant="outline"
+            className="border-amber-500/30 bg-amber-500/10 text-amber-400"
+          >
             <Coins className="mr-1 h-3.5 w-3.5" />
             {reseller.credits} crédits
           </Badge>
@@ -287,15 +357,31 @@ function ResellerCard({
               type="number"
               min={1}
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={e => setAmount(e.target.value)}
               placeholder="Montant"
               className="h-9 w-28"
+            />
+            <Input
+              value={creditReason}
+              onChange={e => setCreditReason(e.target.value)}
+              placeholder="Motif obligatoire"
+              className="h-9 w-44"
             />
             <Button
               size="sm"
               variant="outline"
-              disabled={amountNum < 1 || addCredits.isPending}
-              onClick={() => addCredits.mutate({ resellerId: reseller.id, amount: amountNum })}
+              disabled={
+                amountNum < 1 ||
+                creditReason.trim().length < 3 ||
+                addCredits.isPending
+              }
+              onClick={() =>
+                addCredits.mutate({
+                  resellerId: reseller.id,
+                  amount: amountNum,
+                  reason: creditReason.trim(),
+                })
+              }
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
               Crédits
@@ -306,16 +392,25 @@ function ResellerCard({
 
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
-          <button className="flex w-full items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             <span className="flex items-center gap-2">
               <KeyRound className="h-4 w-4" />
-              Historique d'activations
+              Historique d'activations et de crédits
             </span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+            />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="overflow-x-auto border-t border-border">
+            <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
+              <KeyRound className="h-4 w-4 text-[#8ba26f]" />
+              Activations
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -328,21 +423,88 @@ function ResellerCard({
               </TableHeader>
               <TableBody>
                 {history.data && history.data.length > 0 ? (
-                  history.data.map((a) => (
+                  history.data.map(a => (
                     <TableRow key={a.id}>
                       <TableCell className="font-medium text-foreground">
                         {clientNames.get(a.appClientId) ?? "—"}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">{a.mac}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {a.mac}
+                      </TableCell>
                       <TableCell>{licenseLabel(a.licenseType)}</TableCell>
-                      <TableCell>{a.creditsCharged} crédit{a.creditsCharged > 1 ? "s" : ""}</TableCell>
-                      <TableCell className="text-muted-foreground">{formatDateTime(a.createdAt)}</TableCell>
+                      <TableCell>
+                        {a.creditsCharged} crédit
+                        {a.creditsCharged > 1 ? "s" : ""}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatDateTime(a.createdAt)}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={5}
+                      className="py-8 text-center text-muted-foreground"
+                    >
                       {history.isLoading ? "Chargement…" : "Aucune activation"}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="overflow-x-auto border-t border-border">
+            <div className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-foreground">
+              <History className="h-4 w-4 text-amber-400" />
+              Grand livre des crédits
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Motif</TableHead>
+                  <TableHead>Variation</TableHead>
+                  <TableHead>Solde après</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {creditHistory.data && creditHistory.data.length > 0 ? (
+                  creditHistory.data.map(entry => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="text-muted-foreground">
+                        {formatDateTime(entry.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        {CREDIT_ENTRY_LABELS[entry.entryType]}
+                      </TableCell>
+                      <TableCell>{entry.reason}</TableCell>
+                      <TableCell
+                        className={
+                          entry.delta >= 0
+                            ? "text-emerald-500"
+                            : "text-amber-500"
+                        }
+                      >
+                        {entry.delta >= 0 ? "+" : ""}
+                        {entry.delta}
+                      </TableCell>
+                      <TableCell className="font-semibold">
+                        {entry.balanceAfter}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      {creditHistory.isLoading
+                        ? "Chargement…"
+                        : "Aucun mouvement de crédits"}
                     </TableCell>
                   </TableRow>
                 )}

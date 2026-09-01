@@ -30,7 +30,6 @@ dist-ssr
 *.db
 *.sqlite
 *.sqlite3
-db/migrations/*.sql
 # TypeScript cache
 *.tsbuildinfo
 # Build outputs
@@ -40,3 +39,5 @@ build/
 # Test coverage
 coverage/
 .nyc_output/
+# Encrypted staging backup artifacts and manifests
+artifacts/staging-backups/

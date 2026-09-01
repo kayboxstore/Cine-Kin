@@ -1,9 +1,4 @@
-import { useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useRef, useState } from "react";
 
 interface ScrollRevealProps {
   children: React.ReactNode;
@@ -23,33 +18,44 @@ export default function ScrollReveal({
   distance = 50,
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 
-  useGSAP(() => {
-    if (!ref.current) return;
-
-    const directions = {
-      up: { y: distance, x: 0 },
-      down: { y: -distance, x: 0 },
-      left: { x: distance, y: 0 },
-      right: { x: -distance, y: 0 },
-    };
-
-    gsap.from(ref.current, {
-      ...directions[direction],
-      opacity: 0,
-      duration,
-      delay,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: ref.current,
-        start: "top 85%",
-        toggleActions: "play none none none",
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
       },
-    });
-  }, { scope: ref });
+      { rootMargin: "0px 0px -15%", threshold: 0.05 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const offsets = {
+    up: `translate3d(0, ${distance}px, 0)`,
+    down: `translate3d(0, -${distance}px, 0)`,
+    left: `translate3d(${distance}px, 0, 0)`,
+    right: `translate3d(-${distance}px, 0, 0)`,
+  };
 
   return (
-    <div ref={ref} className={className}>
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translate3d(0, 0, 0)" : offsets[direction],
+        transition: `opacity ${duration}s ease-out ${delay}s, transform ${duration}s ease-out ${delay}s`,
+      }}
+    >
       {children}
     </div>
   );

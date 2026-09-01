@@ -1,15 +1,22 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import * as cookie from "cookie";
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import type { User, AppClient, Reseller } from "@db/schema";
 import { appClients, resellers } from "@db/schema";
-import { ClientSession, ResellerSession, AdminSession } from "@contracts/constants";
+import {
+  ClientSession,
+  ResellerSession,
+  AdminSession,
+} from "@contracts/constants";
 import { authenticateRequest } from "./kimi/auth";
 import {
   verifyClientSession,
   verifyResellerSession,
   verifyAdminSession,
+  sessionVersionForCredential,
+  sessionVersionMatches,
 } from "./lib/app-sessions";
+import { env } from "./lib/env";
 import { getDb } from "./queries/connection";
 
 // Synthetic admin identity for the password-based admin session (no Kimi user
@@ -35,26 +42,52 @@ export type TrpcContext = {
   reseller?: Reseller;
 };
 
-async function loadAppClient(appClientId: number): Promise<AppClient | undefined> {
+async function loadAppClient(
+  appClientId: number,
+  sessionVersion: string
+): Promise<AppClient | undefined> {
   const rows = await getDb()
     .select()
     .from(appClients)
-    .where(eq(appClients.id, appClientId))
+    .where(and(eq(appClients.id, appClientId), isNotNull(appClients.claimedAt)))
     .limit(1);
-  return rows.at(0);
+  const client = rows.at(0);
+  if (
+    !client ||
+    !sessionVersionMatches(
+      sessionVersion,
+      sessionVersionForCredential(client.pinHash ?? "")
+    )
+  ) {
+    return undefined;
+  }
+  return client;
 }
 
-async function loadReseller(resellerId: number): Promise<Reseller | undefined> {
+async function loadReseller(
+  resellerId: number,
+  sessionVersion: string
+): Promise<Reseller | undefined> {
   const rows = await getDb()
     .select()
     .from(resellers)
     .where(eq(resellers.id, resellerId))
     .limit(1);
-  return rows.at(0);
+  const reseller = rows.at(0);
+  if (
+    !reseller ||
+    !sessionVersionMatches(
+      sessionVersion,
+      sessionVersionForCredential(reseller.passwordHash)
+    )
+  ) {
+    return undefined;
+  }
+  return reseller;
 }
 
 export async function createContext(
-  opts: FetchCreateContextFnOptions,
+  opts: FetchCreateContextFnOptions
 ): Promise<TrpcContext> {
   const ctx: TrpcContext = { req: opts.req, resHeaders: opts.resHeaders };
 
@@ -75,7 +108,16 @@ export async function createContext(
     if (adminToken) {
       try {
         const claim = await verifyAdminSession(adminToken);
-        if (claim) ctx.user = PASSWORD_ADMIN_USER;
+        if (
+          claim &&
+          env.adminPassword &&
+          sessionVersionMatches(
+            claim.sessionVersion,
+            sessionVersionForCredential(env.adminPassword)
+          )
+        ) {
+          ctx.user = PASSWORD_ADMIN_USER;
+        }
       } catch {
         // Optional
       }
@@ -86,7 +128,12 @@ export async function createContext(
   if (clientToken) {
     try {
       const claim = await verifyClientSession(clientToken);
-      if (claim) ctx.appClient = await loadAppClient(claim.appClientId);
+      if (claim) {
+        ctx.appClient = await loadAppClient(
+          claim.appClientId,
+          claim.sessionVersion
+        );
+      }
     } catch {
       // Optional
     }
@@ -96,7 +143,12 @@ export async function createContext(
   if (resellerToken) {
     try {
       const claim = await verifyResellerSession(resellerToken);
-      if (claim) ctx.reseller = await loadReseller(claim.resellerId);
+      if (claim) {
+        ctx.reseller = await loadReseller(
+          claim.resellerId,
+          claim.sessionVersion
+        );
+      }
     } catch {
       // Optional
     }

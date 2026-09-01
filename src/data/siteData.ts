@@ -3,13 +3,16 @@
 // Modifier les valeurs ci-dessous selon vos besoins
 // ============================================
 
+import { COMMERCIAL_INFO } from "./commercial";
+
 export const SITE_CONFIG = {
   name: "Ciné Kin Premium",
-  tagline: "L'expérience TV ultime, sans limites",
-  description: "Accédez à des milliers de chaînes TV, films et séries en haute définition. Une solution premium pour toute la famille.",
+  tagline: "Vos contenus sur vos appareils compatibles",
+  description:
+    "Accédez à un catalogue de chaînes TV, films et séries sur vos appareils compatibles.",
   whatsappNumber: "+243830240073", // ← WhatsApp Ciné Kin Premium
   email: "kayboxstore@outlook.fr",
-  supportHours: "Lun - Dim : 08h00 - 23h00",
+  supportHours: COMMERCIAL_INFO.support.hours,
   year: new Date().getFullYear(),
 } as const;
 
@@ -24,18 +27,17 @@ export const CLIENT_PLANS = [
     months: 0,
     price: 0,
     priceLabel: "Gratuit",
-    quality: "HD / FHD / 4K",
-    channels: "15 000+",
+    quality: "HD / FHD / jusqu’à 4K",
+    channels: COMMERCIAL_INFO.catalogue.planLabel,
     screens: 1,
     screensLabel: "1 écran",
     support: "Standard",
-    guarantee: "Aucune",
     vpnFriendly: true,
     popular: false,
     bestDeal: false,
     features: [
       "Accès complet pendant 24h",
-      "15 000+ chaînes",
+      COMMERCIAL_INFO.catalogue.feature,
       "Films & séries (VOD)",
       "1 écran simultané",
       "Support standard",
@@ -48,17 +50,16 @@ export const CLIENT_PLANS = [
     months: 1,
     price: 10,
     priceLabel: "10 $",
-    quality: "HD / FHD / 4K",
-    channels: "15 000+",
+    quality: "HD / FHD / jusqu’à 4K",
+    channels: COMMERCIAL_INFO.catalogue.planLabel,
     screens: 1,
     screensLabel: "1 écran",
     support: "Standard",
-    guarantee: "Aucune",
     vpnFriendly: true,
     popular: false,
     bestDeal: false,
     features: [
-      "15 000+ chaînes",
+      COMMERCIAL_INFO.catalogue.feature,
       "Films & séries (VOD)",
       "Qualité jusqu'à 4K",
       "1 écran simultané",
@@ -73,17 +74,16 @@ export const CLIENT_PLANS = [
     months: 3,
     price: 25,
     priceLabel: "25 $",
-    quality: "HD / FHD / 4K",
-    channels: "15 000+",
+    quality: "HD / FHD / jusqu’à 4K",
+    channels: COMMERCIAL_INFO.catalogue.planLabel,
     screens: 1,
     screensLabel: "1 écran",
     support: "Standard",
-    guarantee: "Aucune",
     vpnFriendly: true,
     popular: false,
     bestDeal: false,
     features: [
-      "15 000+ chaînes",
+      COMMERCIAL_INFO.catalogue.feature,
       "Films & séries (VOD)",
       "Qualité jusqu'à 4K",
       "1 écran simultané",
@@ -98,24 +98,23 @@ export const CLIENT_PLANS = [
     months: 6,
     price: 45,
     priceLabel: "45 $",
-    quality: "HD / FHD / 4K",
-    channels: "15 000+",
+    quality: "HD / FHD / jusqu’à 4K",
+    channels: COMMERCIAL_INFO.catalogue.planLabel,
     screens: 1,
     screensLabel: "1 écran",
     support: "Standard",
-    guarantee: "2 jours",
     vpnFriendly: true,
     popular: false,
     bestDeal: false,
     features: [
-      "15 000+ chaînes",
+      COMMERCIAL_INFO.catalogue.feature,
       "Films & séries (VOD)",
       "Qualité jusqu'à 4K",
       "1 écran simultané",
       "Support standard",
       "EPG + Catch-up",
-      "Anti-freeze",
-      "Garantie 2 jours",
+      "Assistance à l’installation",
+      COMMERCIAL_INFO.refund.label,
     ],
   },
   {
@@ -125,24 +124,23 @@ export const CLIENT_PLANS = [
     months: 12,
     price: 70,
     priceLabel: "70 $",
-    quality: "HD / FHD / 4K",
-    channels: "15 000+",
+    quality: "HD / FHD / jusqu’à 4K",
+    channels: COMMERCIAL_INFO.catalogue.planLabel,
     screens: 1,
     screensLabel: "1 écran",
     support: "Standard",
-    guarantee: "2 jours",
     vpnFriendly: true,
     popular: true,
     bestDeal: true,
     features: [
-      "15 000+ chaînes",
-      "Films & séries (VOD illimité)",
+      COMMERCIAL_INFO.catalogue.feature,
+      "Films & séries (VOD)",
       "Qualité jusqu'à 4K",
       "1 écran simultané",
       "Support standard",
       "EPG + Catch-up",
-      "Anti-freeze premium",
-      "Garantie 2 jours",
+      "Assistance à l’installation",
+      COMMERCIAL_INFO.refund.label,
     ],
   },
   {
@@ -152,24 +150,23 @@ export const CLIENT_PLANS = [
     months: 12,
     price: 120,
     priceLabel: "120 $",
-    quality: "HD / FHD / 4K",
-    channels: "15 000+",
+    quality: "HD / FHD / jusqu’à 4K",
+    channels: COMMERCIAL_INFO.catalogue.planLabel,
     screens: 2,
     screensLabel: "2 écrans",
     support: "Prioritaire",
-    guarantee: "2 jours",
     vpnFriendly: true,
     popular: false,
     bestDeal: false,
     features: [
-      "15 000+ chaînes",
-      "Films & séries (VOD illimité)",
+      COMMERCIAL_INFO.catalogue.feature,
+      "Films & séries (VOD)",
       "Qualité jusqu'à 4K",
       "2 écrans simultanés",
       "Support prioritaire",
       "EPG + Catch-up",
-      "Anti-freeze premium",
-      "Garantie 2 jours",
+      "Assistance à l’installation",
+      COMMERCIAL_INFO.refund.label,
     ],
   },
 ] as const;
@@ -182,12 +179,11 @@ export const RESELLER_PLANS = [
     credits: 20,
     price: 199.99,
     priceLabel: "$199.99",
-    margin: "150%+",
     popular: false,
     features: [
       "20 codes",
       "Panneau revendeur",
-      "Activation instantanée",
+      "Gestion des activations",
       "Support dédié",
       "Guides de démarrage",
     ],
@@ -198,15 +194,12 @@ export const RESELLER_PLANS = [
     credits: 50,
     price: 499.99,
     priceLabel: "$499.99",
-    margin: "150%+",
     popular: true,
     features: [
       "50 codes",
       "Panneau revendeur pro",
-      "Activation instantanée",
+      "Gestion des activations",
       "Support prioritaire",
-      "Site web personnalisé",
-      "API d'accès",
     ],
   },
   {
@@ -215,17 +208,12 @@ export const RESELLER_PLANS = [
     credits: 100,
     price: 1299.99,
     priceLabel: "$1299.99",
-    margin: "150%+",
     popular: false,
     features: [
       "100 codes",
       "Panneau revendeur VIP",
-      "Activation instantanée",
-      "Support 24/7",
-      "Site web personnalisé",
-      "API complète",
-      "Marque blanche",
-      "Formation incluse",
+      "Gestion des activations",
+      "Support prioritaire",
     ],
   },
   {
@@ -234,18 +222,12 @@ export const RESELLER_PLANS = [
     credits: 500,
     price: 2299.99,
     priceLabel: "$2299.99",
-    margin: "150%+",
     popular: false,
     features: [
       "500 codes",
       "Panneau revendeur VIP+",
-      "Activation instantanée",
-      "Support 24/7 dédié",
-      "Site web sur mesure",
-      "API complète",
-      "Marque blanche",
-      "Formation + Coaching",
-      "Accès bêta features",
+      "Gestion des activations",
+      "Support prioritaire",
     ],
   },
 ] as const;
@@ -254,18 +236,18 @@ export const RESELLER_PLANS = [
 export const ADVANTAGES = [
   {
     icon: "FiMonitor",
-    title: "15000+ Chaînes",
-    description: "Une vaste sélection de chaînes du monde entier, disponibles 24h/24.",
+    title: "Large catalogue",
+    description: COMMERCIAL_INFO.catalogue.caveat,
   },
   {
     icon: "FiFilm",
     title: "Films & Séries",
-    description: "Bibliothèque VOD immense avec les dernières sorties cinéma.",
+    description: "Des films et séries sont proposés à la demande selon le catalogue disponible.",
   },
   {
     icon: "FiZap",
-    title: "Qualité 4K",
-    description: "Profitez d'une qualité d'image exceptionnelle jusqu'à 4K UHD.",
+    title: "Jusqu’à 4K",
+    description: "La qualité dépend du contenu, de la formule, de l’appareil et de la connexion.",
   },
   {
     icon: "FiSmartphone",
@@ -274,13 +256,13 @@ export const ADVANTAGES = [
   },
   {
     icon: "FiShield",
-    title: "Anti-freeze",
-    description: "Technologie anti-buffering pour un visionnage fluide.",
+    title: "Formules multi-écrans",
+    description: COMMERCIAL_INFO.screens.label,
   },
   {
     icon: "FiHeadphones",
-    title: "Support 24/7",
-    description: "Une équipe disponible à tout moment pour vous accompagner.",
+    title: COMMERCIAL_INFO.support.label,
+    description: COMMERCIAL_INFO.support.description,
   },
 ] as const;
 
@@ -306,40 +288,14 @@ export const HOW_IT_WORKS = [
   {
     step: 2,
     title: "Recevez vos accès",
-    description: "Après confirmation, vous recevez vos identifiants sous quelques minutes.",
+    description:
+      "Après validation de la formule et du paiement, l’équipe confirme l’activation et vous transmet les identifiants.",
   },
   {
     step: 3,
     title: "Profitez du contenu",
-    description: "Installez l'application et accédez immédiatement à tout le contenu.",
-  },
-] as const;
-
-// Témoignages
-export const TESTIMONIALS = [
-  {
-    name: "Marc D.",
-    role: "Client depuis 6 mois",
-    content: "Qualité exceptionnelle ! J'ai accès à toutes les chaînes que je souhaitais. Le support est très réactif.",
-    rating: 5,
-  },
-  {
-    name: "Sophie L.",
-    role: "Cliente depuis 1 an",
-    content: "Je recommande vivement Ciné Kin Premium. Installation facile et image parfaite même en 4K.",
-    rating: 5,
-  },
-  {
-    name: "Jean K.",
-    role: "Revendeur Pro",
-    content: "Le programme revendeur m'a permis de lancer mon business. Les marges sont excellentes et le support est top.",
-    rating: 5,
-  },
-  {
-    name: "Amina B.",
-    role: "Cliente depuis 3 mois",
-    content: "Parfait pour toute la famille. Les enfants ont leurs chaînes et nous aussi. Très satisfaite !",
-    rating: 5,
+    description:
+      "Installez l’application compatible puis vérifiez le catalogue disponible sur votre appareil.",
   },
 ] as const;
 
@@ -347,11 +303,12 @@ export const TESTIMONIALS = [
 export const FAQ = [
   {
     question: "Qu'est-ce que Ciné Kin Premium ?",
-    answer: "Ciné Kin Premium est une plateforme numérique premium qui vous donne accès à des milliers de chaînes TV, films et séries en haute qualité, sur tous vos appareils.",
+    answer: `Ciné Kin Premium donne accès à un catalogue de chaînes TV, films et séries sur les appareils compatibles. ${COMMERCIAL_INFO.catalogue.caveat}`,
   },
   {
     question: "Comment puis-je commencer ?",
-    answer: "Choisissez simplement l'offre qui vous convient, remplissez le formulaire de commande et notre équipe vous contactera rapidement pour finaliser votre activation.",
+    answer:
+      "Choisissez l’offre qui vous convient et préparez votre demande. L’équipe vous recontactera pendant les horaires de support pour confirmer la formule, le paiement et l’activation.",
   },
   {
     question: "Sur quels appareils puis-je regarder ?",
@@ -363,11 +320,11 @@ export const FAQ = [
   },
   {
     question: "Quelle est la qualité des streams ?",
-    answer: "Nous proposons des qualités HD, Full HD et 4K selon votre formule. Notre technologie anti-freeze garantit un visionnage fluide.",
+    answer: "Nous proposons des qualités HD, Full HD et jusqu’à 4K selon le contenu et la formule. La fluidité dépend aussi de votre connexion et de votre appareil.",
   },
   {
     question: "Comment fonctionne le support ?",
-    answer: "Notre équipe de support est disponible par WhatsApp et email. Selon votre formule, vous bénéficiez d'un support standard ou VIP prioritaire.",
+    answer: `${COMMERCIAL_INFO.support.description} Selon votre formule, vous bénéficiez d’un support standard ou prioritaire.`,
   },
   {
     question: "Puis-je devenir revendeur ?",
@@ -375,7 +332,7 @@ export const FAQ = [
   },
   {
     question: "Quelle est la politique de remboursement ?",
-    answer: "Aucun remboursement n'est effectué après activation sauf en cas de problème technique confirmé de notre côté. N'hésitez pas à tester notre essai gratuit de 24h.",
+    answer: `${COMMERCIAL_INFO.refund.description} Un essai gratuit de 24 h permet de vérifier le service avant une souscription payante.`,
   },
 ] as const;
 
@@ -383,57 +340,23 @@ export const FAQ = [
 export const RESELLER_FAQ = [
   {
     question: "Comment fonctionne le programme revendeur ?",
-    answer: "Achetez un pack de codes et utilisez-les pour créer des abonnements pour vos propres clients. Plus vous achetez de codes, plus votre marge est importante.",
+    answer: "Achetez un pack de codes et utilisez-les pour créer des abonnements pour vos propres clients depuis le portail revendeur.",
   },
   {
     question: "Quelle est la marge des revendeurs ?",
-    answer: "Les marges sont de plus de 150% sur chaque vente, quel que soit le pack choisi.",
+    answer: COMMERCIAL_INFO.reseller.description,
   },
   {
-    question: "Puis-je personnaliser mon offre ?",
-    answer: "Oui, avec les packs Business, Pro et VIP, vous bénéficiez d'un site web personnalisé et/ou d'une marque blanche pour vendre sous votre propre enseigne.",
+    question: "Quels outils sont inclus ?",
+    answer: "Les packs donnent accès au portail revendeur, au suivi des codes et à la gestion des activations. Les éléments exacts figurent sur chaque pack.",
   },
   {
     question: "Comment se passe l'activation ?",
-    answer: "L'activation est instantanée via votre panneau revendeur. Vous pouvez créer des comptes pour vos clients en temps réel.",
+    answer: "Les activations se gèrent depuis le portail revendeur. Leur disponibilité et leur délai sont confirmés au moment de la commande du pack.",
   },
   {
     question: "Y a-t-il un engagement ?",
-    answer: "Non, il n'y a aucun engagement. Vous achetez des codes que vous utilisez à votre rythme. Aucun frais mensuel caché.",
-  },
-] as const;
-
-// Moyens de paiement
-export const PAYMENT_METHODS = [
-  {
-    id: "mpesa",
-    name: "M-Pesa",
-    description: "Paiement mobile via M-Pesa",
-    icon: "FiSmartphone",
-  },
-  {
-    id: "orange",
-    name: "Orange Money",
-    description: "Paiement via Orange Money",
-    icon: "FiSmartphone",
-  },
-  {
-    id: "airtel",
-    name: "Airtel Money",
-    description: "Paiement via Airtel Money",
-    icon: "FiSmartphone",
-  },
-  {
-    id: "card",
-    name: "Carte Bancaire",
-    description: "Visa, Mastercard",
-    icon: "FiCreditCard",
-  },
-  {
-    id: "crypto",
-    name: "Crypto-monnaies",
-    description: "Bitcoin, Ethereum, USDT",
-    icon: "FiDollarSign",
+    answer: "Les packs correspondent à un nombre défini de codes. Le prix et les éventuelles conditions complémentaires sont confirmés avant paiement.",
   },
 ] as const;
 
@@ -463,7 +386,7 @@ export const INSTALL_GUIDES = [
       "Utilisez VLC Media Player ou l'application web",
       "Chargez la playlist M3U fournie",
       "Ou connectez-vous avec vos identifiants",
-      "Le contenu est accessible immédiatement",
+      "Rechargez la liste et vérifiez le contenu disponible",
     ],
   },
 ] as const;

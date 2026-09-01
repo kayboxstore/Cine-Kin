@@ -9,6 +9,7 @@ export default function NotFound() {
       <SEO
         title="Page non trouvée - 404"
         description="La page que vous recherchez n'existe pas ou a été déplacée."
+        noIndex
       />
 
       <motion.div
@@ -33,7 +34,8 @@ export default function NotFound() {
           Page introuvable
         </h2>
         <p className="text-white/60 text-base mb-8 font-light leading-relaxed">
-          La page que vous recherchez n'existe pas ou a été déplacée. Retournez à l'accueil ou explorez nos offres.
+          La page que vous recherchez n'existe pas ou a été déplacée. Retournez
+          à l'accueil ou explorez nos offres.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

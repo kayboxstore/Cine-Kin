@@ -1,5 +1,13 @@
 import { motion } from "framer-motion";
-import { FiCalendar, FiClock, FiArrowRight, FiTv, FiShield, FiWifi, FiSmartphone } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiClock,
+  FiArrowRight,
+  FiTv,
+  FiShield,
+  FiWifi,
+  FiSmartphone,
+} from "react-icons/fi";
 import SEO from "@/components/SEO";
 import ScrollReveal from "@/components/ScrollReveal";
 import { Link } from "react-router-dom";
@@ -8,7 +16,8 @@ const articles = [
   {
     id: 1,
     title: "Qu'est-ce que l'IPTV et comment ça marche ?",
-    excerpt: "L'IPTV (Internet Protocol Television) révolutionne la façon dont nous regardons la télévision. Découvrez comment cette technologie fonctionne et pourquoi elle remplace progressivement le câble traditionnel.",
+    excerpt:
+      "L'IPTV (Internet Protocol Television) révolutionne la façon dont nous regardons la télévision. Découvrez comment cette technologie fonctionne et pourquoi elle remplace progressivement le câble traditionnel.",
     date: "10 juillet 2026",
     readTime: "5 min",
     icon: FiTv,
@@ -16,8 +25,9 @@ const articles = [
   },
   {
     id: 2,
-    title: "Top 10 des chaînes sportives en 4K",
-    excerpt: "Le sport en ultra haute définition change l'expérience visuelle. Voici notre sélection des meilleures chaînes sportives disponibles en 4K sur Ciné Kin Premium.",
+    title: "Bien préparer le streaming sportif en 4K",
+    excerpt:
+      "Les points à vérifier côté contenu, connexion et équipement avant de regarder du sport en ultra haute définition.",
     date: "8 juillet 2026",
     readTime: "4 min",
     icon: FiWifi,
@@ -26,7 +36,8 @@ const articles = [
   {
     id: 3,
     title: "Sécurité IPTV : comment protéger votre connexion",
-    excerpt: "La sécurité est primordiale lors de l'utilisation de services IPTV. Apprenez les meilleures pratiques pour sécuriser votre connexion et protéger vos données personnelles.",
+    excerpt:
+      "La sécurité est primordiale lors de l'utilisation de services IPTV. Apprenez les meilleures pratiques pour sécuriser votre connexion et protéger vos données personnelles.",
     date: "5 juillet 2026",
     readTime: "6 min",
     icon: FiShield,
@@ -35,7 +46,8 @@ const articles = [
   {
     id: 4,
     title: "Comparatif : Smart TV vs Android TV Box",
-    excerpt: "Vous hésitez entre une Smart TV et une Android TV Box ? Nous analysons les avantages et inconvénients de chaque solution pour l'IPTV.",
+    excerpt:
+      "Vous hésitez entre une Smart TV et une Android TV Box ? Nous analysons les avantages et inconvénients de chaque solution pour l'IPTV.",
     date: "2 juillet 2026",
     readTime: "7 min",
     icon: FiSmartphone,
@@ -43,17 +55,19 @@ const articles = [
   },
   {
     id: 5,
-    title: "Les nouveautés Ciné Kin Premium ce mois-ci",
-    excerpt: "De nouvelles chaînes, des films récents et des séries exclusives ont été ajoutés à notre catalogue. Découvrez toutes les nouveautés du mois de juillet 2026.",
+    title: "Comment vérifier le catalogue avant de souscrire",
+    excerpt:
+      "Une méthode simple pour vérifier contenus, qualité, fonctions et compatibilité pendant l'essai gratuit.",
     date: "1 juillet 2026",
     readTime: "3 min",
     icon: FiTv,
-    category: "Actualités",
+    category: "Guide",
   },
   {
     id: 6,
     title: "Comment devenir revendeur IPTV",
-    excerpt: "Le marché de l'IPTV connaît une croissance exponentielle. Découvrez comment lancer votre propre business avec nos packs revendeur et générer des revenus récurrents.",
+    excerpt:
+      "Comprendre les outils, les coûts et les responsabilités d'un pack revendeur avant de démarrer.",
     date: "28 juin 2026",
     readTime: "8 min",
     icon: FiWifi,
@@ -71,8 +85,12 @@ export default function Blog() {
 
       {/* Hero */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(90,107,78,0.06) 0%, transparent 50%)" }}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 30%, rgba(90,107,78,0.06) 0%, transparent 50%)",
+          }}
         />
         <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-8 text-center">
           <ScrollReveal>
@@ -84,7 +102,8 @@ export default function Blog() {
               Le <span className="text-[#6b7c5c]">blog</span> Ciné Kin
             </h1>
             <p className="text-white/60 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-              Guides, conseils et actualités sur l'IPTV et le streaming. Tout ce qu'il faut savoir pour profiter pleinement de votre abonnement.
+              Guides, conseils et actualités sur l'IPTV et le streaming. Tout ce
+              qu'il faut savoir pour profiter pleinement de votre abonnement.
             </p>
           </ScrollReveal>
         </div>
@@ -101,37 +120,44 @@ export default function Blog() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="border border-white/[0.06] rounded-2xl p-6 bg-white/[0.02] hover:border-white/[0.10] transition-all duration-300 group cursor-pointer"
-                onClick={() => window.location.href = `/blog/${article.id}`}
+                className="border border-white/[0.06] rounded-2xl bg-white/[0.02] hover:border-white/[0.10] transition-all duration-300 group overflow-hidden"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#5a6b4e]/10 flex items-center justify-center">
-                    <article.icon className="w-5 h-5 text-[#6b7c5c]" />
-                  </div>
-                  <span className="text-[#6b7c5c] text-xs font-semibold uppercase tracking-wider">{article.category}</span>
-                </div>
-
-                <h2 className="font-display font-semibold text-lg text-white mb-3 group-hover:text-[#6b7c5c] transition-colors">
-                  {article.title}
-                </h2>
-
-                <p className="text-white/60 text-sm leading-relaxed mb-4">
-                  {article.excerpt}
-                </p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
-                  <div className="flex items-center gap-3 text-white/55 text-xs">
-                    <span className="flex items-center gap-1">
-                      <FiCalendar className="w-3 h-3" />
-                      {article.date}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <FiClock className="w-3 h-3" />
-                      {article.readTime}
+                <Link
+                  to={`/blog/${article.id}`}
+                  className="block h-full p-6"
+                  aria-label={`Lire l’article : ${article.title}`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#5a6b4e]/10 flex items-center justify-center">
+                      <article.icon className="w-5 h-5 text-[#6b7c5c]" />
+                    </div>
+                    <span className="text-[#6b7c5c] text-xs font-semibold uppercase tracking-wider">
+                      {article.category}
                     </span>
                   </div>
-                  <FiArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#6b7c5c] group-hover:translate-x-1 transition-all" />
-                </div>
+
+                  <h2 className="font-display font-semibold text-lg text-white mb-3 group-hover:text-[#6b7c5c] transition-colors">
+                    {article.title}
+                  </h2>
+
+                  <p className="text-white/60 text-sm leading-relaxed mb-4">
+                    {article.excerpt}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
+                    <div className="flex items-center gap-3 text-white/55 text-xs">
+                      <span className="flex items-center gap-1">
+                        <FiCalendar className="w-3 h-3" />
+                        {article.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FiClock className="w-3 h-3" />
+                        {article.readTime}
+                      </span>
+                    </div>
+                    <FiArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#6b7c5c] group-hover:translate-x-1 transition-all" />
+                  </div>
+                </Link>
               </motion.article>
             ))}
           </div>

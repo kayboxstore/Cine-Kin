@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, Lock, Zap } from "lucide-react";
+import { AlertTriangle, Copy, Lock, ShieldCheck, Zap } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { useToast } from "@/components/Toast";
 import { SectionCard, LicenseSelect } from "@/components/admin/ui";
@@ -16,7 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { licenseLabel, formatDateTime, normalizeMac } from "@/lib/licenseFormat";
+import {
+  licenseLabel,
+  formatDateTime,
+  formatMacInput,
+  isValidMac,
+  normalizeMac,
+} from "@/lib/licenseFormat";
 
 type License = "12_months" | "unlimited";
 
@@ -31,18 +37,23 @@ export default function ActivationsSection() {
   const [mac, setMac] = useState("");
   const [licenseType, setLicenseType] = useState<License>("12_months");
   const [renewMode, setRenewMode] = useState(false);
+  const [claimCredential, setClaimCredential] = useState<{
+    code: string;
+    expiresAt: Date | string;
+  } | null>(null);
 
   const clientNames = useMemo(() => {
     const map = new Map<number, string>();
-    for (const c of clients.data ?? []) map.set(c.id, c.name || c.email || c.mac);
+    for (const c of clients.data ?? [])
+      map.set(c.id, c.name || c.email || c.mac);
     return map;
   }, [clients.data]);
 
   // Real-time anti-duplicate detection against the known MAC list.
   const matched = useMemo(() => {
     const norm = normalizeMac(mac);
-    if (norm.length < 3) return null;
-    return (clients.data ?? []).find((c) => normalizeMac(c.mac) === norm) ?? null;
+    if (!norm) return null;
+    return (clients.data ?? []).find(c => normalizeMac(c.mac) === norm) ?? null;
   }, [mac, clients.data]);
 
   const resetForm = () => {
@@ -53,27 +64,39 @@ export default function ActivationsSection() {
     setRenewMode(false);
   };
 
-  const onSuccess = (msg: string) => {
+  const onSuccess = (
+    msg: string,
+    data: { claimCode: string | null; claimCodeExpiresAt: Date | null }
+  ) => {
     toast(msg, "success");
+    if (data.claimCode && data.claimCodeExpiresAt) {
+      setClaimCredential({
+        code: data.claimCode,
+        expiresAt: data.claimCodeExpiresAt,
+      });
+    }
     resetForm();
     utils.admin.appClientList.invalidate();
     utils.admin.activationList.invalidate();
   };
 
   const activate = trpc.admin.appClientActivate.useMutation({
-    onSuccess: () => onSuccess("Licence activée."),
-    onError: (e) => toast(e.message || "Échec de l'activation", "error"),
+    onSuccess: data => onSuccess("Licence activée.", data),
+    onError: e => toast(e.message || "Échec de l'activation", "error"),
   });
   const renew = trpc.admin.appClientRenew.useMutation({
-    onSuccess: () => onSuccess("Licence renouvelée."),
-    onError: (e) => toast(e.message || "Échec du renouvellement", "error"),
+    onSuccess: data =>
+      onSuccess("Licence renouvelée sans perte de durée.", data),
+    onError: e => toast(e.message || "Échec du renouvellement", "error"),
   });
 
   const switchToRenew = () => {
     if (!matched) return;
     setName(matched.name ?? "");
     setEmail(matched.email ?? "");
-    setLicenseType(matched.licenseType === "unlimited" ? "unlimited" : "12_months");
+    setLicenseType(
+      matched.licenseType === "unlimited" ? "unlimited" : "12_months"
+    );
     setRenewMode(true);
   };
 
@@ -92,30 +115,79 @@ export default function ActivationsSection() {
   };
 
   const pending = activate.isPending || renew.isPending;
-  const macTooShort = mac.trim().length < 3;
+  const macInvalid = !isValidMac(mac);
 
   return (
     <div className="space-y-8">
-      <SectionCard title={renewMode ? "Renouvellement de licence" : "Nouvelle activation"}>
+      {claimCredential && (
+        <Alert className="border-emerald-500/30 bg-emerald-500/10">
+          <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <AlertTitle className="text-emerald-300">
+            Code d'activation à transmettre
+          </AlertTitle>
+          <AlertDescription className="space-y-3 text-emerald-100/80">
+            <p>
+              Ce code prouve la possession de l'appareil. Il expire le{" "}
+              {formatDateTime(claimCredential.expiresAt)}
+              et ne sera plus affiché après fermeture.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <code className="rounded-lg border border-emerald-400/30 bg-black/20 px-4 py-2 font-mono text-lg font-semibold tracking-wider text-white">
+                {claimCredential.code}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  navigator.clipboard?.writeText(claimCredential.code);
+                  toast("Code copié.", "success");
+                }}
+              >
+                <Copy className="mr-1.5 h-4 w-4" />
+                Copier
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setClaimCredential(null)}
+              >
+                Masquer
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <SectionCard
+        title={renewMode ? "Renouvellement de licence" : "Nouvelle activation"}
+      >
         <div className="space-y-5 p-5">
           {/* Anti-duplicate alert (only outside renew mode) */}
           {matched && !renewMode && (
             <Alert className="border-amber-500/30 bg-amber-500/10">
               <AlertTriangle className="h-4 w-4 text-amber-400" />
-              <AlertTitle className="text-amber-300">MAC déjà connue</AlertTitle>
+              <AlertTitle className="text-amber-300">
+                MAC déjà connue
+              </AlertTitle>
               <AlertDescription className="text-amber-200/80">
                 Un client existe déjà pour cette adresse MAC
-                {matched.name ? ` (${matched.name})` : ""}. Pour prolonger sa licence, utilisez le
-                renouvellement.
-                <div className="mt-3">
-                  <Button
-                    size="sm"
-                    onClick={switchToRenew}
-                    className="bg-amber-500 text-black hover:bg-amber-400"
-                  >
-                    Renouveler plutôt
-                  </Button>
-                </div>
+                {matched.name ? ` (${matched.name})` : ""}. Pour prolonger sa
+                licence, utilisez le renouvellement.
+                {matched.licenseType === "unlimited" ? (
+                  <p className="mt-2 font-medium">
+                    Cette licence est déjà définitive.
+                  </p>
+                ) : (
+                  <div className="mt-3">
+                    <Button
+                      size="sm"
+                      onClick={switchToRenew}
+                      className="bg-amber-500 text-black hover:bg-amber-400"
+                    >
+                      Renouveler plutôt
+                    </Button>
+                  </div>
+                )}
               </AlertDescription>
             </Alert>
           )}
@@ -137,7 +209,7 @@ export default function ActivationsSection() {
               <Input
                 id="act-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={e => setName(e.target.value)}
                 placeholder="Nom du client"
               />
             </div>
@@ -147,7 +219,7 @@ export default function ActivationsSection() {
                 id="act-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="Optionnel — généré si vide"
               />
             </div>
@@ -157,7 +229,7 @@ export default function ActivationsSection() {
                 <Input
                   id="act-mac"
                   value={mac}
-                  onChange={(e) => setMac(e.target.value)}
+                  onChange={e => setMac(formatMacInput(e.target.value))}
                   disabled={renewMode}
                   placeholder="00:11:22:33:44:55"
                   className={renewMode ? "pr-9 opacity-70" : ""}
@@ -172,7 +244,7 @@ export default function ActivationsSection() {
               <LicenseSelect
                 id="act-license"
                 value={licenseType}
-                onChange={(e) => setLicenseType(e.target.value as License)}
+                onChange={e => setLicenseType(e.target.value as License)}
               />
             </div>
           </div>
@@ -180,7 +252,7 @@ export default function ActivationsSection() {
           <div className="flex justify-end">
             <Button
               onClick={submit}
-              disabled={pending || (!renewMode && macTooShort)}
+              disabled={pending || (!renewMode && macInvalid)}
               className="bg-[#5a6b4e] text-white hover:bg-[#4d5d42]"
             >
               <Zap className="mr-1.5 h-4 w-4" />
@@ -208,12 +280,14 @@ export default function ActivationsSection() {
             </TableHeader>
             <TableBody>
               {activations.data && activations.data.length > 0 ? (
-                activations.data.slice(0, 20).map((a) => (
+                activations.data.slice(0, 20).map(a => (
                   <TableRow key={a.id}>
                     <TableCell className="font-medium text-foreground">
                       {clientNames.get(a.appClientId) ?? "—"}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{a.mac}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {a.mac}
+                    </TableCell>
                     <TableCell>{licenseLabel(a.licenseType)}</TableCell>
                     <TableCell>
                       <Badge
@@ -227,13 +301,20 @@ export default function ActivationsSection() {
                         {a.activatedByType === "admin" ? "Admin" : "Revendeur"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{formatDateTime(a.createdAt)}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDateTime(a.createdAt)}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
-                    {activations.isLoading ? "Chargement…" : "Aucune activation"}
+                  <TableCell
+                    colSpan={5}
+                    className="py-12 text-center text-muted-foreground"
+                  >
+                    {activations.isLoading
+                      ? "Chargement…"
+                      : "Aucune activation"}
                   </TableCell>
                 </TableRow>
               )}
