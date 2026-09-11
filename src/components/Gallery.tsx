@@ -3,33 +3,38 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiTv, FiFilm, FiMonitor, FiGrid } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
 import LazyImage from "./LazyImage";
+import ResponsiveImage from "./ResponsiveImage";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 
 const galleryItems = [
   {
     id: 1,
     title: "Guide Électronique des Programmes",
-    description: "Consultez facilement les programmes de toutes vos chaînes avec notre EPG intuitif.",
+    description:
+      "Consultez facilement les programmes de toutes vos chaînes avec notre EPG intuitif.",
     icon: FiTv,
     image: "/images/gallery-epg.jpg",
   },
   {
     id: 2,
     title: "Catalogue VOD Films & Séries",
-    description: "Des milliers de films et séries disponibles à la demande, organisés par genre.",
+    description:
+      "Parcourez les films et séries disponibles à la demande, organisés par genre.",
     icon: FiFilm,
     image: "/images/gallery-vod.jpg",
   },
   {
     id: 3,
     title: "Multi-écrans simultanés",
-    description: "Regardez sur jusqu'à 5 appareils en simultané avec un seul abonnement.",
+    description: `Regardez sur jusqu’à ${COMMERCIAL_INFO.screens.max} écrans selon la formule choisie.`,
     icon: FiMonitor,
     image: "/images/gallery-multi.jpg",
   },
   {
     id: 4,
     title: "Grille de chaînes complète",
-    description: "15 000+ chaînes organisées par pays et catégorie pour un accès rapide.",
+    description:
+      "Des chaînes organisées par pays et catégorie pour un accès rapide.",
     icon: FiGrid,
     image: "/images/gallery-grid.jpg",
   },
@@ -38,15 +43,24 @@ const galleryItems = [
 export default function Gallery() {
   const [selected, setSelected] = useState<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const returnFocusRef = useRef<HTMLButtonElement | null>(null);
 
-  const selectedItem = galleryItems.find((g) => g.id === selected);
+  const selectedItem = galleryItems.find(g => g.id === selected);
 
   // Accessibility: close the lightbox on Escape and move focus to the
   // close button when it opens.
   useEffect(() => {
-    if (selected === null) return;
+    if (selected === null) {
+      returnFocusRef.current?.focus();
+      returnFocusRef.current = null;
+      return;
+    }
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setSelected(null);
+      if (e.key === "Tab") {
+        e.preventDefault();
+        closeButtonRef.current?.focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
     closeButtonRef.current?.focus();
@@ -65,7 +79,8 @@ export default function Gallery() {
               Découvrez <span className="text-[#6b7c5c]">l'expérience</span>
             </h2>
             <p className="text-white/60 text-base font-light max-w-lg mx-auto">
-              Une interface moderne et intuitive pour accéder à tout votre contenu.
+              Une interface moderne et intuitive pour accéder à tout votre
+              contenu.
             </p>
           </div>
         </ScrollReveal>
@@ -75,13 +90,23 @@ export default function Gallery() {
             const Icon = item.icon;
             return (
               <ScrollReveal key={item.id} delay={i * 0.1}>
-                <motion.div
+                <motion.button
+                  type="button"
                   whileHover={{ y: -4 }}
-                  className="group relative border border-white/[0.06] rounded-2xl overflow-hidden cursor-pointer hover:border-[#5a6b4e]/20 transition-all bg-white/[0.02]"
-                  onClick={() => setSelected(item.id)}
+                  className="group relative w-full border border-white/[0.06] rounded-2xl overflow-hidden cursor-pointer hover:border-[#5a6b4e]/20 transition-all bg-white/[0.02] text-left"
+                  onClick={event => {
+                    returnFocusRef.current = event.currentTarget;
+                    setSelected(item.id);
+                  }}
+                  aria-label={`Agrandir : ${item.title}`}
                 >
                   <div className="aspect-video relative">
-                    <LazyImage src={item.image} alt={item.title} className="w-full h-full" />
+                    <LazyImage
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full"
+                      sizes="(min-width: 640px) 50vw, 100vw"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                     <div className="absolute bottom-0 left-0 right-0 p-5">
                       <div className="flex items-center gap-2 mb-2">
@@ -92,10 +117,12 @@ export default function Gallery() {
                           {item.title}
                         </h3>
                       </div>
-                      <p className="text-white/50 text-sm font-light">{item.description}</p>
+                      <p className="text-white/50 text-sm font-light">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
-                </motion.div>
+                </motion.button>
               </ScrollReveal>
             );
           })}
@@ -120,10 +147,11 @@ export default function Gallery() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="relative max-w-4xl w-full"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <button
                 ref={closeButtonRef}
+                type="button"
                 onClick={() => setSelected(null)}
                 aria-label="Fermer"
                 className="absolute -top-10 right-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.1] text-white/60 hover:text-white transition-all"
@@ -131,14 +159,17 @@ export default function Gallery() {
                 <FiX className="w-4 h-4" />
               </button>
               <div className="rounded-2xl overflow-hidden border border-white/[0.08]">
-                <img
+                <ResponsiveImage
                   src={selectedItem.image}
                   alt={selectedItem.title}
+                  sizes="(min-width: 896px) 896px, 100vw"
                   className="w-full h-auto"
                 />
               </div>
               <div className="mt-3 text-center">
-                <h3 className="font-display font-semibold text-white text-lg">{selectedItem.title}</h3>
+                <h3 className="font-display font-semibold text-white text-lg">
+                  {selectedItem.title}
+                </h3>
               </div>
             </motion.div>
           </motion.div>

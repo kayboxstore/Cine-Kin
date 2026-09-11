@@ -1,92 +1,56 @@
 import { Helmet } from "react-helmet-async";
+import { CLIENT_PLANS, SITE_CONFIG } from "@/data/siteData";
+import { COMMERCIAL_INFO } from "@/data/commercial";
+import { getSiteOrigin } from "@/lib/siteUrl";
 
 export default function SchemaOrg() {
-  const siteUrl = "https://7a5czmte3r3ri.kimi.page";
+  const siteUrl = getSiteOrigin();
 
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Ciné Kin Premium",
+    name: SITE_CONFIG.name,
     url: siteUrl,
-    logo: `${siteUrl}/favicon.png`,
-    description: "Service IPTV premium avec 15000+ chaînes TV, films et séries en 4K UHD. Essai gratuit 24h.",
+    logo: `${siteUrl}/favicon-512.png`,
+    description: `${COMMERCIAL_INFO.catalogue.headline} Essai gratuit de 24 h.`,
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+243-830-240-073",
+      telephone: SITE_CONFIG.whatsappNumber,
       contactType: "customer service",
       availableLanguage: ["French", "English"],
       areaServed: "CD",
     },
-    sameAs: [],
   };
 
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "Abonnement IPTV Ciné Kin Premium",
+    name: `Abonnement IPTV ${SITE_CONFIG.name}`,
     provider: {
       "@type": "Organization",
-      name: "Ciné Kin Premium",
+      name: SITE_CONFIG.name,
     },
-    description: "Accès à 15000+ chaînes TV, films et séries en 4K UHD. Compatible Smart TV, Android, iPhone, PC.",
-    areaServed: {
-      "@type": "Place",
-      name: "Monde entier",
-    },
+    description: COMMERCIAL_INFO.catalogue.headline,
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Forfaits IPTV",
-      itemListElement: [
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "Essai 24h",
-          },
-          price: "0",
-          priceCurrency: "USD",
+      itemListElement: CLIENT_PLANS.map(plan => ({
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: `${plan.name} · ${plan.screensLabel}`,
         },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "1 mois",
-          },
-          price: "10",
-          priceCurrency: "USD",
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "3 mois",
-          },
-          price: "25",
-          priceCurrency: "USD",
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "12 mois",
-          },
-          price: "70",
-          priceCurrency: "USD",
-        },
-      ],
+        price: String(plan.price),
+        priceCurrency: "USD",
+      })),
     },
   };
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Ciné Kin Premium",
+    name: SITE_CONFIG.name,
     url: siteUrl,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}/#/offres`,
-      "query-input": "required name=search_term_string",
-    },
   };
 
   return (

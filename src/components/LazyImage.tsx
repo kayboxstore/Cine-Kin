@@ -1,13 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import ResponsiveImage from "./ResponsiveImage";
 
 interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
+  sizes?: string;
 }
 
-export default function LazyImage({ src, alt, className = "" }: LazyImageProps) {
+export default function LazyImage({
+  src,
+  alt,
+  className = "",
+  sizes,
+}: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
@@ -37,14 +43,12 @@ export default function LazyImage({ src, alt, className = "" }: LazyImageProps) 
       />
 
       {isInView && (
-        <motion.img
+        <ResponsiveImage
           src={src}
           alt={alt}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 1.05 }}
-          transition={{ duration: 0.6 }}
+          sizes={sizes}
           onLoad={() => setIsLoaded(true)}
-          className={`w-full h-full object-cover ${isLoaded ? "blur-0" : "blur-lg"} transition-all duration-700`}
+          className={`w-full h-full object-cover ${isLoaded ? "blur-0 opacity-100 scale-100" : "blur-lg opacity-0 scale-105"} transition-all duration-700`}
           loading="lazy"
         />
       )}

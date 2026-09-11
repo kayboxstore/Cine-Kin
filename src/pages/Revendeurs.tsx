@@ -3,17 +3,31 @@ import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiCheck, FiTrendingUp, FiZap, FiBarChart2, FiHeadphones,
-  FiPackage, FiChevronDown, FiChevronUp, FiArrowRight, FiSend,
-  FiUser, FiMail, FiPhone, FiMessageSquare
+  FiCheck,
+  FiTrendingUp,
+  FiZap,
+  FiBarChart2,
+  FiHeadphones,
+  FiPackage,
+  FiChevronDown,
+  FiChevronUp,
+  FiArrowRight,
+  FiSend,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiMessageSquare,
 } from "react-icons/fi";
 import { RESELLER_PLANS, RESELLER_FAQ, SITE_CONFIG } from "@/data/siteData";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 import ScrollReveal from "@/components/ScrollReveal";
+import ResponsiveImage from "@/components/ResponsiveImage";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" as const },
   }),
 };
@@ -24,17 +38,41 @@ const staggerContainer = {
 };
 
 const advantages = [
-  { icon: FiTrendingUp, title: "Marge attractive", desc: "Plus de 150% de marge sur chaque vente. Plus vous vendez, plus vous gagnez." },
-  { icon: FiZap, title: "Activation rapide", desc: "Créez des comptes clients en temps réel via votre panneau d'administration dédié." },
-  { icon: FiBarChart2, title: "Tableau de bord", desc: "Suivez vos ventes, codes restants et performances en temps réel." },
-  { icon: FiHeadphones, title: "Support dédié", desc: "Bénéficiez d'un support prioritaire et d'une formation complète." },
-  { icon: FiPackage, title: "Packs flexibles", desc: "Choisissez le pack qui correspond à votre ambition et évoluez à votre rythme." },
+  {
+    icon: FiTrendingUp,
+    title: "Tarifs maîtrisés",
+    desc: COMMERCIAL_INFO.reseller.description,
+  },
+  {
+    icon: FiZap,
+    title: "Gestion des activations",
+    desc: "Créez et suivez les accès clients depuis votre portail revendeur.",
+  },
+  {
+    icon: FiBarChart2,
+    title: "Tableau de bord",
+    desc: "Consultez vos codes disponibles et l’historique de vos activations.",
+  },
+  {
+    icon: FiHeadphones,
+    title: "Support dédié",
+    desc: "Les modalités de support sont indiquées pour chaque pack avant la commande.",
+  },
+  {
+    icon: FiPackage,
+    title: "Packs flexibles",
+    desc: "Choisissez le pack qui correspond à votre ambition et évoluez à votre rythme.",
+  },
 ];
 
 export default function Revendeurs() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-    name: "", email: "", phone: "", pack: "", message: "",
+    name: "",
+    email: "",
+    phone: "",
+    pack: "",
+    message: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -58,30 +96,41 @@ export default function Revendeurs() {
   return (
     <div>
       <SEO
-        title="Devenez Revendeur IPTV - Marge 150%+"
+        title="Devenez Revendeur IPTV"
         description="Lancez votre business IPTV avec Ciné Kin Premium. Packs revendeur de 20 à 500 codes. Panneau d'administration dédié."
       />
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/reseller-hero.jpg" alt="" className="w-full h-full object-cover opacity-15" />
+          <ResponsiveImage
+            src="/images/reseller-hero.jpg"
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+            className="w-full h-full object-cover opacity-15"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/80 via-[#0a1628]/60 to-[#0a1628]" />
         </div>
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(90,107,78,0.08) 0%, transparent 50%)" }}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 30%, rgba(90,107,78,0.08) 0%, transparent 50%)",
+          }}
         />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8 text-center">
           <ScrollReveal>
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] mb-8">
               <FiTrendingUp className="w-4 h-4 text-[#6b7c5c]" />
-              <span className="text-sm text-white/50">Programme revendeur exclusif</span>
+              <span className="text-sm text-white/50">Programme revendeur</span>
             </div>
             <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-white mb-5 tracking-[-0.02em]">
               Devenez <span className="text-[#6b7c5c]">revendeur</span>
             </h1>
             <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
-              Lancez votre propre business IPTV avec des marges de plus de 150%. Un programme complet pour les entrepreneurs ambitieux.
+              Choisissez un pack de codes, gérez vos activations et fixez
+              librement vos tarifs. Aucun niveau de revenu n’est garanti.
             </p>
           </ScrollReveal>
         </div>
@@ -92,10 +141,12 @@ export default function Revendeurs() {
         <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
           <ScrollReveal className="text-center mb-16">
             <h2 className="font-display font-bold text-3xl sm:text-4xl text-white mb-4 tracking-[-0.02em]">
-              Pourquoi devenir <span className="text-[#6b7c5c]">revendeur</span> ?
+              Pourquoi devenir <span className="text-[#6b7c5c]">revendeur</span>{" "}
+              ?
             </h2>
             <p className="text-white/60 text-lg max-w-2xl mx-auto font-light">
-              Rejoignez un réseau de plus de 1000 revendeurs actifs et bénéficiez d'avantages exclusifs.
+              Un portail dédié regroupe les outils actuellement disponibles pour
+              gérer vos codes et vos clients.
             </p>
           </ScrollReveal>
 
@@ -116,8 +167,12 @@ export default function Revendeurs() {
                 <div className="w-12 h-12 rounded-xl bg-[#5a6b4e]/10 flex items-center justify-center mb-4">
                   <adv.icon className="w-6 h-6 text-[#6b7c5c]" />
                 </div>
-                <h3 className="font-display font-semibold text-lg text-white mb-2">{adv.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed font-light">{adv.desc}</p>
+                <h3 className="font-display font-semibold text-lg text-white mb-2">
+                  {adv.title}
+                </h3>
+                <p className="text-white/60 text-sm leading-relaxed font-light">
+                  {adv.desc}
+                </p>
               </motion.div>
             ))}
           </motion.div>
@@ -149,7 +204,9 @@ export default function Revendeurs() {
                 variants={fadeInUp}
                 custom={i}
                 className={`relative border rounded-2xl p-6 bg-[#111d32]/40 ${
-                  plan.popular ? "border-[#5a6b4e]/20 lg:scale-105" : "border-white/[0.04] hover:border-white/[0.08]"
+                  plan.popular
+                    ? "border-[#5a6b4e]/20 lg:scale-105"
+                    : "border-white/[0.04] hover:border-white/[0.08]"
                 }`}
               >
                 {plan.popular && (
@@ -159,18 +216,27 @@ export default function Revendeurs() {
                 )}
 
                 <div className="text-center mb-6 pt-2">
-                  <h3 className="font-display font-semibold text-xl text-white mb-2">{plan.name}</h3>
-                  <div className="text-[#6b7c5c]/70 text-sm font-medium tracking-wide">{plan.margin} de marge</div>
+                  <h3 className="font-display font-semibold text-xl text-white mb-2">
+                    {plan.name}
+                  </h3>
+                  <div className="text-[#6b7c5c]/70 text-sm font-medium tracking-wide">
+                    {plan.priceLabel}
+                  </div>
                 </div>
 
                 <div className="text-center py-3 mb-6 bg-white/[0.03] rounded-xl">
-                  <div className="font-display font-bold text-2xl text-white">{plan.credits}</div>
+                  <div className="font-display font-bold text-2xl text-white">
+                    {plan.credits}
+                  </div>
                   <div className="text-white/60 text-sm">codes inclus</div>
                 </div>
 
                 <ul className="space-y-3 mb-7">
                   {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2.5 text-sm text-white/50">
+                    <li
+                      key={j}
+                      className="flex items-center gap-2.5 text-sm text-white/50"
+                    >
                       <FiCheck className="w-4 h-4 text-[#5a6b4e] flex-shrink-0" />
                       {feature}
                     </li>
@@ -180,7 +246,9 @@ export default function Revendeurs() {
                 <button
                   onClick={() => {
                     setFormData(prev => ({ ...prev, pack: plan.id }));
-                    document.getElementById("devis-form")?.scrollIntoView({ behavior: "smooth" });
+                    document
+                      .getElementById("devis-form")
+                      ?.scrollIntoView({ behavior: "smooth" });
                   }}
                   className={`block w-full py-4 text-center text-sm font-bold rounded-xl transition-all duration-300 tracking-wide ${
                     plan.popular
@@ -207,12 +275,21 @@ export default function Revendeurs() {
 
           <div className="space-y-3">
             {RESELLER_FAQ.map((item, i) => (
-              <div key={i} className="border border-white/[0.03] rounded-xl overflow-hidden bg-[#0a1628]/50">
+              <div
+                key={i}
+                className="border border-white/[0.03] rounded-xl overflow-hidden bg-[#0a1628]/50"
+              >
                 <button
+                  type="button"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   className="w-full flex items-center justify-between p-5 text-left"
+                  id={`reseller-faq-button-${i}`}
+                  aria-expanded={openFaq === i}
+                  aria-controls={`reseller-faq-panel-${i}`}
                 >
-                  <span className="font-display font-medium text-white/65 text-base pr-4">{item.question}</span>
+                  <span className="font-display font-medium text-white/65 text-base pr-4">
+                    {item.question}
+                  </span>
                   {openFaq === i ? (
                     <FiChevronUp className="w-5 h-5 text-[#5a6b4e] flex-shrink-0" />
                   ) : (
@@ -222,13 +299,18 @@ export default function Revendeurs() {
                 <AnimatePresence>
                   {openFaq === i && (
                     <motion.div
+                      id={`reseller-faq-panel-${i}`}
+                      role="region"
+                      aria-labelledby={`reseller-faq-button-${i}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       className="px-5 pb-5"
                     >
-                      <p className="text-white/60 text-sm leading-relaxed font-light">{item.answer}</p>
+                      <p className="text-white/60 text-sm leading-relaxed font-light">
+                        {item.answer}
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -247,80 +329,137 @@ export default function Revendeurs() {
                 <>
                   <div className="text-center mb-8">
                     <h2 className="font-display font-bold text-2xl sm:text-3xl text-white mb-2 tracking-[-0.02em]">
-                      Demander un <span className="text-[#6b7c5c]">pack revendeur</span>
+                      Demander un{" "}
+                      <span className="text-[#6b7c5c]">pack revendeur</span>
                     </h2>
                     <p className="text-white/60 text-base font-light">
-                      Remplissez le formulaire ci-dessous. Notre équipe vous contactera rapidement.
+                      Remplissez le formulaire : votre demande sera préparée
+                      dans WhatsApp, où vous devrez l’envoyer.
                     </p>
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                      <label className="flex items-center gap-2 text-sm text-white/55 mb-2">
+                      <label
+                        htmlFor="reseller-name"
+                        className="flex items-center gap-2 text-sm text-white/55 mb-2"
+                      >
                         <FiUser className="w-4 h-4" /> Nom complet
                       </label>
                       <input
+                        id="reseller-name"
                         type="text"
+                        autoComplete="name"
                         required
                         value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
                         className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-[#5a6b4e]/40 transition-all text-base"
                         placeholder="Votre nom"
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="flex items-center gap-2 text-sm text-white/55 mb-2">
+                        <label
+                          htmlFor="reseller-email"
+                          className="flex items-center gap-2 text-sm text-white/55 mb-2"
+                        >
                           <FiMail className="w-4 h-4" /> Email
                         </label>
                         <input
+                          id="reseller-email"
                           type="email"
+                          autoComplete="email"
                           required
                           value={formData.email}
-                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              email: e.target.value,
+                            }))
+                          }
                           className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-[#5a6b4e]/40 transition-all text-base"
                           placeholder="votre@email.com"
                         />
                       </div>
                       <div>
-                        <label className="flex items-center gap-2 text-sm text-white/55 mb-2">
+                        <label
+                          htmlFor="reseller-phone"
+                          className="flex items-center gap-2 text-sm text-white/55 mb-2"
+                        >
                           <FiPhone className="w-4 h-4" /> WhatsApp
                         </label>
                         <input
+                          id="reseller-phone"
                           type="tel"
+                          autoComplete="tel"
                           required
                           value={formData.phone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              phone: e.target.value,
+                            }))
+                          }
                           className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-[#5a6b4e]/40 transition-all text-base"
                           placeholder="+243..."
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="flex items-center gap-2 text-sm text-white/55 mb-2">
+                      <label
+                        htmlFor="reseller-pack"
+                        className="flex items-center gap-2 text-sm text-white/55 mb-2"
+                      >
                         <FiPackage className="w-4 h-4" /> Pack souhaité
                       </label>
                       <select
+                        id="reseller-pack"
                         value={formData.pack}
-                        onChange={(e) => setFormData(prev => ({ ...prev, pack: e.target.value }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            pack: e.target.value,
+                          }))
+                        }
                         className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white focus:outline-none focus:border-[#5a6b4e]/40 transition-all appearance-none text-base"
                       >
-                        <option value="" className="bg-[#0a1628]">Choisir un pack</option>
+                        <option value="" className="bg-[#0a1628]">
+                          Choisir un pack
+                        </option>
                         {RESELLER_PLANS.map(plan => (
-                          <option key={plan.id} value={plan.id} className="bg-[#0a1628]">
+                          <option
+                            key={plan.id}
+                            value={plan.id}
+                            className="bg-[#0a1628]"
+                          >
                             {plan.name}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="flex items-center gap-2 text-sm text-white/55 mb-2">
-                        <FiMessageSquare className="w-4 h-4" /> Message (optionnel)
+                      <label
+                        htmlFor="reseller-message"
+                        className="flex items-center gap-2 text-sm text-white/55 mb-2"
+                      >
+                        <FiMessageSquare className="w-4 h-4" /> Message
+                        (optionnel)
                       </label>
                       <textarea
+                        id="reseller-message"
                         rows={4}
                         value={formData.message}
-                        onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            message: e.target.value,
+                          }))
+                        }
                         className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-[#5a6b4e]/40 transition-all resize-none text-base"
                         placeholder="Dites-nous en plus sur votre projet..."
                       />
@@ -330,7 +469,7 @@ export default function Revendeurs() {
                       className="w-full py-4 text-base font-semibold text-white bg-[#5a6b4e] rounded-xl hover:bg-[#4d5d42] transition-all duration-300 flex items-center justify-center gap-2 tracking-wide"
                     >
                       <FiSend className="w-5 h-5" />
-                      Envoyer ma demande
+                      Continuer sur WhatsApp
                     </button>
                   </form>
                 </>
@@ -339,13 +478,18 @@ export default function Revendeurs() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-8"
+                  role="status"
+                  aria-live="polite"
                 >
                   <div className="w-16 h-16 rounded-full bg-[#5a6b4e]/10 flex items-center justify-center mx-auto mb-4">
                     <FiCheck className="w-8 h-8 text-[#6b7c5c]" />
                   </div>
-                  <h3 className="font-display font-bold text-2xl text-white mb-2">Demande envoyée !</h3>
+                  <h3 className="font-display font-bold text-2xl text-white mb-2">
+                    Demande préparée dans WhatsApp
+                  </h3>
                   <p className="text-white/50 text-base mb-6 font-light">
-                    L'équipe {SITE_CONFIG.name} vous contactera rapidement pour finaliser votre inscription.
+                    Appuyez sur « Envoyer » dans WhatsApp pour transmettre votre
+                    demande à l’équipe {SITE_CONFIG.name}.
                   </p>
                   <Link
                     to="/"

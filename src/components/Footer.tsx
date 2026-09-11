@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import { SITE_CONFIG } from "@/data/siteData";
 import Logo from "./Logo";
 
@@ -12,6 +12,7 @@ export default function Footer() {
         { name: "Nos offres", path: "/offres" },
         { name: "Revendeurs", path: "/revendeurs" },
         { name: "Commander", path: "/commande" },
+        { name: "Connexion", path: "/login" },
       ],
     },
     {
@@ -21,6 +22,7 @@ export default function Footer() {
         { name: "Guide d'installation", path: "/support#guides" },
         { name: "FAQ", path: "/support#faq" },
         { name: "Nous contacter", path: "/contact" },
+        { name: "État de la plateforme", path: "/status" },
       ],
     },
     {
@@ -78,13 +80,9 @@ export default function Footer() {
           <p className="text-white/20 text-[10px] tracking-wide text-center sm:text-left">
             &copy; {SITE_CONFIG.year} {SITE_CONFIG.name}. Tous droits réservés.
           </p>
-          <div className="flex items-center gap-2">
-            {[FiFacebook, FiInstagram, FiTwitter, FiYoutube].map((Icon, i) => (
-              <a key={i} href="#" className="w-7 h-7 flex items-center justify-center rounded-md text-white/55 hover:text-[#6b7c5c] transition-all duration-300 border border-white/[0.04]">
-                <Icon className="w-3 h-3" />
-              </a>
-            ))}
-          </div>
+          <Link to="/status" className="text-white/40 hover:text-[#6b7c5c] text-xs transition-colors">
+            Vérifier la plateforme
+          </Link>
         </div>
       </div>
     </footer>

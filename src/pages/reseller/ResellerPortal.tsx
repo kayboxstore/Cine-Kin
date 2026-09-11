@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Coins, KeyRound, LayoutDashboard, ListChecks, LogOut } from "lucide-react";
+import {
+  Coins,
+  History,
+  KeyRound,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+} from "lucide-react";
 import SEO from "@/components/SEO";
 import { ToastProvider } from "@/components/Toast";
 import { useReseller } from "@/hooks/useReseller";
@@ -7,12 +14,14 @@ import LoginScreen from "./LoginScreen";
 import DashboardTab from "./DashboardTab";
 import ActivationsTab from "./ActivationsTab";
 import PasswordTab from "./PasswordTab";
+import CreditsTab from "./CreditsTab";
 
-type Tab = "dashboard" | "activations" | "password";
+type Tab = "dashboard" | "activations" | "credits" | "password";
 
 const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { key: "activations", label: "Mes activations", icon: ListChecks },
+  { key: "credits", label: "Mouvements de crédits", icon: History },
   { key: "password", label: "Mot de passe", icon: KeyRound },
 ];
 
@@ -22,8 +31,15 @@ function PortalInner() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a1628]">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#5a6b4e]/20 border-t-[#6b7c5c]" />
+      <div
+        className="flex min-h-screen items-center justify-center bg-[#0a1628]"
+        role="status"
+      >
+        <div
+          className="h-10 w-10 animate-spin rounded-full border-2 border-[#5a6b4e]/20 border-t-[#6b7c5c]"
+          aria-hidden="true"
+        />
+        <span className="sr-only">Chargement de l’espace revendeur…</span>
       </div>
     );
   }
@@ -50,10 +66,14 @@ function PortalInner() {
             <div className="flex items-center gap-1.5 rounded-lg border border-[#5a6b4e]/30 bg-[#5a6b4e]/10 px-3 py-1.5 text-sm text-[#8ba26f]">
               <Coins className="h-4 w-4" />
               <span className="font-semibold">{reseller.credits}</span>
-              <span className="hidden text-[#8ba26f]/70 sm:inline">crédits</span>
+              <span className="hidden text-[#8ba26f]/70 sm:inline">
+                crédits
+              </span>
             </div>
             <button
+              type="button"
               onClick={logout}
+              aria-label="Se déconnecter"
               title="Déconnexion"
               className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.05] text-white/60 transition-colors hover:bg-red-500/10 hover:text-red-400"
             >
@@ -64,12 +84,21 @@ function PortalInner() {
 
         {/* Tabs */}
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <nav className="flex gap-1 overflow-x-auto">
-            {TABS.map((t) => {
+          <nav
+            className="flex gap-1 overflow-x-auto"
+            role="tablist"
+            aria-label="Sections de l’espace revendeur"
+          >
+            {TABS.map(t => {
               const active = t.key === tab;
               return (
                 <button
                   key={t.key}
+                  type="button"
+                  role="tab"
+                  id={`reseller-tab-${t.key}`}
+                  aria-selected={active}
+                  aria-controls={`reseller-panel-${t.key}`}
                   onClick={() => setTab(t.key)}
                   className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                     active
@@ -87,9 +116,17 @@ function PortalInner() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-        {tab === "dashboard" && <DashboardTab credits={reseller.credits} />}
-        {tab === "activations" && <ActivationsTab />}
-        {tab === "password" && <PasswordTab />}
+        <section
+          role="tabpanel"
+          id={`reseller-panel-${tab}`}
+          aria-labelledby={`reseller-tab-${tab}`}
+          tabIndex={0}
+        >
+          {tab === "dashboard" && <DashboardTab credits={reseller.credits} />}
+          {tab === "activations" && <ActivationsTab />}
+          {tab === "credits" && <CreditsTab />}
+          {tab === "password" && <PasswordTab />}
+        </section>
       </main>
     </div>
   );
@@ -98,7 +135,11 @@ function PortalInner() {
 export default function ResellerPortal() {
   return (
     <ToastProvider>
-      <SEO title="Espace revendeur — Ciné Kin" description="Portail revendeur Ciné Kin" />
+      <SEO
+        title="Espace revendeur — Ciné Kin"
+        description="Portail revendeur Ciné Kin"
+        noIndex
+      />
       <PortalInner />
     </ToastProvider>
   );

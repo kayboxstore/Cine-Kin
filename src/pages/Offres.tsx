@@ -3,6 +3,7 @@ import SEO from "@/components/SEO";
 import { motion } from "framer-motion";
 import { FiCheck, FiWifi, FiMonitor, FiHeadphones, FiShield, FiStar } from "react-icons/fi";
 import { CLIENT_PLANS, SITE_CONFIG } from "@/data/siteData";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const fadeInUp = {
@@ -30,7 +31,7 @@ export default function Offres() {
 
       <SEO
         title="Nos Offres IPTV - Abonnements à partir de 10 $"
-        description="Découvrez nos abonnements IPTV premium : Essai gratuit 24h, 1 mois, 3 mois, 6 mois et 12 mois (1 ou 2 écrans). 15 000+ chaînes en 4K UHD."
+        description="Découvrez nos abonnements IPTV : essai gratuit 24 h, puis formules de 1 à 12 mois avec 1 ou 2 écrans. Qualité jusqu’à 4K selon le contenu."
       />
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
@@ -97,7 +98,7 @@ export default function Offres() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/50 bg-white/[0.03] rounded-lg p-2.5">
                     <FiWifi className="w-4 h-4 text-[#6b7c5c]" />
-                    <span>{plan.channels} chaînes</span>
+                    <span>{plan.channels}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/50 bg-white/[0.03] rounded-lg p-2.5">
                     <FiMonitor className="w-4 h-4 text-[#6b7c5c]" />
@@ -145,8 +146,8 @@ export default function Offres() {
                     <FiMonitor className="w-6 h-6 text-[#6b7c5c]" />
                   </div>
                   <div>
-                    <h3 className="font-display font-semibold text-white mb-1">Qualité garantie</h3>
-                    <p className="text-white/60 text-sm font-light">HD, Full HD et 4K selon votre formule. Technologie anti-freeze intégrée.</p>
+                    <h3 className="font-display font-semibold text-white mb-1">Qualité disponible</h3>
+                    <p className="text-white/60 text-sm font-light">{COMMERCIAL_INFO.catalogue.caveat}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -154,8 +155,8 @@ export default function Offres() {
                     <FiShield className="w-6 h-6 text-[#6b7c5c]" />
                   </div>
                   <div>
-                    <h3 className="font-display font-semibold text-white mb-1">Sécurisé</h3>
-                    <p className="text-white/60 text-sm font-light">Compatible VPN. Vos données sont protégées et votre confidentialité respectée.</p>
+                    <h3 className="font-display font-semibold text-white mb-1">Conditions annoncées</h3>
+                    <p className="text-white/60 text-sm font-light">{COMMERCIAL_INFO.refund.description}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">

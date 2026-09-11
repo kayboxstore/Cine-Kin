@@ -19,14 +19,24 @@ export default function DashboardView({
   dashboard: Dashboard;
   onNavigate: (v: ClientView) => void;
 }) {
-  const isTrial = dashboard.status === "inactive" || dashboard.licenseType === null;
+  const isTrial =
+    dashboard.status === "inactive" || dashboard.licenseType === null;
   const expired = dashboard.status === "expired";
 
   const statusBadge = isTrial
-    ? { label: "Essai", className: "border-amber-500/30 bg-amber-500/10 text-amber-400" }
+    ? {
+        label: "Essai",
+        className: "border-amber-500/30 bg-amber-500/10 text-amber-400",
+      }
     : expired
-      ? { label: "Expirée", className: "border-red-500/30 bg-red-500/10 text-red-400" }
-      : { label: "Active", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" };
+      ? {
+          label: "Expirée",
+          className: "border-red-500/30 bg-red-500/10 text-red-400",
+        }
+      : {
+          label: "Active",
+          className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+        };
 
   const expiryLine = isTrial
     ? "Aucune licence active — activez votre abonnement."
@@ -34,7 +44,12 @@ export default function DashboardView({
       ? "Aucune expiration"
       : `${expired ? "Expirée le" : "Active jusqu'au"} ${formatDate(dashboard.expiresAt)}`;
 
-  const tiles: { view: ClientView; icon: typeof ListVideo; label: string; hint: string }[] = [
+  const tiles: {
+    view: ClientView;
+    icon: typeof ListVideo;
+    label: string;
+    hint: string;
+  }[] = [
     {
       view: "playlists",
       icon: ListVideo,
@@ -47,7 +62,12 @@ export default function DashboardView({
       label: "Contrôle parental",
       hint: dashboard.parentalControlEnabled ? "Activé" : "Non configuré",
     },
-    { view: "payment", icon: CreditCard, label: "Paiement", hint: "Gérer l'abonnement" },
+    {
+      view: "payment",
+      icon: CreditCard,
+      label: "Renouvellement",
+      hint: "Contacter le support",
+    },
   ];
 
   return (
@@ -55,8 +75,12 @@ export default function DashboardView({
       {/* Status card */}
       <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#5a6b4e]/12 to-transparent p-6">
         <div className="flex items-center justify-between">
-          <span className="text-sm uppercase tracking-wide text-white/50">Ma formule</span>
-          <span className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${statusBadge.className}`}>
+          <span className="text-sm uppercase tracking-wide text-white/50">
+            Ma formule
+          </span>
+          <span
+            className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${statusBadge.className}`}
+          >
             {statusBadge.label}
           </span>
         </div>
@@ -69,9 +93,10 @@ export default function DashboardView({
 
       {/* Tiles */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {tiles.map((t) => (
+        {tiles.map(t => (
           <button
             key={t.view}
+            type="button"
             onClick={() => onNavigate(t.view)}
             className="group flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 text-left transition-colors hover:border-[#5a6b4e]/40 hover:bg-white/[0.04] sm:flex-col sm:items-start"
           >

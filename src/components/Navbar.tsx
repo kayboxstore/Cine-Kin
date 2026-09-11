@@ -1,7 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX, FiLogIn, FiLogOut, FiUser, FiShield } from "react-icons/fi";
+import {
+  FiMenu,
+  FiX,
+  FiLogIn,
+  FiLogOut,
+  FiUser,
+  FiShield,
+} from "react-icons/fi";
 import { useAuth } from "@/hooks/useAuth";
 import { NAV_LINKS } from "@/data/siteData";
 import Logo from "./Logo";
@@ -17,7 +24,17 @@ const preloadMap: Record<string, () => Promise<unknown>> = {
   "/blog": () => import("@/pages/Blog"),
 };
 
-function PrefetchLink({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) {
+function PrefetchLink({
+  to,
+  children,
+  className,
+  active,
+}: {
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+  active?: boolean;
+}) {
   const [prefetched, setPrefetched] = useState(false);
 
   const handleMouseEnter = () => {
@@ -28,7 +45,13 @@ function PrefetchLink({ to, children, className }: { to: string; children: React
   };
 
   return (
-    <Link to={to} className={className} onMouseEnter={handleMouseEnter}>
+    <Link
+      to={to}
+      className={className}
+      onMouseEnter={handleMouseEnter}
+      onFocus={handleMouseEnter}
+      aria-current={active ? "page" : undefined}
+    >
       {children}
     </Link>
   );
@@ -37,6 +60,7 @@ function PrefetchLink({ to, children, className }: { to: string; children: React
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -47,12 +71,21 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close the mobile menu on route change.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setIsOpen(false); }, [location]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   return (
     <motion.nav
+      aria-label="Navigation principale"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" as const }}
@@ -64,15 +97,21 @@ export default function Navbar() {
     >
       <div className="max-w-6xl mx-auto px-6 sm:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="group">
+          <Link
+            to="/"
+            onClick={() => setIsOpen(false)}
+            className="group"
+            aria-label="Ciné Kin Premium — Accueil"
+          >
             <Logo size={32} variant="full" />
           </Link>
 
           <div className="hidden lg:flex items-center gap-0.5">
-            {NAV_LINKS.map((link) => (
+            {NAV_LINKS.map(link => (
               <PrefetchLink
                 key={link.path}
                 to={link.path}
+                active={location.pathname === link.path}
                 className={`relative px-3.5 py-1.5 text-[13px] font-medium rounded-md transition-all duration-300 tracking-wide ${
                   location.pathname === link.path
                     ? "text-white"
@@ -81,13 +120,20 @@ export default function Navbar() {
               >
                 {link.name}
                 {location.pathname === link.path && (
-                  <motion.div layoutId="nav-indicator" className="absolute bottom-0 left-3.5 right-3.5 h-px bg-[#5a6b4e]/40" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+                  <motion.div
+                    layoutId="nav-indicator"
+                    className="absolute bottom-0 left-3.5 right-3.5 h-px bg-[#5a6b4e]/40"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
                 )}
               </PrefetchLink>
             ))}
             {isAdmin && (
               <Link
                 to="/admin"
+                aria-current={
+                  location.pathname === "/admin" ? "page" : undefined
+                }
                 className={`relative px-3.5 py-1.5 text-[13px] font-medium rounded-md transition-all duration-300 tracking-wide flex items-center gap-1.5 ${
                   location.pathname === "/admin"
                     ? "text-[#6b7c5c]"
@@ -97,7 +143,11 @@ export default function Navbar() {
                 <FiShield className="w-3.5 h-3.5" />
                 Dashboard
                 {location.pathname === "/admin" && (
-                  <motion.div layoutId="nav-indicator" className="absolute bottom-0 left-3.5 right-3.5 h-px bg-[#5a6b4e]/40" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+                  <motion.div
+                    layoutId="nav-indicator"
+                    className="absolute bottom-0 left-3.5 right-3.5 h-px bg-[#5a6b4e]/40"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
                 )}
               </Link>
             )}
@@ -108,11 +158,17 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] rounded-full border border-white/[0.06]">
                   {user?.avatar ? (
-                    <img src={user.avatar} alt="" className="w-5 h-5 rounded-full" />
+                    <img
+                      src={user.avatar}
+                      alt=""
+                      className="w-5 h-5 rounded-full"
+                    />
                   ) : (
                     <FiUser className="w-3.5 h-3.5 text-[#6b7c5c]" />
                   )}
-                  <span className="text-white/70 text-xs">{user?.name || "User"}</span>
+                  <span className="text-white/70 text-xs">
+                    {user?.name || "User"}
+                  </span>
                   {isAdmin && (
                     <span className="px-1.5 py-0.5 bg-[#5a6b4e]/15 text-[#6b7c5c] text-[9px] font-bold rounded uppercase">
                       Admin
@@ -120,7 +176,9 @@ export default function Navbar() {
                   )}
                 </div>
                 <button
+                  type="button"
                   onClick={logout}
+                  aria-label="Se déconnecter"
                   className="w-8 h-8 flex items-center justify-center rounded-full text-white/55 hover:text-red-400 hover:bg-red-400/10 transition-all"
                   title="Déconnexion"
                 >
@@ -138,6 +196,7 @@ export default function Navbar() {
             )}
             <Link
               to="/commande"
+              onClick={() => setIsOpen(false)}
               className="px-5 py-2.5 text-xs font-semibold text-white bg-[#5a6b4e] rounded-full hover:bg-[#4d5d42] transition-all tracking-wide"
             >
               Commander
@@ -151,8 +210,20 @@ export default function Navbar() {
             >
               Commander
             </Link>
-            <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg text-white/55 hover:text-white/65 transition-colors">
-              {isOpen ? <FiX className="w-4 h-4" /> : <FiMenu className="w-4 h-4" />}
+            <button
+              ref={menuButtonRef}
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 rounded-lg text-white/55 hover:text-white/65 transition-colors"
+              aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={isOpen}
+              aria-controls="mobile-navigation"
+            >
+              {isOpen ? (
+                <FiX className="w-4 h-4" />
+              ) : (
+                <FiMenu className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
@@ -161,6 +232,7 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -168,17 +240,36 @@ export default function Navbar() {
             className="lg:hidden bg-[#050b14] border-t border-white/[0.08] overflow-hidden"
           >
             <div className="px-6 py-6 space-y-0.5">
-              {NAV_LINKS.map((link) => (
-                <Link key={link.path} to={link.path} className={`block px-4 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                  location.pathname === link.path ? "text-white bg-white/[0.03]" : "text-white/55 hover:text-white/65"
-                }`}>
+              {NAV_LINKS.map(link => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  aria-current={
+                    location.pathname === link.path ? "page" : undefined
+                  }
+                  className={`block px-4 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                    location.pathname === link.path
+                      ? "text-white bg-white/[0.03]"
+                      : "text-white/55 hover:text-white/65"
+                  }`}
+                >
                   {link.name}
                 </Link>
               ))}
               {isAdmin && (
-                <Link to="/admin" className={`block px-4 py-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
-                  location.pathname === "/admin" ? "text-[#6b7c5c] bg-white/[0.03]" : "text-white/55 hover:text-white/65"
-                }`}>
+                <Link
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  aria-current={
+                    location.pathname === "/admin" ? "page" : undefined
+                  }
+                  className={`block px-4 py-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
+                    location.pathname === "/admin"
+                      ? "text-[#6b7c5c] bg-white/[0.03]"
+                      : "text-white/55 hover:text-white/65"
+                  }`}
+                >
                   <FiShield className="w-3.5 h-3.5" />
                   Dashboard
                 </Link>
@@ -190,11 +281,17 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 px-4 py-2">
                       {user?.avatar ? (
-                        <img src={user.avatar} alt="" className="w-6 h-6 rounded-full" />
+                        <img
+                          src={user.avatar}
+                          alt=""
+                          className="w-6 h-6 rounded-full"
+                        />
                       ) : (
                         <FiUser className="w-4 h-4 text-[#6b7c5c]" />
                       )}
-                      <span className="text-white/70 text-xs">{user?.name || "User"}</span>
+                      <span className="text-white/70 text-xs">
+                        {user?.name || "User"}
+                      </span>
                       {isAdmin && (
                         <span className="px-1.5 py-0.5 bg-[#5a6b4e]/15 text-[#6b7c5c] text-[9px] font-bold rounded uppercase">
                           Admin
@@ -202,7 +299,11 @@ export default function Navbar() {
                       )}
                     </div>
                     <button
-                      onClick={logout}
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        logout();
+                      }}
                       className="w-full text-left px-4 py-2.5 rounded-lg text-xs text-red-400/70 hover:text-red-400 hover:bg-red-400/5 transition-all flex items-center gap-2"
                     >
                       <FiLogOut className="w-3.5 h-3.5" />
@@ -212,10 +313,11 @@ export default function Navbar() {
                 ) : (
                   <Link
                     to="/login"
+                    onClick={() => setIsOpen(false)}
                     className="block px-4 py-2.5 rounded-lg text-xs text-white/60 hover:text-white bg-white/[0.03] transition-all flex items-center gap-2"
                   >
                     <FiLogIn className="w-3.5 h-3.5" />
-                    Connexion Admin
+                    Connexion
                   </Link>
                 )}
               </div>

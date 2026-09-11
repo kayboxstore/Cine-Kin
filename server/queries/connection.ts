@@ -21,7 +21,17 @@ function createPool(): Pool {
     user: decodeURIComponent(url.username),
     password: decodeURIComponent(url.password),
     database: url.pathname.replace(/^\//, ""),
-    ...(isLocal ? {} : { ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true } }),
+    waitForConnections: true,
+    connectionLimit: env.databasePoolLimit,
+    maxIdle: env.databasePoolLimit,
+    idleTimeout: 60_000,
+    queueLimit: 0,
+    connectTimeout: env.databaseConnectTimeoutMs,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
+    ...(isLocal
+      ? {}
+      : { ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true } }),
   });
 }
 

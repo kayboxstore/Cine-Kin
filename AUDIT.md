@@ -1,5 +1,10 @@
 # Audit technique — Ciné Kin Premium
 
+> **Archive historique.** Ce document décrit l’état initial du dépôt au commit
+> `c0fc833`, avant les vagues de correction de la PR #18. Plusieurs constats
+> ci-dessous (sécurité, tests, CI, performances, accessibilité et SEO) ont depuis
+> été corrigés ; il ne doit pas être utilisé comme état actuel du projet.
+
 **Date de l'audit :** 15 juillet 2026
 **Portée :** intégralité du dépôt (`main` / commit `c0fc833`)
 **Méthodologie :** revue statique complète du code source, des dépendances (`package.json`, `package-lock.json`), de la configuration de build, et `npm audit` sur le lock file. Aucune base de données de production ni environnement live n'était disponible pour ce test.

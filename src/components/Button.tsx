@@ -8,11 +8,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-[#5a6b4e] text-white hover:bg-[#4d5d42] active:bg-[#3d4d32] shadow-lg shadow-[#5a6b4e]/10",
-        secondary: "bg-white/[0.05] text-white/70 border border-white/[0.08] hover:bg-white/[0.08] hover:text-white",
-        outline: "border border-[#5a6b4e]/30 text-[#6b7c5c] hover:bg-[#5a6b4e]/10 hover:border-[#5a6b4e]/50",
+        primary:
+          "bg-[#5a6b4e] text-white hover:bg-[#4d5d42] active:bg-[#3d4d32] shadow-lg shadow-[#5a6b4e]/10",
+        secondary:
+          "bg-white/[0.05] text-white/70 border border-white/[0.08] hover:bg-white/[0.08] hover:text-white",
+        outline:
+          "border border-[#5a6b4e]/30 text-[#6b7c5c] hover:bg-[#5a6b4e]/10 hover:border-[#5a6b4e]/50",
         ghost: "text-white/50 hover:text-white hover:bg-white/[0.03]",
-        danger: "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20",
+        danger:
+          "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20",
       },
       size: {
         sm: "px-4 py-2.5 text-xs",
@@ -31,24 +35,37 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   isLoading?: boolean;
   loadingText?: string;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, fullWidth, isLoading, loadingText, children, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      fullWidth,
+      isLoading,
+      loadingText,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <button
         className={cn(buttonVariants({ variant, size, fullWidth, className }))}
         ref={ref}
+        type={props.type ?? "button"}
         disabled={disabled || isLoading}
         {...props}
       >
-        {isLoading && (
-          <FiLoader className="w-4 h-4 animate-spin" />
-        )}
+        {isLoading && <FiLoader className="w-4 h-4 animate-spin" />}
         {isLoading && loadingText ? loadingText : children}
       </button>
     );
