@@ -98,24 +98,103 @@ Le build produit `dist/public` (frontend statique) et `dist/boot.js` (serveur).
 En production, le serveur Hono sert les fichiers statiques et fait le fallback
 SPA vers `index.html`. `VITE_SITE_URL` est validée puis injectée dans le HTML,
 `robots.txt` et `sitemap.xml` pendant ce build ; elle doit donc être définie
-avant le build de production. Le build Vercel **n'applique plus de migration** :
-une preview ne doit jamais pouvoir modifier une base partagée. La migration et
-son audit sont exécutés séparément avec `npm run db:deploy`, d'abord sur
+avant le build de production. Le build Vercel (`npm run vercel-build`)
+**n'applique et n'appliquera jamais de migration** — il exécute uniquement
+`vite build` puis l'assemblage `.vercel/output` : une preview ne doit jamais
+pouvoir modifier une base partagée. La migration et son audit sont exécutés
+séparément avec `npm run db:deploy` (ou `npm run db:migrate` seul), d'abord sur
 staging, puis sur production dans une étape de release explicitement autorisée.
+La migration précède toujours le déploiement du nouveau code, jamais l'inverse.
+
+### Statut des plateformes
+
+- **Render** est l'hébergeur de staging actuel de l'application.
+- **Aiven** héberge la base MySQL de staging actuelle.
+- **Vercel** est une cible de déploiement compatible et candidate, évaluée par
+  ce dépôt — elle n'est **pas** la plateforme de production retenue tant
+  qu'une décision explicite n'a pas été actée. Le build et le mode `vercel-build`
+  documentés ici garantissent uniquement la compatibilité, pas un choix de
+  plateforme.
+
+### Ordre exact de la répétition puis de la mise en production
+
+1. Test local des migrations (`npm run db:test-migrations`, base MySQL locale
+   jetable).
+2. `npm run staging:preflight` en lecture seule, qui doit confirmer que la
+   base de restauration est bien vide (`empty`) avant toute écriture.
+3. `STAGING_REHEARSAL_ALLOW_APPLY=1 npm run staging:rehearse -- --apply` :
+   sauvegarde chiffrée de la source, restauration dans la base isolée,
+   migration puis audit de cette copie.
+4. Déploiement sur Render, pointé vers la base ainsi restaurée et migrée (pas
+   avant — le code neuf ne doit jamais démarrer contre un schéma non migré).
+5. Smoke tests (`npm run staging:smoke`) puis tests authentifiés (connexion,
+   révocation de session, changement de mot de passe, etc.).
+
+Détail complet : [`docs/staging-rehearsal-runbook.md`](docs/staging-rehearsal-runbook.md).
+La décision de fusion et de mise en production suit en complément la
+[`checklist de préparation à la mise en production`](docs/release-readiness-checklist.md),
+qui recense aussi les validations juridiques et métier encore nécessaires.
 
 Pour reprendre une base créée auparavant avec `db:push`, suivre obligatoirement
 [`docs/database-migration-runbook.md`](docs/database-migration-runbook.md) sur
 une copie de staging avant la production. Ne plus utiliser `drizzle-kit push`
 sur une base partagée ou de production.
 
-La répétition complète — sauvegarde chiffrée, restauration dans une base vide,
-migration, audit et smoke tests — est décrite dans
-[`docs/staging-rehearsal-runbook.md`](docs/staging-rehearsal-runbook.md).
-
 L'intégration continue (`.github/workflows/ci.yml`) exécute lint, typecheck,
-tests, build et E2E HTTP du build final, puis valide sur MySQL 8 une installation
-neuve et une mise à niveau depuis le schéma historique.
+tests, build, E2E HTTP du build final et audit des dépendances de production
+dans le job `ci` ; valide sur MySQL 8 une installation neuve et une mise à
+niveau depuis le schéma historique dans le job `migrations` ; et exécute la
+suite Playwright (connexion, déconnexion, non-rejeu d'un cookie volé) contre
+le build réel et une base MySQL locale jetable dans le job `e2e-browser` —
+toujours avec des secrets fictifs, jamais de connexion à Aiven, Render ou
+Vercel.
 
 Les sondes d'exploitation sont `GET /api/health/live` (processus) et
 `GET /api/health/ready` (connexion MySQL réelle). Chaque réponse HTTP porte un
 `X-Request-ID` corrélé aux logs JSON du serveur.
+
+## Sessions et déconnexion (révocation)
+
+Chaque session (admin, client, revendeur, Kimi) est un JWT signé contenant un
+identifiant unique `jti`. La déconnexion enregistre ce `jti` dans la table
+`revoked_auth_sessions` (liste de révocation) avant d'effacer le cookie ; toute
+requête ultérieure porteuse de ce jeton est alors rejetée, même si le cookie
+signé est encore techniquement valide.
+
+Conséquences à connaître pour l'exploitation :
+
+- **Jetons antérieurs à cette fonctionnalité — invalidation immédiate, aucune
+  tolérance temporaire.** La vérification de chaque session (admin, client,
+  revendeur, Kimi) exige un `jti` de forme UUID v4 valide **et** une
+  revendication `exp` valide ; un jeton signé qui ne porte pas ces deux
+  éléments est rejeté d'emblée, quelle que soit sa signature — il n'existe
+  aucun chemin qui l'accepte « jusqu'à son expiration naturelle ». Concrètement,
+  au premier déploiement de cette fonctionnalité, **tout cookie émis
+  auparavant devient inutilisable immédiatement** : ses porteurs doivent se
+  reconnecter une fois. C'est une conséquence assumée du modèle de sécurité
+  (la révocation est indexée uniquement par `jti` ; un jeton qui n'en porte
+  pas ne peut être ni vérifié comme non révoqué, ni révoqué individuellement,
+  donc il ne peut pas être accepté). Preuve par test : voir
+  `server/lib/app-sessions.test.ts` et `server/kimi/session.test.ts`
+  (« rejects a validly signed token with no jti/exp », pour les quatre types
+  de session).
+- **Session déjà révoquée** : une requête portant un cookie déjà révoqué
+  (deuxième onglet, clic répété, déconnexion déclenchée ailleurs) reçoit
+  `UNAUTHORIZED`. Le frontend traite explicitement ce cas comme une
+  déconnexion déjà réussie — écran de connexion affiché, aucune erreur
+  technique montrée à l'utilisateur — et ne le traite comme un échec réel que
+  pour une erreur réseau ou serveur (5xx).
+- **Cookie encore présent après déconnexion** : le navigateur peut conserver
+  l'ancien cookie `HttpOnly` en mémoire jusqu'à son remplacement ou son
+  expiration naturelle ; cela ne lui redonne aucun privilège, puisque la
+  vérification côté serveur consulte systématiquement la liste de révocation.
+- **`revoked_auth_sessions` ne doit jamais être supprimée lors d'un retour
+  arrière.** Une suppression de cette table réactiverait tous les jetons
+  révoqués qu'elle contenait — une régression de sécurité. Le retour arrière
+  privilégie toujours la remise en avant (« fix-forward ») ; voir
+  [`docs/database-migration-runbook.md`](docs/database-migration-runbook.md#retour-arrière).
+- **Rotation de `SESSION_SECRET`** : réservée à un incident réel nécessitant
+  l'invalidation complète de toutes les sessions (compromission suspectée du
+  secret, par exemple). Elle invalide immédiatement les quatre types de
+  session pour tous les utilisateurs et force une reconnexion générale — ce
+  n'est pas une opération de routine.

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,8 +11,19 @@ export const migrationsDirectory = path.join(projectRoot, "db", "migrations");
 
 export const BASELINE_TAG = "0000_baseline";
 
+function migrationHashAliases(sql) {
+  const lfSql = sql.replace(/\r\n/g, "\n");
+  const crlfSql = lfSql.replace(/\n/g, "\r\n");
+  return [...new Set([lfSql, crlfSql])].map(content =>
+    createHash("sha256").update(content).digest("hex")
+  );
+}
+
 function normalizedType(value) {
-  return value.toLowerCase().replace(/\s+/g, "");
+  const normalized = value.toLowerCase().replace(/\s+/g, "");
+  // MySQL reports the BOOLEAN alias as TINYINT(1) in information_schema,
+  // while Drizzle records it as `boolean` in snapshots.
+  return normalized === "boolean" ? "tinyint(1)" : normalized;
 }
 
 function expectedColumnType(value) {
@@ -29,7 +41,10 @@ function numberValue(value) {
   return typeof value === "bigint" ? Number(value) : Number(value ?? 0);
 }
 
-export function databaseTarget(rawUrl = process.env.DATABASE_URL) {
+export function databaseTarget(
+  rawUrl = process.env.DATABASE_URL,
+  { sslCaPath = process.env.MYSQL_SSL_CA } = {}
+) {
   if (!rawUrl) {
     throw new Error("DATABASE_URL est obligatoire pour cette opération.");
   }
@@ -50,6 +65,14 @@ export function databaseTarget(rawUrl = process.env.DATABASE_URL) {
   }
 
   const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  const caPath = String(sslCaPath ?? "").trim();
+  const ssl = isLocal
+    ? undefined
+    : {
+        minVersion: "TLSv1.2",
+        rejectUnauthorized: true,
+        ...(caPath ? { ca: readFileSync(caPath, "utf8") } : {}),
+      };
   return {
     rawUrl,
     host: url.hostname,
@@ -61,9 +84,7 @@ export function databaseTarget(rawUrl = process.env.DATABASE_URL) {
       user: decodeURIComponent(url.username),
       password: decodeURIComponent(url.password),
       database,
-      ...(isLocal
-        ? {}
-        : { ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true } }),
+      ...(ssl ? { ssl } : {}),
     },
   };
 }
@@ -105,9 +126,11 @@ export async function loadMigrationDefinition(tag) {
   const snapshot = await readJson(
     path.join(migrationsDirectory, "meta", `${prefix}_snapshot.json`)
   );
+  const hashes = migrationHashAliases(sql);
   return {
     entry,
-    hash: createHash("sha256").update(sql).digest("hex"),
+    hash: hashes[0],
+    hashes,
     snapshot,
     sql,
     sqlPath,
@@ -441,7 +464,7 @@ export function assessTrackedState(definitions, inspection) {
     );
     if (!definition) {
       errors.push(`Migration inconnue enregistrée à ${row.createdAt}.`);
-    } else if (definition.hash !== row.hash) {
+    } else if (!definition.hashes.includes(String(row.hash))) {
       errors.push(`Empreinte divergente pour ${definition.entry.tag}.`);
     }
   }

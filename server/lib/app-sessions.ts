@@ -24,6 +24,17 @@ export function sessionVersionForCredential(credential: string): string {
   return createHmac("sha256", secret()).update(credential).digest("base64url");
 }
 
+export function resellerSessionCredential(
+  passwordHash: string,
+  sessionEpoch: number
+): string {
+  // Epoch zero preserves compatibility for accounts that have never been
+  // suspended. Once incremented it is never reset, so old cookies stay dead.
+  return sessionEpoch === 0
+    ? passwordHash
+    : `${passwordHash}:session-epoch:${sessionEpoch}`;
+}
+
 export function sessionVersionMatches(
   actual: string,
   expected: string
@@ -36,16 +47,36 @@ export function sessionVersionMatches(
   );
 }
 
+// A UUID v4 as produced by node:crypto's randomUUID(), used for every `jti`
+// this module mints. Strictly v4: the version nibble must be `4` and the
+// variant nibble must be one of `8`/`9`/`a`/`b` (RFC 4122), not just any hex
+// digit in those positions — a well-formed UUID of a different version must
+// not slip through. Rejects any malformed/truncated/wrong-version `jti`
+// before it ever reaches a SQL query.
+const JTI_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+// Every verified session additionally exposes its own `jti` and expiry, so
+// callers can check/record revocation without re-decoding the token.
+export type TokenIdentity = { jti: string; expiresAt: Date };
+
+function extractTokenIdentity(payload: jose.JWTPayload): TokenIdentity | null {
+  const { jti, exp } = payload;
+  if (typeof jti !== "string" || !JTI_PATTERN.test(jti)) return null;
+  if (typeof exp !== "number" || !Number.isFinite(exp)) return null;
+  return { jti, expiresAt: new Date(exp * 1000) };
+}
+
 export type ClientSessionPayload = {
   kind: "client";
   appClientId: number;
   sessionVersion: string;
-};
+} & TokenIdentity;
 export type ResellerSessionPayload = {
   kind: "reseller";
   resellerId: number;
   sessionVersion: string;
-};
+} & TokenIdentity;
 
 export async function signClientSession(
   appClientId: number,
@@ -77,10 +108,13 @@ export async function verifyClientSession(
       typeof payload.sessionVersion !== "string"
     )
       return null;
+    const identity = extractTokenIdentity(payload);
+    if (!identity) return null;
     return {
       kind: "client",
       appClientId: payload.appClientId,
       sessionVersion: payload.sessionVersion,
+      ...identity,
     };
   } catch {
     return null;
@@ -117,17 +151,23 @@ export async function verifyResellerSession(
       typeof payload.sessionVersion !== "string"
     )
       return null;
+    const identity = extractTokenIdentity(payload);
+    if (!identity) return null;
     return {
       kind: "reseller",
       resellerId: payload.resellerId,
       sessionVersion: payload.sessionVersion,
+      ...identity,
     };
   } catch {
     return null;
   }
 }
 
-export type AdminSessionPayload = { kind: "admin"; sessionVersion: string };
+export type AdminSessionPayload = {
+  kind: "admin";
+  sessionVersion: string;
+} & TokenIdentity;
 
 export async function signAdminSession(
   sessionVersion: string
@@ -154,7 +194,13 @@ export async function verifyAdminSession(
     });
     if (payload.kind !== "admin" || typeof payload.sessionVersion !== "string")
       return null;
-    return { kind: "admin", sessionVersion: payload.sessionVersion };
+    const identity = extractTokenIdentity(payload);
+    if (!identity) return null;
+    return {
+      kind: "admin",
+      sessionVersion: payload.sessionVersion,
+      ...identity,
+    };
   } catch {
     return null;
   }

@@ -49,6 +49,8 @@ const sampleReseller: Reseller = {
   contact: "wa:+243...",
   username: "reseller1",
   passwordHash: "scrypt$deadbeef$cafe",
+  isActive: true,
+  sessionEpoch: 0,
   credits: 42,
   createdAt: new Date(),
 };
@@ -143,6 +145,38 @@ const ADMIN_APP_PROCEDURES: {
         amount: 10,
         reason: "Recharge test",
       }),
+  },
+  {
+    name: "resellerUpdate",
+    call: c =>
+      c.admin.resellerUpdate({
+        resellerId: 1,
+        name: "R",
+        username: "reseller9",
+        reason: "Test autorisation",
+      }),
+  },
+  {
+    name: "resellerResetPassword",
+    call: c =>
+      c.admin.resellerResetPassword({
+        resellerId: 1,
+        newPassword: "new-password-123",
+        reason: "Test autorisation",
+      }),
+  },
+  {
+    name: "resellerSetActive",
+    call: c =>
+      c.admin.resellerSetActive({
+        resellerId: 1,
+        isActive: false,
+        reason: "Test autorisation",
+      }),
+  },
+  {
+    name: "resellerAdminHistory",
+    call: c => c.admin.resellerAdminHistory({ resellerId: 1, limit: 20 }),
   },
   {
     name: "resellerActivationHistory",

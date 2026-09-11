@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import SEO from "@/components/SEO";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider, useToast } from "@/components/Toast";
 import { useClientPortal } from "@/hooks/useClientPortal";
 import ClientLogin from "./ClientLogin";
 import DashboardView from "./DashboardView";
@@ -19,8 +19,24 @@ const TITLES: Record<ClientView, string> = {
 };
 
 function PortalInner() {
-  const { dashboard, isAuthenticated, isLoading, logout } = useClientPortal();
+  const { toast } = useToast();
+  const { dashboard, isAuthenticated, isLoading, logout, logoutError } =
+    useClientPortal();
   const [view, setView] = useState<ClientView>("dashboard");
+
+  // Only a genuine failure (network/5xx) ever reaches this — an
+  // UNAUTHORIZED logout response is treated as "already logged out" inside
+  // useClientPortal and never becomes a logoutError. The dashboard
+  // intentionally stays visible here: a failed logout must not look like a
+  // successful one.
+  useEffect(() => {
+    if (logoutError) {
+      toast(
+        logoutError.message || "Échec de la déconnexion. Réessayez.",
+        "error"
+      );
+    }
+  }, [logoutError, toast]);
 
   if (isLoading) {
     return (
