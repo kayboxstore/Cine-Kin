@@ -177,8 +177,8 @@ export const RESELLER_PLANS = [
     id: "starter",
     name: "Starter",
     credits: 20,
-    price: 199.99,
-    priceLabel: "$199.99",
+    price: 199,
+    priceLabel: "$199",
     popular: false,
     features: [
       "20 codes",
@@ -192,8 +192,8 @@ export const RESELLER_PLANS = [
     id: "business",
     name: "Business",
     credits: 50,
-    price: 499.99,
-    priceLabel: "$499.99",
+    price: 449,
+    priceLabel: "$449",
     popular: true,
     features: [
       "50 codes",
@@ -206,8 +206,8 @@ export const RESELLER_PLANS = [
     id: "pro",
     name: "Pro",
     credits: 100,
-    price: 1299.99,
-    priceLabel: "$1299.99",
+    price: 849,
+    priceLabel: "$849",
     popular: false,
     features: [
       "100 codes",
@@ -220,8 +220,8 @@ export const RESELLER_PLANS = [
     id: "vip",
     name: "VIP",
     credits: 500,
-    price: 2299.99,
-    priceLabel: "$2299.99",
+    price: 3999,
+    priceLabel: "$3,999",
     popular: false,
     features: [
       "500 codes",
