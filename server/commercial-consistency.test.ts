@@ -26,7 +26,7 @@ describe("public commercial information", () => {
   it("does not encode a guaranteed reseller margin in the plan grid", () => {
     for (const plan of RESELLER_PLANS) {
       expect("margin" in plan).toBe(false);
-      expect(plan.priceLabel).toContain(String(plan.price));
+      expect(plan.priceLabel.replace(/\D/g, "")).toContain(String(plan.price));
     }
   });
 
