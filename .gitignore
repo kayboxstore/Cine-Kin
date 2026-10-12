@@ -39,3 +39,5 @@ build/
 # Test coverage
 coverage/
 .nyc_output/
+# Encrypted staging backup artifacts and manifests
+artifacts/staging-backups/

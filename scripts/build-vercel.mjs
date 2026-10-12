@@ -64,14 +64,14 @@ await writeFile(
       shouldAddHelpers: false,
     },
     null,
-    2,
-  ),
+    2
+  )
 );
 
 // The .func dir needs its own package.json so Node treats index.mjs as ESM.
 await writeFile(
   path.join(funcDir, "package.json"),
-  JSON.stringify({ type: "module" }, null, 2),
+  JSON.stringify({ type: "module" }, null, 2)
 );
 
 // 4. Top-level routing: /api/* hits the function, filesystem assets are served
@@ -84,12 +84,17 @@ await writeFile(
       routes: [
         { src: "^/api/(.*)$", dest: "/api/index" },
         { handle: "filesystem" },
-        { src: "/(.*)", dest: "/index.html" },
+        {
+          src: "^/(|a-propos|admin|blog|commande|conditions|contact|espace-client|faq|login|mentions-legales|offres|paiement|politique-confidentialite|revendeur|revendeurs|status|support|tutoriels)/?$",
+          dest: "/index.html",
+        },
+        { src: "^/blog/[1-6]/?$", dest: "/index.html" },
+        { src: "/(.*)", dest: "/index.html", status: 404 },
       ],
     },
     null,
-    2,
-  ),
+    2
+  )
 );
 
 console.log("✓ .vercel/output assembled (1 function: api/index.func)");

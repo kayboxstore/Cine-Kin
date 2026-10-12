@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /espace-client
+Disallow: /login
+Disallow: /revendeur
 
 Sitemap: https://7a5czmte3r3ri.kimi.page/sitemap.xml

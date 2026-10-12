@@ -32,7 +32,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
   }, []);
 
-  const removeToast = (id: string) => setToasts(prev => prev.filter(t => t.id !== id));
+  const removeToast = (id: string) =>
+    setToasts(prev => prev.filter(t => t.id !== id));
 
   const icons = {
     success: FiCheck,
@@ -49,7 +50,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed top-24 right-4 z-[100] space-y-3 w-80">
+      <div
+        className="fixed top-24 right-4 z-[100] space-y-3 w-80"
+        aria-live="polite"
+        aria-relevant="additions text"
+      >
         <AnimatePresence>
           {toasts.map(t => {
             const Icon = icons[t.type];
@@ -61,10 +66,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 exit={{ opacity: 0, x: 50, scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 className={`flex items-start gap-3 p-4 rounded-xl border backdrop-blur-xl ${colors[t.type]}`}
+                role={t.type === "error" ? "alert" : "status"}
               >
                 <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-white/80 flex-1">{t.message}</p>
-                <button onClick={() => removeToast(t.id)} className="text-white/60 hover:text-white transition-colors">
+                <button
+                  type="button"
+                  onClick={() => removeToast(t.id)}
+                  className="text-white/60 hover:text-white transition-colors"
+                  aria-label="Fermer la notification"
+                >
                   <FiX className="w-4 h-4" />
                 </button>
               </motion.div>
