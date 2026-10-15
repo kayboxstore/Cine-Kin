@@ -120,7 +120,9 @@ schéma divergent fait échouer cette étape avant toute migration.
 ## Retour arrière
 
 Les instructions DDL MySQL peuvent être validées implicitement et ne disposent
-pas d'un rollback transactionnel fiable. En cas d'incident grave :
+pas d'un rollback transactionnel fiable. La priorité est toujours la remise en
+avant (« fix-forward ») plutôt que la suppression de structures déjà migrées.
+En cas d'incident grave :
 
 1. interrompre le déploiement ;
 2. remettre la version applicative précédente — les nouvelles colonnes et la
@@ -128,4 +130,13 @@ pas d'un rollback transactionnel fiable. En cas d'incident grave :
 3. si l'intégrité des données est en cause, restaurer la sauvegarde créée juste
    avant l'opération ;
 4. ne jamais supprimer manuellement des lignes de `__drizzle_migrations` pour
-   tenter de rejouer une migration.
+   tenter de rejouer une migration ;
+5. ne jamais supprimer (`DROP TABLE`) la table `revoked_auth_sessions`, y
+   compris lors d'un retour arrière — elle porte la liste de révocation des
+   sessions déconnectées ; la vider réactiverait tous les jetons déjà révoqués
+   qu'elle contenait, ce qui est une régression de sécurité, pas une
+   opération de nettoyage anodine ;
+6. si un incident nécessite l'invalidation complète et immédiate de toutes les
+   sessions (par exemple une compromission suspectée), faire tourner
+   `SESSION_SECRET` plutôt que de manipuler `revoked_auth_sessions` — c'est
+   l'unique mécanisme prévu pour ce cas, réservé aux incidents réels.

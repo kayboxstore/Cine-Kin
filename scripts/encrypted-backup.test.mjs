@@ -130,6 +130,12 @@ describe("encrypted staging backups", () => {
           "HOME",
           "LANG",
           "LC_ALL",
+          // Trust anchor for verified TLS to the protected Aiven MySQL
+          // instance (see PR #22 and scripts/lib/mysql-cli.mjs): Node and the
+          // mysql/mysqldump CLIs both need to see these to validate the
+          // Aiven CA, so they are deliberately part of the allowlist.
+          "MYSQL_SSL_CA",
+          "NODE_EXTRA_CA_CERTS",
           "PATH",
           "Path",
           "PATHEXT",

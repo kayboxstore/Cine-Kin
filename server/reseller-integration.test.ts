@@ -19,6 +19,7 @@ const shared = vi.hoisted(() => {
       appClients: [] as any[],
       playlists: [] as any[],
       creditLedger: [] as any[],
+      adminAuditLog: [] as any[],
     },
     seq: { v: 0 },
   };
@@ -59,6 +60,8 @@ vi.mock("./queries/connection", async () => {
         return store.playlists;
       case "reseller_credit_ledger":
         return store.creditLedger;
+      case "reseller_admin_audit_log":
+        return store.adminAuditLog;
       default:
         throw new Error("unknown table: " + getTableName(t));
     }
@@ -203,6 +206,7 @@ vi.mock("./queries/connection", async () => {
         store.appClients = snap.appClients;
         store.playlists = snap.playlists;
         store.creditLedger = snap.creditLedger;
+        store.adminAuditLog = snap.adminAuditLog;
         throw e;
       }
     },
@@ -248,6 +252,8 @@ function makeReseller(over: Partial<Reseller> = {}): Reseller {
     contact: null,
     username: "reseller",
     passwordHash: hashSecret("password"),
+    isActive: true,
+    sessionEpoch: 0,
     credits: 0,
     createdAt: new Date(),
     ...over,
@@ -281,6 +287,7 @@ beforeEach(() => {
   shared.store.appClients = [];
   shared.store.playlists = [];
   shared.store.creditLedger = [];
+  shared.store.adminAuditLog = [];
   shared.seq.v = 0;
 });
 
@@ -593,6 +600,135 @@ describe("admin.resellerAddCredits — atomic balance and ledger", () => {
       actorUserId: adminUser.id,
       reason: "Recharge payée par M-Pesa",
     });
+  });
+});
+
+describe("admin reseller management — profile, password and status", () => {
+  it("updates the public profile and records only changed field names", async () => {
+    shared.store.resellers.push(
+      makeReseller({ id: 7, name: "Ancien nom", username: "ancien" })
+    );
+
+    await expect(
+      createCaller(makeCtx({ user: adminUser })).admin.resellerUpdate({
+        resellerId: 7,
+        name: "Nouveau nom",
+        contact: "contact@example.com",
+        username: "nouveau",
+        reason: "Correction demandée par le revendeur",
+      })
+    ).resolves.toEqual({
+      success: true,
+      changedFields: ["name", "contact", "username"],
+    });
+
+    expect(shared.store.resellers[0]).toMatchObject({
+      name: "Nouveau nom",
+      contact: "contact@example.com",
+      username: "nouveau",
+    });
+    expect(shared.store.adminAuditLog[0]).toMatchObject({
+      resellerId: 7,
+      actorUserId: adminUser.id,
+      action: "profile_update",
+      reason: "Correction demandée par le revendeur",
+    });
+    expect(JSON.parse(shared.store.adminAuditLog[0].metadata)).toEqual({
+      changedFields: ["name", "contact", "username"],
+    });
+  });
+
+  it("resets the password without returning or auditing the plaintext", async () => {
+    const oldPassword = "ancien-secret-123";
+    const newPassword = "nouveau-secret-456";
+    shared.store.resellers.push(
+      makeReseller({
+        id: 8,
+        username: "resettable",
+        passwordHash: hashSecret(oldPassword),
+      })
+    );
+
+    const result = await createCaller(
+      makeCtx({ user: adminUser })
+    ).admin.resellerResetPassword({
+      resellerId: 8,
+      newPassword,
+      reason: "Mot de passe oublié",
+    });
+
+    expect(result).toEqual({ success: true, username: "resettable" });
+    expect(JSON.stringify(result)).not.toContain(newPassword);
+    expect(
+      verifySecret(newPassword, shared.store.resellers[0].passwordHash)
+    ).toBe(true);
+    expect(
+      verifySecret(oldPassword, shared.store.resellers[0].passwordHash)
+    ).toBe(false);
+    expect(shared.store.adminAuditLog[0]).toMatchObject({
+      resellerId: 8,
+      action: "password_reset",
+      reason: "Mot de passe oublié",
+      metadata: null,
+    });
+    expect(JSON.stringify(shared.store.adminAuditLog)).not.toContain(
+      newPassword
+    );
+
+    const anonymous = createCaller(makeCtx());
+    await expect(
+      anonymous.reseller.login({
+        username: "resettable",
+        password: oldPassword,
+      })
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(
+      anonymous.reseller.login({
+        username: "resettable",
+        password: newPassword,
+      })
+    ).resolves.toEqual({ success: true });
+  });
+
+  it("suspends and reactivates without deleting history", async () => {
+    const reseller = makeReseller({ id: 9, username: "status-account" });
+    shared.store.resellers.push(reseller);
+    shared.store.activations.push({
+      id: 91,
+      activatedByResellerId: 9,
+      createdAt: new Date(),
+    });
+    const admin = createCaller(makeCtx({ user: adminUser }));
+
+    await admin.admin.resellerSetActive({
+      resellerId: 9,
+      isActive: false,
+      reason: "Suspension administrative",
+    });
+    expect(shared.store.resellers[0].isActive).toBe(false);
+    expect(shared.store.resellers[0].sessionEpoch).toBe(1);
+    expect(shared.store.activations).toHaveLength(1);
+    await expect(
+      createCaller(makeCtx()).reseller.login({
+        username: "status-account",
+        password: "password",
+      })
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+
+    await admin.admin.resellerSetActive({
+      resellerId: 9,
+      isActive: true,
+      reason: "Réactivation validée",
+    });
+    expect(shared.store.resellers[0].isActive).toBe(true);
+    expect(shared.store.resellers[0].sessionEpoch).toBe(1);
+    await expect(
+      createCaller(makeCtx()).reseller.login({
+        username: "status-account",
+        password: "password",
+      })
+    ).resolves.toEqual({ success: true });
+    expect(shared.store.adminAuditLog).toHaveLength(2);
   });
 });
 

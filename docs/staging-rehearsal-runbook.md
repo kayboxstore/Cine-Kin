@@ -23,6 +23,13 @@ l'audit d'intégrité.
 - le répertoire de sauvegarde ne peut pas être la racine du projet, un dossier
   public, généré, interne à Git ou appartenant aux dépendances.
 
+**Statut des plateformes concernées par cette procédure** : Render est
+l'hébergeur de staging actuel de l'application ; Aiven héberge la base MySQL
+de staging actuelle (source de cette répétition). Vercel n'intervient pas
+dans cette procédure : c'est une cible de déploiement compatible et
+candidate, pas la plateforme de production retenue — voir la section
+« Statut des plateformes » du README.
+
 Le format et les options de sauvegarde suivent les recommandations de la
 [documentation MySQL sur la sauvegarde et la reprise](https://dev.mysql.com/doc/refman/8.0/en/backup-and-recovery.html)
 et de la [documentation `mysqldump`](https://dev.mysql.com/doc/refman/8.0/en/using-mysqldump.html).
@@ -72,6 +79,12 @@ affichés et confirmer que la restauration est `empty`. La commande s'arrête si
 la cible contient déjà une table ou si la configuration ressemble à une cible
 non isolée.
 
+Une source sans données métier valide uniquement la chaîne technique. Elle ne
+constitue pas une preuve représentative de reprise : avant toute décision de
+production, répéter la procédure avec une sauvegarde récente et représentative,
+conformément à la
+[`checklist de préparation à la mise en production`](release-readiness-checklist.md).
+
 ## 3. Sauvegarder, restaurer, migrer et auditer
 
 Après validation humaine du préflight, ouvrir temporairement la porte
@@ -107,8 +120,20 @@ partielle : ne pas la réutiliser, créer une nouvelle base vide et recommencer.
 
 ## 4. Déployer et exécuter les smoke tests
 
-Déployer le code de la release en pointant `DATABASE_URL` vers la base restaurée,
-puis exécuter :
+Déployer le code de la release sur Render, en pointant `DATABASE_URL` vers la
+base restaurée sur Aiven — jamais l'inverse : la migration et son audit
+(étape 3) doivent avoir réussi avant que le nouveau code ne démarre contre
+cette base.
+
+> **Déconnexion ponctuelle attendue au déploiement de la révocation de
+> session** : la vérification de chaque session (admin, client, revendeur,
+> Kimi) exige désormais un `jti` et un `exp` valides ; tout cookie émis avant
+> ce déploiement en est dépourvu et devient donc inutilisable immédiatement,
+> sans période de tolérance. C'est une conséquence assumée, pas une
+> régression : prévenir les utilisateurs qu'une reconnexion unique sera
+> nécessaire après ce déploiement précis.
+
+Puis exécuter :
 
 ```bash
 npm run staging:smoke

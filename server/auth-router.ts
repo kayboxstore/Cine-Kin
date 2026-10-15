@@ -3,10 +3,11 @@ import { TRPCError } from "@trpc/server";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { Session, AdminSession } from "@contracts/constants";
 import { appendSessionCookie, clearSessionCookie } from "./lib/cookies";
+import { sessionVersionForCredential, signAdminSession } from "./lib/app-sessions";
 import {
-  sessionVersionForCredential,
-  signAdminSession,
-} from "./lib/app-sessions";
+  revokeSession,
+  schedulePurgeAfterRevocation,
+} from "./lib/session-revocation";
 import { env } from "./lib/env";
 import { createRouter, publicQuery, authedQuery } from "./middleware";
 
@@ -47,13 +48,47 @@ export const authRouter = createRouter({
     }),
 
   logout: authedQuery.mutation(async ({ ctx }) => {
-    // Clear both the Kimi OAuth session and the password-based admin session.
-    clearSessionCookie(ctx.resHeaders, ctx.req.headers, Session.cookieName);
-    clearSessionCookie(
-      ctx.resHeaders,
-      ctx.req.headers,
-      AdminSession.cookieName
-    );
+    // createContext() already decoded whichever of the Kimi/admin cookies
+    // were present and validly signed on this request — only those (never
+    // both unconditionally) get revoked and cleared. A second tab or a
+    // repeated click may already have neither.
+
+    // Revocation MUST succeed before any cookie is cleared and before a
+    // success response is returned — a copied cookie must never remain
+    // usable just because clearing failed silently or the DB write did not
+    // actually happen. If revokeSession() throws (e.g. MySQL unreachable),
+    // it propagates out of this resolver: no cookie is cleared, no success
+    // response is sent.
+    let revoked = false;
+    if (ctx.kimiSession) {
+      await revokeSession(ctx.kimiSession.jti, "kimi", ctx.kimiSession.expiresAt);
+      revoked = true;
+    }
+    if (ctx.adminSession) {
+      await revokeSession(ctx.adminSession.jti, "admin", ctx.adminSession.expiresAt);
+      revoked = true;
+    }
+
+    // Only after every revocation above has been confirmed do we clear the
+    // cookies that were actually present.
+    if (ctx.kimiSession) {
+      clearSessionCookie(ctx.resHeaders, ctx.req.headers, Session.cookieName);
+    }
+    if (ctx.adminSession) {
+      clearSessionCookie(
+        ctx.resHeaders,
+        ctx.req.headers,
+        AdminSession.cookieName
+      );
+    }
+
+    // Deterministic (not random), bounded, and only after a revocation this
+    // request actually recorded — never on a no-op logout. Best-effort: a
+    // purge failure can never undo the revocation above or fail this response.
+    if (revoked) {
+      schedulePurgeAfterRevocation();
+    }
+
     return { success: true };
   }),
 });

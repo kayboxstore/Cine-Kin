@@ -56,6 +56,11 @@ app.use("*", async (c, next) => {
   c.set("requestId", requestId);
   c.header("X-Request-ID", requestId);
   await next();
+  // Some downstream adapters (notably tRPC's fetch adapter) replace the
+  // response object instead of mutating the one Hono had when this middleware
+  // started. Re-apply the correlation header to the final response so error
+  // responses such as an anonymous 401 can always be matched to their log.
+  c.header("X-Request-ID", requestId);
   logEvent("info", "http_request", {
     requestId,
     method: c.req.method,

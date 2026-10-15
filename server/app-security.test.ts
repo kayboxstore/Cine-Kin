@@ -40,6 +40,15 @@ describe("Hono authentication perimeter", () => {
     expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 
+  it("keeps the correlation id when the tRPC adapter returns an authentication error", async () => {
+    const response = await app.request(
+      'https://cine.test/api/trpc/auth.me?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D'
+    );
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get("x-request-id")).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
   it("exposes whether optional Kimi OAuth is configured without leaking configuration", async () => {
     const response = await app.request("https://cine.test/api/oauth/status");
 

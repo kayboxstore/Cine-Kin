@@ -6,6 +6,8 @@ const SAFE_ENVIRONMENT_KEYS = [
   "HOME",
   "LANG",
   "LC_ALL",
+  "MYSQL_SSL_CA",
+  "NODE_EXTRA_CA_CERTS",
   "PATH",
   "Path",
   "PATHEXT",
@@ -37,8 +39,12 @@ function optionValue(value) {
   return `"${normalized.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }
 
-export function mysqlDefaultsFile(target) {
+export function mysqlDefaultsFile(
+  target,
+  sslCaPath = process.env.MYSQL_SSL_CA
+) {
   const local = ["localhost", "127.0.0.1"].includes(target.host);
+  const caPath = String(sslCaPath ?? "").trim();
   return [
     "[client]",
     "protocol=TCP",
@@ -47,7 +53,12 @@ export function mysqlDefaultsFile(target) {
     `user=${optionValue(target.options.user)}`,
     `password=${optionValue(target.options.password)}`,
     "default-character-set=utf8mb4",
-    ...(local ? [] : ["ssl-mode=VERIFY_IDENTITY"]),
+    ...(local
+      ? []
+      : [
+          "ssl-mode=VERIFY_IDENTITY",
+          ...(caPath ? [`ssl-ca=${optionValue(caPath)}`] : []),
+        ]),
     "",
   ].join("\n");
 }

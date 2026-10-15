@@ -7,6 +7,7 @@ import {
   timestamp,
   int,
   bigint,
+  boolean,
   index,
   uniqueIndex,
 } from "drizzle-orm/mysql-core";
@@ -128,12 +129,52 @@ export const resellers = mysqlTable("resellers", {
   contact: varchar("contact", { length: 255 }),
   username: varchar("username", { length: 100 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  // Incremented on suspension so a cookie issued before the suspension can
+  // never become valid again after a later reactivation.
+  sessionEpoch: int("session_epoch", { unsigned: true }).default(0).notNull(),
   credits: int("credits").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export type Reseller = typeof resellers.$inferSelect;
 export type InsertReseller = typeof resellers.$inferInsert;
+
+// Persistent audit trail for sensitive reseller administration. Passwords and
+// password hashes must never be written here; metadata contains only the names
+// of changed fields or the resulting account status.
+export const resellerAdminAuditLog = mysqlTable(
+  "reseller_admin_audit_log",
+  {
+    id: serial("id").primaryKey(),
+    resellerId: bigint("reseller_id", {
+      mode: "number",
+      unsigned: true,
+    }).notNull(),
+    actorUserId: bigint("actor_user_id", {
+      mode: "number",
+      unsigned: true,
+    }).notNull(),
+    action: mysqlEnum("action", [
+      "profile_update",
+      "password_reset",
+      "status_change",
+    ]).notNull(),
+    reason: varchar("reason", { length: 255 }).notNull(),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  table => [
+    index("reseller_admin_audit_reseller_created_idx").on(
+      table.resellerId,
+      table.createdAt
+    ),
+  ]
+);
+
+export type ResellerAdminAuditEntry = typeof resellerAdminAuditLog.$inferSelect;
+export type InsertResellerAdminAuditEntry =
+  typeof resellerAdminAuditLog.$inferInsert;
 
 // Shared counters for authentication/API rate limiting. Keys are SHA-256
 // digests, so raw IP addresses and procedure names are not persisted.
@@ -239,3 +280,33 @@ export const playlists = mysqlTable("playlists", {
 
 export type Playlist = typeof playlists.$inferSelect;
 export type InsertPlaylist = typeof playlists.$inferInsert;
+
+// Revocation list for the four stateless JWT session kinds (admin, client,
+// reseller, kimi). Sessions are NOT recorded at login — only a token whose
+// owner explicitly logged out gets a row here, keyed by its own `jti`. This
+// is deliberately additive-only and denylist-based (not a full session
+// table): no row here means simply "not revoked", not "valid" — a token
+// still has to carry a valid `jti` and `exp` to be accepted at all, which
+// the verification code enforces unconditionally regardless of this table
+// (any signed token missing either is rejected outright, with no grace
+// period). A row past its own `expires_at` is provably redundant (the
+// JWT's own `exp` claim already rejects it) and safe to purge in bounded
+// batches.
+export const revokedAuthSessions = mysqlTable(
+  "revoked_auth_sessions",
+  {
+    jti: varchar("jti", { length: 36 }).primaryKey(),
+    sessionKind: mysqlEnum("session_kind", [
+      "admin",
+      "client",
+      "reseller",
+      "kimi",
+    ]).notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    revokedAt: timestamp("revoked_at").defaultNow().notNull(),
+  },
+  table => [index("revoked_auth_sessions_expires_idx").on(table.expiresAt)]
+);
+
+export type RevokedAuthSession = typeof revokedAuthSessions.$inferSelect;
+export type InsertRevokedAuthSession = typeof revokedAuthSessions.$inferInsert;
