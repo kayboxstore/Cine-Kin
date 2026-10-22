@@ -16,11 +16,57 @@ export function logEvent(
   else console.info(entry);
 }
 
+export type DriverErrorFields = {
+  code?: string;
+  errno?: number;
+  sqlState?: string;
+  sqlMessage?: string;
+};
+
+// A mysql2/Drizzle query failure carries structured fields (code/errno/
+// sqlState/sqlMessage) either directly on the thrown error or several
+// `.cause` levels down (a TRPCError's .cause is often Drizzle's own wrapper
+// error, itself rebuilding .message as "Failed query: <sql> params: <...>"
+// and setting *its* .cause to the real mysql2 error). Walks the cause chain
+// looking for that shape so callers can log only the structured fields and
+// redact every free-text message along the way.
+//
+// Requires errno/sqlState/sqlMessage, never a bare `code` alone: a
+// TRPCError's own `.code` is a tRPC code string (e.g.
+// "INTERNAL_SERVER_ERROR") that would otherwise be mistaken for a driver
+// error code.
+export function driverErrorFields(error: unknown): DriverErrorFields | undefined {
+  let current: unknown = error;
+  for (let depth = 0; depth < 5 && current && typeof current === "object"; depth++) {
+    const fields = current as Record<string, unknown>;
+    const isDriverShaped =
+      typeof fields.errno === "number" ||
+      typeof fields.sqlState === "string" ||
+      typeof fields.sqlMessage === "string";
+    if (isDriverShaped) {
+      return {
+        code: typeof fields.code === "string" ? fields.code : undefined,
+        errno: typeof fields.errno === "number" ? fields.errno : undefined,
+        sqlState: typeof fields.sqlState === "string" ? fields.sqlState : undefined,
+        sqlMessage: typeof fields.sqlMessage === "string" ? fields.sqlMessage : undefined,
+      };
+    }
+    current = fields.cause;
+  }
+  return undefined;
+}
+
 export function errorSummary(error: unknown): {
   errorName: string;
   errorMessage: string;
 } {
   if (error instanceof Error) {
+    // A driver/Drizzle error's own .message (and Drizzle's wrapper message)
+    // can contain the raw SQL text and bound parameter values. Never log it
+    // here; driverErrorFields() carries the safe, structured fields instead.
+    if (driverErrorFields(error)) {
+      return { errorName: error.name, errorMessage: "[driver error — see driver fields]" };
+    }
     return { errorName: error.name, errorMessage: error.message };
   }
   return { errorName: "UnknownError", errorMessage: String(error) };
