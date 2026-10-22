@@ -7,7 +7,12 @@ import { fileURLToPath } from "node:url";
 import { once } from "node:events";
 import { sanitizedCommandEnvironment } from "./lib/mysql-cli.mjs";
 import { projectRoot } from "./lib/migration-database.mjs";
-import { DISALLOW_ALL_ROBOTS_TXT } from "./lib/public-metadata.ts";
+
+// Kept as a literal, not an import: this script runs as plain Node ESM (no
+// TS transpilation), and Node 20 (the CI runtime) rejects importing a .ts
+// file directly. Must stay identical to DISALLOW_ALL_ROBOTS_TXT in
+// ./lib/public-metadata.ts — covered by scripts/public-metadata.test.mjs.
+const DISALLOW_ALL_ROBOTS_TXT = "User-agent: *\nDisallow: /\n";
 
 const modulePath = fileURLToPath(import.meta.url);
 
