@@ -44,16 +44,34 @@ export function driverErrorFields(error: unknown): DriverErrorFields | undefined
       typeof fields.sqlState === "string" ||
       typeof fields.sqlMessage === "string";
     if (isDriverShaped) {
+      const sqlMessage =
+        typeof fields.sqlMessage === "string" ? fields.sqlMessage : undefined;
       return {
         code: typeof fields.code === "string" ? fields.code : undefined,
         errno: typeof fields.errno === "number" ? fields.errno : undefined,
         sqlState: typeof fields.sqlState === "string" ? fields.sqlState : undefined,
-        sqlMessage: typeof fields.sqlMessage === "string" ? fields.sqlMessage : undefined,
+        sqlMessage:
+          sqlMessage && isAllowlistedSqlMessage(sqlMessage) ? sqlMessage : undefined,
       };
     }
     current = fields.cause;
   }
   return undefined;
+}
+
+// mysql2's sqlMessage can itself carry user-supplied data verbatim — a
+// duplicate-key violation echoes the offending value ("Duplicate entry
+// 'a@b.com' for key 'email'"). Only schema-shaped messages (naming a
+// column/table/database that doesn't exist, never a row's data) are safe to
+// log as-is; anything else is dropped, keeping only code/errno/sqlState.
+const ALLOWED_SQL_MESSAGE_PATTERNS = [
+  /^Unknown column '[^']*'/,
+  /^Table '[^']*' doesn't exist/,
+  /^Unknown database '[^']*'/,
+];
+
+function isAllowlistedSqlMessage(sqlMessage: string): boolean {
+  return ALLOWED_SQL_MESSAGE_PATTERNS.some(pattern => pattern.test(sqlMessage));
 }
 
 export function errorSummary(error: unknown): {

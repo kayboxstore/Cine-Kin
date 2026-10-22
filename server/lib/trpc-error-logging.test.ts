@@ -54,6 +54,49 @@ describe("logTrpcProcedureError", () => {
     expect(logged).not.toContain("00:11:22:33:44:55");
   });
 
+  it("drops a duplicate-key sqlMessage from the log — it echoes the offending value", () => {
+    const cause = Object.assign(new Error("Duplicate entry 'a@b.com' for key 'email'"), {
+      code: "ER_DUP_ENTRY",
+      errno: 1062,
+      sqlState: "23000",
+      sqlMessage: "Duplicate entry 'a@b.com' for key 'email'",
+    });
+    const error = new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "ignored on purpose",
+      cause,
+    });
+
+    logTrpcProcedureError({ error, path: "app.registerDevice" });
+
+    const logged = String(errorSpy.mock.calls[0]?.[0]);
+    expect(logged).toContain("ER_DUP_ENTRY");
+    expect(logged).toContain("1062");
+    expect(logged).not.toContain("a@b.com");
+  });
+
+  it("keeps an allowlisted, schema-shaped sqlMessage in the log as-is", () => {
+    const cause = Object.assign(
+      new Error("Unknown column 'claim_code_hash' in 'field list'"),
+      {
+        code: "ER_BAD_FIELD_ERROR",
+        errno: 1054,
+        sqlState: "42S22",
+        sqlMessage: "Unknown column 'claim_code_hash' in 'field list'",
+      }
+    );
+    const error = new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "ignored on purpose",
+      cause,
+    });
+
+    logTrpcProcedureError({ error, path: "app.registerDevice" });
+
+    const logged = String(errorSpy.mock.calls[0]?.[0]);
+    expect(logged).toContain("Unknown column 'claim_code_hash' in 'field list'");
+  });
+
   it("logs just the tRPC code and path for a deliberately thrown TRPCError", () => {
     const error = new TRPCError({ code: "UNAUTHORIZED", message: "PIN incorrect." });
 
