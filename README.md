@@ -32,6 +32,7 @@ Copier `.env.example` vers `.env` et renseigner les valeurs :
 | `APP_SECRET`        | Secret client OAuth uniquement                                             |
 | `APP_BASE_URL`      | Origine HTTPS canonique utilisée pour le callback OAuth                    |
 | `VITE_SITE_URL`     | Origine HTTPS injectée au build dans canonical, réseaux sociaux et sitemap |
+| `VITE_SITE_INDEXING`| Doit valoir exactement `true` pour rendre le site indexable (sinon noindex/disallow-all) — voir [`docs/site-indexing.md`](docs/site-indexing.md) |
 | `SESSION_SECRET`    | Secret dédié à la signature des sessions et transactions OAuth             |
 | `ENCRYPTION_KEY`    | Clé dédiée au chiffrement AES-GCM des identifiants de playlists            |
 | `ADMIN_PASSWORD`    | Mot de passe administrateur alternatif, optionnel                          |

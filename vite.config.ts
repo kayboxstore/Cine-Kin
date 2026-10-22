@@ -8,18 +8,21 @@ import {
   publicMetadataPlugin,
   resolvePublicSiteOrigin,
 } from "./scripts/lib/public-metadata";
+import { isSiteIndexingEnabled } from "./contracts/site-indexing";
 
 const publicOutputDirectory = path.resolve(__dirname, "dist/public");
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
+  const viteEnv = loadEnv(mode, __dirname, "VITE_");
   const buildPlugins =
     command === "build"
       ? [
           publicMetadataPlugin({
             outputDirectory: publicOutputDirectory,
-            siteOrigin: resolvePublicSiteOrigin(
-              loadEnv(mode, __dirname, "VITE_").VITE_SITE_URL
+            siteOrigin: resolvePublicSiteOrigin(viteEnv.VITE_SITE_URL),
+            siteIndexingEnabled: isSiteIndexingEnabled(
+              viteEnv.VITE_SITE_INDEXING
             ),
           }),
         ]
