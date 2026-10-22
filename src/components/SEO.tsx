@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { getAbsoluteAssetUrl, getCanonicalUrl } from "@/lib/siteUrl";
+import {
+  getAbsoluteAssetUrl,
+  getCanonicalUrl,
+  isSiteIndexable,
+} from "@/lib/siteUrl";
 
 interface SEOProps {
   title: string;
@@ -25,7 +29,8 @@ export default function SEO({
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
   const canonicalUrl = getCanonicalUrl(canonical);
   const ogImageUrl = getAbsoluteAssetUrl(ogImage);
-  const robots = noIndex ? "noindex, nofollow" : "index, follow";
+  const robots =
+    noIndex || !isSiteIndexable() ? "noindex, nofollow" : "index, follow";
 
   useEffect(() => {
     document

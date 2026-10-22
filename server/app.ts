@@ -65,6 +65,17 @@ app.use("*", async (c, next) => {
   });
 });
 
+// Keeps crawlers out while the site isn't ready to be indexed, on every
+// response (API included). VITE_SITE_INDEXING must be exactly "true" to lift
+// it — see env.ts; the HTML <meta name="robots"> tag and robots.txt follow
+// the same variable at build time (scripts/lib/public-metadata.ts).
+app.use("*", async (c, next) => {
+  if (!env.siteIndexingEnabled) {
+    c.header("X-Robots-Tag", "noindex, nofollow");
+  }
+  await next();
+});
+
 app.onError((error, c) => {
   const requestId = c.get("requestId") || randomUUID();
   logEvent("error", "unhandled_request_error", {

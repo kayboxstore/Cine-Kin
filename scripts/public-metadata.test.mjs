@@ -4,6 +4,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SITE_ORIGIN,
+  DISALLOW_ALL_ROBOTS_TXT,
+  applyRobotsMetaTag,
+  buildRobotsMetaTag,
   replacePublicSiteOrigin,
   resolvePublicSiteOrigin,
   rewritePublicMetadataFiles,
@@ -62,7 +65,8 @@ describe("public build metadata", () => {
 
       await rewritePublicMetadataFiles(
         outputDirectory,
-        "https://cinekin.example"
+        "https://cinekin.example",
+        true
       );
 
       const [robots, sitemap] = await Promise.all([
@@ -74,5 +78,62 @@ describe("public build metadata", () => {
     } finally {
       await rm(outputDirectory, { recursive: true, force: true });
     }
+  });
+
+  it("replaces robots.txt with a blanket disallow when indexing is off, but still rewrites the sitemap origin", async () => {
+    const outputDirectory = await mkdtemp(
+      path.join(os.tmpdir(), "cine-kin-public-metadata-")
+    );
+    try {
+      await Promise.all([
+        writeFile(
+          path.join(outputDirectory, "robots.txt"),
+          `Sitemap: ${DEFAULT_SITE_ORIGIN}/sitemap.xml\n`,
+          "utf8"
+        ),
+        writeFile(
+          path.join(outputDirectory, "sitemap.xml"),
+          `<loc>${DEFAULT_SITE_ORIGIN}/offres</loc>\n`,
+          "utf8"
+        ),
+      ]);
+
+      await rewritePublicMetadataFiles(
+        outputDirectory,
+        "https://cinekin.example",
+        false
+      );
+
+      const [robots, sitemap] = await Promise.all([
+        readFile(path.join(outputDirectory, "robots.txt"), "utf8"),
+        readFile(path.join(outputDirectory, "sitemap.xml"), "utf8"),
+      ]);
+      expect(robots).toBe(DISALLOW_ALL_ROBOTS_TXT);
+      expect(robots).not.toContain("Sitemap:");
+      expect(sitemap).toBe("<loc>https://cinekin.example/offres</loc>\n");
+    } finally {
+      await rm(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it("builds an index,follow meta tag only when indexing is enabled", () => {
+    expect(buildRobotsMetaTag(true)).toBe(
+      '<meta data-static-seo="true" name="robots" content="index, follow" />'
+    );
+    expect(buildRobotsMetaTag(false)).toBe(
+      '<meta data-static-seo="true" name="robots" content="noindex, nofollow" />'
+    );
+  });
+
+  it("rewrites the HTML robots meta tag in place without touching other tags", () => {
+    const html =
+      '<meta data-static-seo="true" name="author" content="Ciné Kin Premium" />' +
+      '<meta data-static-seo="true" name="robots" content="index, follow" />';
+
+    expect(applyRobotsMetaTag(html, false)).toBe(
+      '<meta data-static-seo="true" name="author" content="Ciné Kin Premium" />' +
+        '<meta data-static-seo="true" name="robots" content="noindex, nofollow" />'
+    );
+    expect(applyRobotsMetaTag(html, true)).toBe(html);
   });
 });

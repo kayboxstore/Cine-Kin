@@ -43,6 +43,12 @@ describe("frontend quality safeguards", () => {
     expect(seo).not.toContain("window.location.href");
   });
 
+  it("forces noindex on every page once the site-wide indexing switch is off", () => {
+    const seo = read("src/components/SEO.tsx");
+    expect(seo).toContain("isSiteIndexable()");
+    expect(seo).toContain("noIndex || !isSiteIndexable()");
+  });
+
   it("replaces the static crawler fallback with one route-specific SEO set", () => {
     const index = read("index.html");
     const seo = read("src/components/SEO.tsx");

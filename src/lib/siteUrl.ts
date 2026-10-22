@@ -1,4 +1,14 @@
+import { isSiteIndexingEnabled } from "@contracts/site-indexing";
+
 const FALLBACK_SITE_ORIGIN = "https://7a5czmte3r3ri.kimi.page";
+
+// Same switch the build (index.html, robots.txt) and the server
+// (X-Robots-Tag) honor. Read here too so that once React/Helmet take over
+// after hydration, a page's own noIndex={false} can never override the
+// site-wide "not ready to be indexed yet" state.
+export function isSiteIndexable(): boolean {
+  return isSiteIndexingEnabled(import.meta.env.VITE_SITE_INDEXING);
+}
 
 export function getSiteOrigin(): string {
   const configured = import.meta.env.VITE_SITE_URL?.trim();

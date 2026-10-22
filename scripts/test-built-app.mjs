@@ -8,6 +8,12 @@ import { once } from "node:events";
 import { sanitizedCommandEnvironment } from "./lib/mysql-cli.mjs";
 import { projectRoot } from "./lib/migration-database.mjs";
 
+// Kept as a literal, not an import: this script runs as plain Node ESM (no
+// TS transpilation), and Node 20 (the CI runtime) rejects importing a .ts
+// file directly. Must stay identical to DISALLOW_ALL_ROBOTS_TXT in
+// ./lib/public-metadata.ts — covered by scripts/public-metadata.test.mjs.
+const DISALLOW_ALL_ROBOTS_TXT = "User-agent: *\nDisallow: /\n";
+
 const modulePath = fileURLToPath(import.meta.url);
 
 function assert(condition, message) {
@@ -230,9 +236,26 @@ export async function runBuiltAppE2e() {
         robotsResponse.status === 200,
         `robots.txt retourne HTTP ${robotsResponse.status}.`
       );
+
+      // VITE_SITE_INDEXING decides which of two contracts this build's
+      // robots.txt follows (see scripts/lib/public-metadata.ts); detect which
+      // one this build actually produced rather than assuming one.
+      const siteIndexingEnabled = robots !== DISALLOW_ALL_ROBOTS_TXT;
+      if (siteIndexingEnabled) {
+        assert(
+          robots.includes(`Sitemap: ${siteOrigin}/sitemap.xml`),
+          "robots.txt et sitemap n’utilisent pas le même domaine."
+        );
+      } else {
+        assert(
+          !robots.includes("Sitemap:"),
+          "robots.txt ne doit pas référencer le sitemap hors indexation."
+        );
+      }
       assert(
-        robots.includes(`Sitemap: ${siteOrigin}/sitemap.xml`),
-        "robots.txt et sitemap n’utilisent pas le même domaine."
+        metadataContent(homeHtml, "name", "robots") ===
+          (siteIndexingEnabled ? "index, follow" : "noindex, nofollow"),
+        "La balise meta robots ne correspond pas au mode d’indexation du build."
       );
       assert(
         metadataContent(homeHtml, "property", "og:url") === siteOrigin,

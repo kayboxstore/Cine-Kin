@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { isSiteIndexingEnabled } from "@contracts/site-indexing";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -84,6 +85,11 @@ export const env = {
   kimiTokenIssuer: process.env.KIMI_TOKEN_ISSUER ?? "",
   kimiOauthPkce: booleanValue(process.env.KIMI_OAUTH_PKCE, true),
   appBaseUrl: process.env.APP_BASE_URL ?? "",
+  // Same build variable the frontend build reads (VITE_SITE_INDEXING) — kept
+  // in sync so the server's X-Robots-Tag header always matches what the
+  // build already baked into the HTML/robots.txt. Anything other than the
+  // exact string "true" (including unset) means "do not index".
+  siteIndexingEnabled: isSiteIndexingEnabled(process.env.VITE_SITE_INDEXING),
   trustProxy: booleanValue(
     process.env.TRUST_PROXY,
     Boolean(process.env.VERCEL)
