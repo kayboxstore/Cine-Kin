@@ -1,10 +1,36 @@
 import { ErrorMessages } from "@contracts/constants";
-import { initTRPC, TRPCError } from "@trpc/server";
+import { initTRPC, TRPCError, type TRPCDefaultErrorShape } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 
+// Any error not thrown as a TRPCError (an unhandled driver/Drizzle
+// exception, for instance) is wrapped by tRPC into code
+// "INTERNAL_SERVER_ERROR" with shape.message set to that error's own
+// .message — which for a failed query can be the raw SQL text and bound
+// parameters. A TRPCError thrown deliberately by a procedure (UNAUTHORIZED,
+// CONFLICT, ...) carries its own user-facing message and must pass through
+// unchanged. shape.data.stack is also stripped defensively: tRPC only sets
+// it when `isDev` (NODE_ENV !== "production"), but a misconfigured
+// environment variable must not be the only thing standing between a stack
+// trace and a client.
+export function formatTrpcError(opts: {
+  shape: TRPCDefaultErrorShape;
+  error: TRPCError;
+}): TRPCDefaultErrorShape {
+  const { shape, error } = opts;
+  const data = { ...shape.data };
+  delete data.stack;
+  return {
+    ...shape,
+    message:
+      error.code === "INTERNAL_SERVER_ERROR" ? "Erreur interne." : shape.message,
+    data,
+  };
+}
+
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter: formatTrpcError,
 });
 
 export const createRouter = t.router;

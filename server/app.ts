@@ -19,11 +19,12 @@ import {
   isSensitiveTrpcRequest,
   sensitiveProcedureKey,
 } from "./lib/trpc-security";
-import { env } from "./lib/env";
+import { env, isKimiOAuthConfigured } from "./lib/env";
 import { getTrustedClientIp } from "./lib/client-ip";
 import { createRateLimitStore } from "./lib/database-rate-limit-store";
 import { createReadinessHandler } from "./lib/health";
 import { errorSummary, logEvent } from "./lib/observability";
+import { logTrpcProcedureError } from "./lib/trpc-error-logging";
 
 type AppEnv = {
   Bindings: HttpBindings;
@@ -63,6 +64,17 @@ app.use("*", async (c, next) => {
     status: c.res.status,
     durationMs: Math.round(performance.now() - startedAt),
   });
+});
+
+// Keeps crawlers out while the site isn't ready to be indexed, on every
+// response (API included). VITE_SITE_INDEXING must be exactly "true" to lift
+// it — see env.ts; the HTML <meta name="robots"> tag and robots.txt follow
+// the same variable at build time (scripts/lib/public-metadata.ts).
+app.use("*", async (c, next) => {
+  if (!env.siteIndexingEnabled) {
+    c.header("X-Robots-Tag", "noindex, nofollow");
+  }
+  await next();
 });
 
 app.onError((error, c) => {
@@ -170,6 +182,10 @@ app.get("/api/health/live", c => {
   return c.json({ ok: true });
 });
 app.get("/api/health/ready", createReadinessHandler());
+app.get(Paths.oauthStatus, c => {
+  c.header("Cache-Control", "no-store");
+  return c.json({ enabled: isKimiOAuthConfigured() });
+});
 app.get(Paths.oauthStart, createOAuthStartHandler());
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async c => {
@@ -178,6 +194,9 @@ app.use("/api/trpc/*", async c => {
     req: c.req.raw,
     router: appRouter,
     createContext,
+    onError({ error, path }) {
+      logTrpcProcedureError({ error, path });
+    },
   });
 });
 app.all("/api/*", c => c.json({ error: "Not Found" }, 404));

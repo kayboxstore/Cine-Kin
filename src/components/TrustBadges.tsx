@@ -1,12 +1,13 @@
 import { FiShield, FiLock, FiHeadphones, FiRefreshCw, FiCheckCircle } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
+import { COMMERCIAL_INFO } from "@/data/commercial";
 
 const badges = [
-  { icon: FiShield, label: "Satisfait ou remboursé", desc: "30 jours" },
-  { icon: FiLock, label: "Paiement sécurisé", desc: "SSL 256-bit" },
-  { icon: FiHeadphones, label: "Support 7j/7", desc: "08h - 23h" },
-  { icon: FiRefreshCw, label: "Mise à jour", desc: "Automatique" },
-  { icon: FiCheckCircle, label: "Activation", desc: "< 5 minutes" },
+  { icon: FiShield, label: "Conditions claires", desc: "Avant paiement" },
+  { icon: FiLock, label: "Aucune carte saisie", desc: "Sur ce site" },
+  { icon: FiHeadphones, label: "Support 7j/7", desc: COMMERCIAL_INFO.support.hoursShort },
+  { icon: FiRefreshCw, label: "Formules fixes", desc: "Prix affichés" },
+  { icon: FiCheckCircle, label: "Activation", desc: "Après validation" },
 ];
 
 export default function TrustBadges() {

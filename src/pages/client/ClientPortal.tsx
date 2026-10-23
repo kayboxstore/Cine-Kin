@@ -15,7 +15,7 @@ const TITLES: Record<ClientView, string> = {
   dashboard: "Espace client",
   playlists: "Playlists",
   parental: "Contrôle parental",
-  payment: "Paiement",
+  payment: "Renouvellement",
 };
 
 function PortalInner() {
@@ -24,8 +24,15 @@ function PortalInner() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a1628]">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#5a6b4e]/20 border-t-[#6b7c5c]" />
+      <div
+        className="flex min-h-screen items-center justify-center bg-[#0a1628]"
+        role="status"
+      >
+        <div
+          className="h-10 w-10 animate-spin rounded-full border-2 border-[#5a6b4e]/20 border-t-[#6b7c5c]"
+          aria-hidden="true"
+        />
+        <span className="sr-only">Chargement de l’espace client…</span>
       </div>
     );
   }
@@ -41,6 +48,7 @@ function PortalInner() {
           <div className="flex items-center gap-3">
             {view !== "dashboard" ? (
               <button
+                type="button"
                 onClick={() => setView("dashboard")}
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.05] text-white/70 transition-colors hover:bg-white/[0.08]"
                 aria-label="Retour"
@@ -58,7 +66,9 @@ function PortalInner() {
             <span className="text-sm text-white/50">{TITLES[view]}</span>
           </div>
           <button
+            type="button"
             onClick={logout}
+            aria-label="Se déconnecter"
             title="Déconnexion"
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.05] text-white/60 transition-colors hover:bg-red-500/10 hover:text-red-400"
           >
@@ -68,7 +78,9 @@ function PortalInner() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-        {view === "dashboard" && <DashboardView dashboard={dashboard} onNavigate={setView} />}
+        {view === "dashboard" && (
+          <DashboardView dashboard={dashboard} onNavigate={setView} />
+        )}
         {view === "playlists" && <PlaylistsView />}
         {view === "parental" && <ParentalView />}
         {view === "payment" && <PaymentView mac={dashboard.mac} />}
@@ -80,7 +92,11 @@ function PortalInner() {
 export default function ClientPortal() {
   return (
     <ToastProvider>
-      <SEO title="Espace client — Ciné Kin" description="Portail client Ciné Kin" />
+      <SEO
+        title="Espace client — Ciné Kin"
+        description="Portail client Ciné Kin"
+        noIndex
+      />
       <PortalInner />
     </ToastProvider>
   );
