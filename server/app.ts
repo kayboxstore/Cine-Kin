@@ -24,6 +24,7 @@ import { getTrustedClientIp } from "./lib/client-ip";
 import { createRateLimitStore } from "./lib/database-rate-limit-store";
 import { createReadinessHandler } from "./lib/health";
 import { errorSummary, logEvent } from "./lib/observability";
+import { logTrpcProcedureError } from "./lib/trpc-error-logging";
 
 type AppEnv = {
   Bindings: HttpBindings;
@@ -193,6 +194,9 @@ app.use("/api/trpc/*", async c => {
     req: c.req.raw,
     router: appRouter,
     createContext,
+    onError({ error, path }) {
+      logTrpcProcedureError({ error, path });
+    },
   });
 });
 app.all("/api/*", c => c.json({ error: "Not Found" }, 404));
